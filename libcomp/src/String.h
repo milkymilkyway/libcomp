@@ -438,6 +438,8 @@ public:
             ok = false;
         }
 
+        bool negative = !s.empty() && '-' == s[0];
+
         if(ok)
         {
             if(std::numeric_limits<T>::is_signed)
@@ -467,7 +469,8 @@ public:
                 if(ss && static_cast<T>(temp) >=
                     std::numeric_limits<T>::min() &&
                     static_cast<T>(temp) <=
-                    std::numeric_limits<T>::max())
+                    std::numeric_limits<T>::max() &&
+                    !negative)
                 {
                     value = static_cast<T>(temp);
                 }
