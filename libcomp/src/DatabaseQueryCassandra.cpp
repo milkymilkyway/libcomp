@@ -124,7 +124,6 @@ bool DatabaseQueryCassandra::Prepare(const String& query)
 bool DatabaseQueryCassandra::Execute()
 {
     bool result = false;
-    bool isBatch = false;
 
     if(nullptr != mFuture)
     {
@@ -148,8 +147,6 @@ bool DatabaseQueryCassandra::Execute()
 
             if(nullptr != mBatch)
             {
-                isBatch = true;
-
                 if(CASS_OK == cass_batch_add_statement(mBatch, mStatement))
                 {
                     cass_statement_free(mStatement);

@@ -32,7 +32,7 @@
 
 using namespace libcomp;
 
-TcpServer::TcpServer(String listenAddress, int port) : mAcceptor(mService),
+TcpServer::TcpServer(String listenAddress, int16_t port) : mAcceptor(mService),
     mDiffieHellman(nullptr), mListenAddress(listenAddress), mPort(port)
 {
 }
@@ -131,9 +131,9 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
             // will reset this socket (which is a reference to the local
             // variable in the Start() function).
             mAcceptor.async_accept(socket,
-                [this, &socket](asio::error_code errorCode)
+                [this, &socket](asio::error_code acceptErrorCode)
                 {
-                    AcceptHandler(errorCode, socket);
+                    AcceptHandler(acceptErrorCode, socket);
                 });
         }
     }
@@ -206,7 +206,8 @@ DH* TcpServer::LoadDiffieHellman(const void *pData, size_t dataSize)
         if(nullptr != pDiffieHellman)
         {
             pDiffieHellman->p = BN_bin2bn(reinterpret_cast<
-                const unsigned char*>(pData), dataSize, NULL);
+                const unsigned char*>(pData),
+                static_cast<int>(dataSize), NULL);
 
             if(0 >= BN_hex2bn(&pDiffieHellman->g, DH_BASE_STRING) ||
                 nullptr == pDiffieHellman->p || nullptr == pDiffieHellman->g ||

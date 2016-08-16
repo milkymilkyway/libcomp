@@ -176,7 +176,8 @@ std::vector<char> Decrypt::LoadFile(const std::string& path, int requestedSize)
         }
     }
 
-    if(!file.good() || data.size() != fileSize)
+    if(!file.good() || data.size() != static_cast<std::vector<
+        char>::size_type>(fileSize))
     {
         data.clear();
     }
@@ -243,7 +244,7 @@ String Decrypt::GenerateRandom(int sz)
     random = LoadFile("/dev/urandom", sz);
 
     // Check that enough data was read.
-    if(random.size() != sz)
+    if(random.size() != static_cast<std::vector<char>::size_type>(sz))
     {
         EXCEPTION("Failed to read from /dev/urandom");
     }
@@ -435,7 +436,7 @@ void Decrypt::Encrypt(const BF_KEY& key, void *pVoidData, uint32_t dataSize)
         {
             BF_encrypt(reinterpret_cast<BF_LONG*>(pData), &key);
             pData += BLOWFISH_BLOCK_SIZE;
-            dataSize -= BLOWFISH_BLOCK_SIZE;
+            dataSize -= static_cast<uint32_t>(BLOWFISH_BLOCK_SIZE);
         }
     }
 }
@@ -483,7 +484,7 @@ void Decrypt::Decrypt(const BF_KEY& key, void *pVoidData, uint32_t dataSize)
         {
             BF_decrypt(reinterpret_cast<BF_LONG*>(pData), &key);
             pData += BLOWFISH_BLOCK_SIZE;
-            dataSize -= BLOWFISH_BLOCK_SIZE;
+            dataSize -= static_cast<uint32_t>(BLOWFISH_BLOCK_SIZE);
         }
     }
 }
@@ -620,16 +621,19 @@ void Decrypt::DecryptCbc(std::vector<char>& data,
 
 void Decrypt::EncryptPacket(const BF_KEY& key, Packet& packet)
 {
-    uint32_t realSize = packet.Size() - 2 * sizeof(uint32_t);
+    uint32_t realSize = packet.Size() - 2 *
+        static_cast<uint32_t>(sizeof(uint32_t));
 
     // Write the real size.
     packet.Seek(4);
     packet.WriteU32Big(realSize);
 
     // Round up the size of the packet to a multiple of BLOWFISH_BLOCK_SIZE.
-    uint32_t paddedSize = packet.Size() - 2 * sizeof(uint32_t);
-    paddedSize = ((paddedSize + BLOWFISH_BLOCK_SIZE - 1) /
-        BLOWFISH_BLOCK_SIZE) * BLOWFISH_BLOCK_SIZE;
+    uint32_t paddedSize = packet.Size() - 2 *
+        static_cast<uint32_t>(sizeof(uint32_t));
+    paddedSize = static_cast<uint32_t>(((paddedSize +
+        BLOWFISH_BLOCK_SIZE - 1) / BLOWFISH_BLOCK_SIZE) *
+        BLOWFISH_BLOCK_SIZE);
 
     // Make sure the packet is padded.
     if(realSize != paddedSize)

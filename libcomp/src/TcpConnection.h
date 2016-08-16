@@ -78,7 +78,7 @@ public:
     void SendPacket(Packet& packet);
     void SendPacket(ReadOnlyPacket& packet);
 
-    bool RequestPacket(uint32_t size);
+    bool RequestPacket(size_t size);
 
     Role_t GetRole() const;
     ConnectionStatus_t GetStatus() const;

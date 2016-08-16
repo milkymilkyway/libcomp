@@ -39,8 +39,12 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wunused-local-typedef"
+#endif // __clang__
 
 #if GCC_VERSION > 40201
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"

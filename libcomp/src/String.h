@@ -450,7 +450,7 @@ public:
                 if(ss && temp >= std::numeric_limits<T>::min() &&
                     temp <= std::numeric_limits<T>::max())
                 {
-                    value = temp;
+                    value = static_cast<T>(temp);
                 }
                 else
                 {
@@ -464,10 +464,12 @@ public:
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= std::numeric_limits<T>::min() &&
-                    temp <= std::numeric_limits<T>::max())
+                if(ss && static_cast<T>(temp) >=
+                    std::numeric_limits<T>::min() &&
+                    static_cast<T>(temp) <=
+                    std::numeric_limits<T>::max())
                 {
-                    value = temp;
+                    value = static_cast<T>(temp);
                 }
                 else
                 {

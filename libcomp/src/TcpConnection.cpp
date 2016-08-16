@@ -109,7 +109,7 @@ void TcpConnection::SendPacket(ReadOnlyPacket& packet)
     }
 }
 
-bool TcpConnection::RequestPacket(uint32_t size)
+bool TcpConnection::RequestPacket(size_t size)
 {
     bool result = false;
 
@@ -145,7 +145,7 @@ bool TcpConnection::RequestPacket(uint32_t size)
                 {
                     // Adjust the size of the packet.
                     (void)mReceivedPacket.Direct(mReceivedPacket.Size() +
-                        length);
+                        static_cast<uint32_t>(length));
                     mReceivedPacket.Rewind();
 
                     // It's up to this callback to remove the data from the
@@ -238,7 +238,7 @@ void TcpConnection::SendNextPacket()
                 bool sendAnother = false;
                 bool packetOk = false;
 
-                ReadOnlyPacket packet;
+                ReadOnlyPacket readOnlyPacket;
 
                 if(errorCode)
                 {
@@ -246,7 +246,7 @@ void TcpConnection::SendNextPacket()
                 }
                 else
                 {
-                    std::lock_guard<std::mutex> guard(mOutgoingMutex);
+                    std::lock_guard<std::mutex> outgoingGuard(mOutgoingMutex);
 
                     if(mOutgoingPackets.empty() || length !=
                         mOutgoingPackets.front().Size())
@@ -255,7 +255,7 @@ void TcpConnection::SendNextPacket()
                     }
                     else
                     {
-                        packet = mOutgoingPackets.front();
+                        readOnlyPacket = mOutgoingPackets.front();
 
                         mOutgoingPackets.pop_front();
 
@@ -266,7 +266,7 @@ void TcpConnection::SendNextPacket()
 
                 if(packetOk)
                 {
-                    PacketSent(packet);
+                    PacketSent(readOnlyPacket);
 
                     if(sendAnother)
                     {

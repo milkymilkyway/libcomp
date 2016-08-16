@@ -758,25 +758,25 @@ String String::FromCodePoint(CodePoint cp)
     }
     else if(0x800 > cp)
     {
-        bytes[0] = 0xC0 | ((cp >> 6) & 0x1F);
-        bytes[1] = 0x80 | (cp & 0x3F);
+        bytes[0] = static_cast<unsigned char>(0xC0 | ((cp >> 6) & 0x1F));
+        bytes[1] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
 
         return String(reinterpret_cast<char*>(bytes), 2);
     }
     else if(0x10000 > cp)
     {
-        bytes[0] = 0xE0 | ((cp >> 12) & 0x0F);
-        bytes[1] = 0x80 | ((cp >> 6) & 0x3F);
-        bytes[2] = 0x80 | (cp & 0x3F);
+        bytes[0] = static_cast<unsigned char>(0xE0 | ((cp >> 12) & 0x0F));
+        bytes[1] = static_cast<unsigned char>(0x80 | ((cp >> 6) & 0x3F));
+        bytes[2] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
 
         return String(reinterpret_cast<char*>(bytes), 3);
     }
     else
     {
-        bytes[0] = 0xF0 | ((cp >> 18) & 0x07);
-        bytes[1] = 0x80 | ((cp >> 12) & 0x3F);
-        bytes[2] = 0x80 | ((cp >> 6) & 0x3F);
-        bytes[3] = 0x80 | (cp & 0x3F);
+        bytes[0] = static_cast<unsigned char>(0xF0 | ((cp >> 18) & 0x07));
+        bytes[1] = static_cast<unsigned char>(0x80 | ((cp >> 12) & 0x3F));
+        bytes[2] = static_cast<unsigned char>(0x80 | ((cp >> 6) & 0x3F));
+        bytes[3] = static_cast<unsigned char>(0x80 | (cp & 0x3F));
 
         return String(reinterpret_cast<char*>(bytes), 4);
     }

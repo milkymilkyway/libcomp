@@ -505,7 +505,9 @@ void LobbyConnection::ParsePacket(libcomp::Packet& packet,
             {
                 // This is a shallow copy of the command data.
                 ReadOnlyPacket command(copy, commandStart +
-                    2 * sizeof(uint16_t), commandSize - 2 * sizeof(uint16_t));
+                    2 * static_cast<uint32_t>(sizeof(uint16_t)),
+                    commandSize - 2 * static_cast<uint32_t>(
+                    sizeof(uint16_t)));
 
                 // Notify the task about the new packet.
                 mMessageQueue->Enqueue(new libcomp::Message::Packet(self,

@@ -108,6 +108,8 @@ TEST(ScriptEngine, ReadOnlyPacket)
     Log::GetSingletonPtr()->AddLogHook(
         [&scriptMessages](Log::Level_t level, const String& msg)
         {
+            (void)level;
+
             scriptMessages += msg;
         });
 
