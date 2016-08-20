@@ -105,6 +105,7 @@ ExternalProject_Add(
 ExternalProject_Get_Property(sqrat INSTALL_DIR)
 
 SET(SQRAT_INCLUDE_DIRS "${INSTALL_DIR}/include")
+SET(SQRAT_DEFINES "-DSCRAT_USE_CXX11_OPTIMIZATIONS=1")
 
 ExternalProject_Add(
     civet
