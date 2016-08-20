@@ -133,6 +133,38 @@ TEST(ScriptEngine, ReadOnlyPacket)
     Log::GetSingletonPtr()->ClearHooks();
 }
 
+TEST(ScriptEngine, ReadWriteArray)
+{
+    String scriptMessages;
+
+    Log::GetSingletonPtr()->AddLogHook(
+        [&scriptMessages](Log::Level_t level, const String& msg)
+        {
+            (void)level;
+
+            scriptMessages += msg;
+        });
+
+    ScriptEngine engine;
+
+    EXPECT_TRUE(engine.Eval(
+        "p <- Packet();\n"
+        "local b = blob();\n"
+        "b.writen(-1095041334, 'i');" // 0xCAFEBABE
+        "p.WriteArray(b);\n"
+        "if(4 == p.Size())\n"
+        "{\n"
+            "p.Rewind(4)\n"
+            "local c = p.ReadArray(4);\n"
+            "print(c.readn('i'));\n"
+        "}\n"
+    ));
+    EXPECT_EQ(scriptMessages, "SQUIRREL: -1095041334\n");
+    scriptMessages.Clear();
+
+    Log::GetSingletonPtr()->ClearHooks();
+}
+
 int main(int argc, char *argv[])
 {
     try

@@ -125,6 +125,9 @@ ScriptEngine::ScriptEngine()
         });
     sq_setprintfunc(mVM, &SquirrelPrintFunction, &SquirrelErrorFunction);
 
+    sq_pushroottable(mVM);
+    sqstd_register_bloblib(mVM);
+
     // Bindings.
     BindReadOnlyPacket();
     BindPacket();
@@ -161,7 +164,14 @@ bool ScriptEngine::Eval(const String& source, const String& sourceName)
 void ScriptEngine::BindReadOnlyPacket()
 {
     Class<ReadOnlyPacket> readOnlyPacketBinding(mVM, "ReadOnlyPacket");
-    readOnlyPacketBinding.Func("Size", &Packet::Size);
+    readOnlyPacketBinding.Func("Size", &ReadOnlyPacket::Size);
+    readOnlyPacketBinding.Func<std::vector<char> (ReadOnlyPacket::*)(uint32_t)>(
+        "ReadArray", &Packet::ReadArray);
+    readOnlyPacketBinding.Overload<void (ReadOnlyPacket::*)()>(
+        "Rewind", &ReadOnlyPacket::Rewind);
+    readOnlyPacketBinding.Overload<void (ReadOnlyPacket::*)(uint32_t)>(
+        "Rewind", &ReadOnlyPacket::Rewind);
+    readOnlyPacketBinding.Func("HexDump", &Packet::HexDump);
 
     RootTable(mVM).Bind("ReadOnlyPacket", readOnlyPacketBinding);
 }
@@ -171,6 +181,8 @@ void ScriptEngine::BindPacket()
     // Base class must be bound first.
     DerivedClass<Packet, ReadOnlyPacket> packetBinding(mVM, "Packet");
     packetBinding.Func("WriteBlank", &Packet::WriteBlank);
+    packetBinding.Func<void (Packet::*)(const std::vector<char>&)>(
+        "WriteArray", &Packet::WriteArray);
 
     RootTable(mVM).Bind("Packet", packetBinding);
 }

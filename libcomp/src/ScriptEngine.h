@@ -32,6 +32,7 @@
 
 // Squirrel Includes
 #include <squirrel.h>
+#include <sqstdblob.h>
 
 namespace libcomp
 {
