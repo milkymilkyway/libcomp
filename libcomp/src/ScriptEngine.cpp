@@ -168,7 +168,7 @@ void ScriptEngine::BindReadOnlyPacket()
         .Overload<void (ReadOnlyPacket::*)(uint32_t)>(
             "Rewind", &ReadOnlyPacket::Rewind)
         .Func("HexDump", &Packet::HexDump)
-    ;
+    ; // Last call to binding
 
     RootTable(mVM).Bind("ReadOnlyPacket", binding);
 }
@@ -182,7 +182,7 @@ void ScriptEngine::BindPacket()
         .Func("WriteU16Little", &Packet::WriteU16Little)
         .Func<void (Packet::*)(const std::vector<char>&)>(
             "WriteArray", &Packet::WriteArray)
-    ;
+    ; // Last call to binding
 
     RootTable(mVM).Bind("Packet", binding);
 }
