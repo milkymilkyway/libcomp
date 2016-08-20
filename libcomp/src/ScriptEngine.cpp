@@ -45,11 +45,6 @@
 using namespace libcomp;
 using namespace Sqrat;
 
-#if 0
-typedef void (*SQCOMPILERERROR)(HSQUIRRELVM /*v*/,const SQChar * /*desc*/,const SQChar * /*source*/,
-    SQInteger /*line*/,SQInteger /*column*/);
-#endif
-
 const SQInteger ONE_PARAM = 1;
 const SQBool    NO_RETURN_VALUE = SQFalse;
 const SQBool    RAISE_ERROR = SQTrue;
