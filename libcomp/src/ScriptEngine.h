@@ -47,10 +47,10 @@ public:
 
     bool Eval(const String& source, const String& sourceName = String());
 
+private:
     void BindReadOnlyPacket();
     void BindPacket();
 
-private:
     HSQUIRRELVM mVM;
 };
 

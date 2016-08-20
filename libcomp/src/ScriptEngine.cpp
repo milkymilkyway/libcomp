@@ -163,29 +163,33 @@ bool ScriptEngine::Eval(const String& source, const String& sourceName)
 
 void ScriptEngine::BindReadOnlyPacket()
 {
-    Class<ReadOnlyPacket> readOnlyPacketBinding(mVM, "ReadOnlyPacket");
-    readOnlyPacketBinding.Func("Size", &ReadOnlyPacket::Size);
-    readOnlyPacketBinding.Func<std::vector<char> (ReadOnlyPacket::*)(uint32_t)>(
-        "ReadArray", &Packet::ReadArray);
-    readOnlyPacketBinding.Overload<void (ReadOnlyPacket::*)()>(
-        "Rewind", &ReadOnlyPacket::Rewind);
-    readOnlyPacketBinding.Overload<void (ReadOnlyPacket::*)(uint32_t)>(
-        "Rewind", &ReadOnlyPacket::Rewind);
-    readOnlyPacketBinding.Func("HexDump", &Packet::HexDump);
+    Class<ReadOnlyPacket> binding(mVM, "ReadOnlyPacket");
+    binding
+        .Func("Size", &ReadOnlyPacket::Size)
+        .Func<std::vector<char> (ReadOnlyPacket::*)(uint32_t)>(
+            "ReadArray", &Packet::ReadArray)
+        .Overload<void (ReadOnlyPacket::*)()>(
+            "Rewind", &ReadOnlyPacket::Rewind)
+        .Overload<void (ReadOnlyPacket::*)(uint32_t)>(
+            "Rewind", &ReadOnlyPacket::Rewind)
+        .Func("HexDump", &Packet::HexDump)
+    ;
 
-    RootTable(mVM).Bind("ReadOnlyPacket", readOnlyPacketBinding);
+    RootTable(mVM).Bind("ReadOnlyPacket", binding);
 }
 
 void ScriptEngine::BindPacket()
 {
     // Base class must be bound first.
-    DerivedClass<Packet, ReadOnlyPacket> packetBinding(mVM, "Packet");
-    packetBinding.Func("WriteBlank", &Packet::WriteBlank);
-    packetBinding.Func("WriteU16Little", &Packet::WriteU16Little);
-    packetBinding.Func<void (Packet::*)(const std::vector<char>&)>(
-        "WriteArray", &Packet::WriteArray);
+    DerivedClass<Packet, ReadOnlyPacket> binding(mVM, "Packet");
+    binding
+        .Func("WriteBlank", &Packet::WriteBlank)
+        .Func("WriteU16Little", &Packet::WriteU16Little)
+        .Func<void (Packet::*)(const std::vector<char>&)>(
+            "WriteArray", &Packet::WriteArray)
+    ;
 
-    RootTable(mVM).Bind("Packet", packetBinding);
+    RootTable(mVM).Bind("Packet", binding);
 }
 
 HSQUIRRELVM ScriptEngine::GetVM()
