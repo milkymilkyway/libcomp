@@ -26,13 +26,12 @@
 
 #include <PushIgnore.h>
 #include <gtest/gtest.h>
+#include <sqrat.h>
 #include <PopIgnore.h>
 
 #include <Log.h>
 #include <Packet.h>
 #include <ScriptEngine.h>
-
-#include <sqrat.h>
 
 using namespace libcomp;
 
