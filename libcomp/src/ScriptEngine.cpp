@@ -181,8 +181,14 @@ void ScriptEngine::BindPacket()
     // Base class must be bound first.
     DerivedClass<Packet, ReadOnlyPacket> packetBinding(mVM, "Packet");
     packetBinding.Func("WriteBlank", &Packet::WriteBlank);
+    packetBinding.Func("WriteU16Little", &Packet::WriteU16Little);
     packetBinding.Func<void (Packet::*)(const std::vector<char>&)>(
         "WriteArray", &Packet::WriteArray);
 
     RootTable(mVM).Bind("Packet", packetBinding);
+}
+
+HSQUIRRELVM ScriptEngine::GetVM()
+{
+    return mVM;
 }

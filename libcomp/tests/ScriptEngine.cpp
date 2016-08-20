@@ -29,7 +29,10 @@
 #include <PopIgnore.h>
 
 #include <Log.h>
+#include <Packet.h>
 #include <ScriptEngine.h>
+
+#include <sqrat.h>
 
 using namespace libcomp;
 
@@ -160,6 +163,57 @@ TEST(ScriptEngine, ReadWriteArray)
         "}\n"
     ));
     EXPECT_EQ(scriptMessages, "SQUIRREL: -1095041334\n");
+    scriptMessages.Clear();
+
+    Log::GetSingletonPtr()->ClearHooks();
+}
+
+TEST(ScriptEngine, FunctionCall)
+{
+    String scriptMessages;
+
+    Log::GetSingletonPtr()->AddLogHook(
+        [&scriptMessages](Log::Level_t level, const String& msg)
+        {
+            (void)level;
+
+            scriptMessages += msg;
+        });
+
+    ScriptEngine engine;
+
+    EXPECT_TRUE(engine.Eval(
+        "function TestFunction(a)\n"
+        "{\n"
+            "b <- Packet();"
+            "a.WriteU16Little(0x1234);\n"
+            "b.WriteU16Little(0x5678);\n"
+            "return b;\n"
+        "}\n"
+    ));
+
+    std::shared_ptr<libcomp::Packet> a(new libcomp::Packet);
+    std::shared_ptr<libcomp::Packet> b;
+
+    b = Sqrat::RootTable(engine.GetVM()).GetFunction(
+        "TestFunction").Evaluate<libcomp::Packet>(a);
+
+    EXPECT_EQ(scriptMessages, "");
+
+    ASSERT_TRUE(b);
+
+    EXPECT_EQ(b->Size(), 2);
+    EXPECT_EQ(a->Size(), 2);
+
+    EXPECT_EQ(b->Tell(), 2);
+    EXPECT_EQ(a->Tell(), 2);
+
+    a->Rewind();
+    b->Rewind();
+
+    EXPECT_EQ(a->ReadU16Little(), 0x1234);
+    EXPECT_EQ(b->ReadU16Little(), 0x5678);
+
     scriptMessages.Clear();
 
     Log::GetSingletonPtr()->ClearHooks();
