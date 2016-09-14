@@ -335,6 +335,28 @@ public:
         char fillChar = ' ');
 
     /**
+     * Replace the first argument with a number.
+     * @param a Number to place into the first argument.
+     * @param fieldWidth Minimum number of characters.
+     * @param base Base of the number (8, 10 or 16).
+     * @param fillChar Character to pad the value with.
+     * @returns String with the argument added.
+     */
+    String Arg(float a, int fieldWidth = 0, int base = 10,
+        char fillChar = ' ');
+
+    /**
+     * Replace the first argument with a number.
+     * @param a Number to place into the first argument.
+     * @param fieldWidth Minimum number of characters.
+     * @param base Base of the number (8, 10 or 16).
+     * @param fillChar Character to pad the value with.
+     * @returns String with the argument added.
+     */
+    String Arg(double a, int fieldWidth = 0, int base = 10,
+        char fillChar = ' ');
+
+    /**
      * Compare the string to a C-style UTF-8 encoded string.
      * @param szString C-style UTF-8 encoded string to compare to.
      * @returns true if the string data matches exactly.
@@ -442,14 +464,15 @@ public:
 
         if(ok)
         {
-            if(std::numeric_limits<T>::is_signed)
+            if(!std::numeric_limits<T>::is_integer ||
+                std::numeric_limits<T>::is_signed)
             {
                 int64_t temp;
 
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= std::numeric_limits<T>::min() &&
+                if(ss && temp >= std::numeric_limits<T>::lowest() &&
                     temp <= std::numeric_limits<T>::max())
                 {
                     value = static_cast<T>(temp);
@@ -467,7 +490,7 @@ public:
                 ss >> std::setbase(base) >> temp;
 
                 if(ss && static_cast<T>(temp) >=
-                    std::numeric_limits<T>::min() &&
+                    std::numeric_limits<T>::lowest() &&
                     static_cast<T>(temp) <=
                     std::numeric_limits<T>::max() &&
                     !negative)

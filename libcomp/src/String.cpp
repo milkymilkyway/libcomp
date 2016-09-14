@@ -656,6 +656,28 @@ String String::Arg(uint64_t a, int fieldWidth, int base, char fillChar)
     return Arg(String(ss.str()));
 }
 
+String String::Arg(float a, int fieldWidth, int base, char fillChar)
+{
+    std::stringstream ss;
+    ss.width(fieldWidth);
+    ss.fill(fillChar);
+
+    ss << std::setbase(base) << a;
+
+    return Arg(String(ss.str()));
+}
+
+String String::Arg(double a, int fieldWidth, int base, char fillChar)
+{
+    std::stringstream ss;
+    ss.width(fieldWidth);
+    ss.fill(fillChar);
+
+    ss << std::setbase(base) << a;
+
+    return Arg(String(ss.str()));
+}
+
 String String::ToUpper() const
 {
     std::string s = d->mString;
