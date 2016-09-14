@@ -217,7 +217,7 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(tinyxml2-ex INSTALL_DIR)
 
-SET(TINYXML2_INCLUDE "${INSTALL_DIR}/include")
+SET(TINYXML2_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
 ADD_LIBRARY(tinyxml2 STATIC IMPORTED)
 ADD_DEPENDENCIES(tinyxml2 tinyxml2-ex)
