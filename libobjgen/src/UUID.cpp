@@ -168,8 +168,8 @@ std::vector<char> UUID::ToData() const
 
     uint32_t a = mTimeAndVersion & 0xFFFFFFFF;
     uint16_t b = (mTimeAndVersion >> 32) & 0xFFFF;
-    uint16_t c = (mTimeAndVersion >> 48) & 0xFFFF;
-    uint16_t d = (mClockSequenceAndNode >> 48) & 0xFFFF;
+    uint16_t c = static_cast<uint16_t>((mTimeAndVersion >> 48) & 0xFFFF);
+    uint16_t d = static_cast<uint16_t>((mClockSequenceAndNode >> 48) & 0xFFFF);
     uint64_t e = mClockSequenceAndNode & 0xFFFFFFFFFFFFLL;
 
     a = htobe32(a);

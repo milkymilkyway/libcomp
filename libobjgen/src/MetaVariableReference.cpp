@@ -85,18 +85,25 @@ bool MetaVariableReference::IsValid() const
 
 bool MetaVariableReference::IsValid(const void *pData, size_t dataSize) const
 {
+    (void)pData;
+    (void)dataSize;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableReference::Load(std::istream& stream)
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableReference::Save(std::ostream& stream) const
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
@@ -104,6 +111,8 @@ bool MetaVariableReference::Save(std::ostream& stream) const
 bool MetaVariableReference::Load(const tinyxml2::XMLDocument& doc,
     const tinyxml2::XMLElement& root)
 {
+    (void)doc;
+
     /// @todo Fix
     return BaseLoad(root);
 }
@@ -111,6 +120,8 @@ bool MetaVariableReference::Load(const tinyxml2::XMLDocument& doc,
 bool MetaVariableReference::Save(tinyxml2::XMLDocument& doc,
     tinyxml2::XMLElement& root) const
 {
+    (void)doc;
+
     /// @todo Fix
     return BaseSave(root);
 }

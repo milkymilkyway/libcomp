@@ -155,18 +155,25 @@ bool MetaVariableString::IsValid() const
 
 bool MetaVariableString::IsValid(const void *pData, size_t dataSize) const
 {
+    (void)pData;
+    (void)dataSize;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableString::Load(std::istream& stream)
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableString::Save(std::ostream& stream) const
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
@@ -174,6 +181,8 @@ bool MetaVariableString::Save(std::ostream& stream) const
 bool MetaVariableString::Load(const tinyxml2::XMLDocument& doc,
     const tinyxml2::XMLElement& root)
 {
+    (void)doc;
+
     bool status = true;
 
     const char *szDefault = root.Attribute("default");
@@ -359,6 +368,9 @@ bool MetaVariableString::Load(const tinyxml2::XMLDocument& doc,
 bool MetaVariableString::Save(tinyxml2::XMLDocument& doc,
     tinyxml2::XMLElement& root) const
 {
+    (void)doc;
+    (void)root;
+
     /// @todo Fix
     return true;
 }
@@ -603,6 +615,12 @@ std::string MetaVariableString::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
+    (void)generator;
+    (void)name;
+    (void)doc;
+    (void)root;
+    (void)tabLevel;
+
     /// @todo Fix
     return std::string();
 }
@@ -611,6 +629,8 @@ std::string MetaVariableString::GetXmlSaveCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
+    (void)doc;
+
     std::stringstream ss;
     ss << generator.Tab(tabLevel) << "{" << std::endl;
     ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLElement *pMember = "

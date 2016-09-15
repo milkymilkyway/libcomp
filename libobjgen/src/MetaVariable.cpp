@@ -30,6 +30,7 @@
 #include "MetaObject.h"
 
 // Standard C++11 Includes
+#include <algorithm>
 #include <sstream>
 
 using namespace libobjgen;
@@ -142,6 +143,8 @@ std::string MetaVariable::GetSetterCode(const Generator& generator,
 std::string MetaVariable::GetAccessDeclarations(const Generator& generator,
     const MetaObject& object, const std::string& name, size_t tabLevel) const
 {
+    (void)object;
+
     std::stringstream ss;
     ss << generator.Tab(tabLevel) << GetCodeType() << " Get"
         << generator.GetCapitalName(*this) << "() const;" << std::endl;
@@ -177,6 +180,8 @@ std::string MetaVariable::GetAccessFunctions(const Generator& generator,
 std::string MetaVariable::GetConstructorCode(const Generator& generator,
     const MetaObject& object, const std::string& name, size_t tabLevel) const
 {
+    (void)object;
+
     std::string code = GetConstructValue();
 
     if(code.empty())
@@ -202,6 +207,11 @@ std::string MetaVariable::GetConstructorCode(const Generator& generator,
 std::string MetaVariable::GetDestructorCode(const Generator& generator,
     const MetaObject& object, const std::string& name, size_t tabLevel) const
 {
+    (void)generator;
+    (void)object;
+    (void)name;
+    (void)tabLevel;
+
     return std::string();
 }
 

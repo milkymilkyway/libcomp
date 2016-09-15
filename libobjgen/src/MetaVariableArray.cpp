@@ -90,18 +90,25 @@ bool MetaVariableArray::IsValid() const
 
 bool MetaVariableArray::IsValid(const void *pData, size_t dataSize) const
 {
+    (void)pData;
+    (void)dataSize;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableArray::Load(std::istream& stream)
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableArray::Save(std::ostream& stream) const
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
@@ -109,6 +116,8 @@ bool MetaVariableArray::Save(std::ostream& stream) const
 bool MetaVariableArray::Load(const tinyxml2::XMLDocument& doc,
     const tinyxml2::XMLElement& root)
 {
+    (void)doc;
+
     bool status = true;
 
     const char *szSize = root.Attribute("size");
@@ -142,6 +151,9 @@ bool MetaVariableArray::Load(const tinyxml2::XMLDocument& doc,
 bool MetaVariableArray::Save(tinyxml2::XMLDocument& doc,
     tinyxml2::XMLElement& root) const
 {
+    (void)doc;
+    (void)root;
+
     /// @todo Fix
     return true;
 }
@@ -281,6 +293,12 @@ std::string MetaVariableArray::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
+    (void)generator;
+    (void)name;
+    (void)doc;
+    (void)root;
+    (void)tabLevel;
+
     /// @todo Fix
     return std::string();
 }
@@ -289,6 +307,12 @@ std::string MetaVariableArray::GetXmlSaveCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
+    (void)generator;
+    (void)name;
+    (void)doc;
+    (void)root;
+    (void)tabLevel;
+
     /// @todo Fix
     return std::string();
 }

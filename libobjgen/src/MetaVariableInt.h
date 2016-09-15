@@ -163,10 +163,12 @@ public:
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= std::numeric_limits<T>::lowest() &&
-                    temp <= std::numeric_limits<T>::max())
+                if(ss && static_cast<T>(temp) >=
+                    std::numeric_limits<T>::lowest() &&
+                    static_cast<T>(temp) <=
+                    std::numeric_limits<T>::max())
                 {
-                    value = temp;
+                    value = static_cast<T>(temp);
                 }
                 else
                 {
@@ -180,10 +182,12 @@ public:
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= std::numeric_limits<T>::lowest() &&
-                    temp <= std::numeric_limits<T>::max())
+                if(ss && static_cast<T>(temp) >=
+                    std::numeric_limits<T>::lowest() &&
+                    static_cast<T>(temp) <=
+                    std::numeric_limits<T>::max())
                 {
-                    value = temp;
+                    value = static_cast<T>(temp);
                 }
                 else
                 {
@@ -266,9 +270,11 @@ public:
     virtual bool Load(const tinyxml2::XMLDocument& doc,
         const tinyxml2::XMLElement& root)
     {
-        const char *szType = root.Attribute("type");
+        (void)doc;
 
         /*
+        const char *szType = root.Attribute("type");
+
         // This check does not work for an alias. For example:
         // float, f32, single
         if(nullptr == szType || szType != GetType())
@@ -578,6 +584,12 @@ public:
         const std::string& name, const std::string& doc,
         const std::string& root, size_t tabLevel = 1) const
     {
+        (void)generator;
+        (void)name;
+        (void)doc;
+        (void)root;
+        (void)tabLevel;
+
         /// @todo Fix
         return std::string();
     }
@@ -586,6 +598,8 @@ public:
         const std::string& name, const std::string& doc,
         const std::string& root, size_t tabLevel = 1) const
     {
+        (void)doc;
+
         std::stringstream ss;
         ss << generator.Tab(tabLevel) << "{" << std::endl;
         ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLElement *pMember = "

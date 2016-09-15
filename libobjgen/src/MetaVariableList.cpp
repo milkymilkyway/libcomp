@@ -73,18 +73,25 @@ bool MetaVariableList::IsValid() const
 
 bool MetaVariableList::IsValid(const void *pData, size_t dataSize) const
 {
+    (void)pData;
+    (void)dataSize;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableList::Load(std::istream& stream)
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
 
 bool MetaVariableList::Save(std::ostream& stream) const
 {
+    (void)stream;
+
     /// @todo Fix
     return true;
 }
@@ -92,12 +99,17 @@ bool MetaVariableList::Save(std::ostream& stream) const
 bool MetaVariableList::Load(const tinyxml2::XMLDocument& doc,
     const tinyxml2::XMLElement& root)
 {
+    (void)doc;
+
     return BaseLoad(root) && IsValid();
 }
 
 bool MetaVariableList::Save(tinyxml2::XMLDocument& doc,
     tinyxml2::XMLElement& root) const
 {
+    (void)doc;
+    (void)root;
+
     /// @todo Fix
     return true;
 }
@@ -220,6 +232,12 @@ std::string MetaVariableList::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
+    (void)generator;
+    (void)name;
+    (void)doc;
+    (void)root;
+    (void)tabLevel;
+
     /// @todo Fix
     return std::string();
 }

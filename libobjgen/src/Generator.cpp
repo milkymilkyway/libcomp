@@ -30,6 +30,7 @@
 #include "MetaVariable.h"
 
 // Standard C++11 Includes
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 
