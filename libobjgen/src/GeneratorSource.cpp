@@ -218,6 +218,9 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
         << "::Load(const tinyxml2::XMLDocument& doc, " << std::endl;
     ss << Tab() << "const tinyxml2::XMLElement& root)" << std::endl;
     ss << "{" << std::endl;
+    ss << Tab() << "(void)doc;" << std::endl; /// @todo Fix
+    ss << Tab() << "(void)root;" << std::endl;
+    ss << std::endl;
     ss << Tab() << "bool status = true;" << std::endl;
 
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
