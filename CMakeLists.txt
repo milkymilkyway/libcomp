@@ -375,7 +375,6 @@ MACRO(OBJGEN_XML outfiles xml)
     # depend on all xml schema files listed and are generated when those files
     # or the objgen application change.
     FOREACH(out ${outs})
-        MESSAGE("Dependencies: ${deps}")
         ADD_CUSTOM_COMMAND(OUTPUT ${out}
             COMMAND comp_objgen ${incs} -o ${out} ${xml_abs}
             COMMAND cmake -E touch ${out}
