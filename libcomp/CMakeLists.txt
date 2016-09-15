@@ -29,6 +29,9 @@ MESSAGE("** Configuring ${PROJECT_NAME} **")
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/api/libcomp)
 #GENERATE_DOCS(doc/Doxyfile.in)
 
+# Add a directory to put the objgen output into.
+FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/objgen)
+
 ADD_DEFINITIONS(${SQRAT_DEFINES})
 
 INCLUDE_DIRECTORIES(${ZLIB_INCLUDES})
