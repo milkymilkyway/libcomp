@@ -41,6 +41,7 @@ INCLUDE_DIRECTORIES(${TTVFS_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${SQLITE3_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${LIBUV_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CASSANDRA_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${TINYXML2_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 SET(SYSTEM_LIBRARIES "")
@@ -66,6 +67,7 @@ SET(${PROJECT_NAME}_SRCS
     src/Log.cpp
     #src/MemoryFile.cpp
     src/MessagePacket.cpp
+    src/Object.cpp
     src/Packet.cpp
     src/PacketException.cpp
     #src/PacketScript.cpp
@@ -80,17 +82,6 @@ SET(${PROJECT_NAME}_SRCS
     src/TcpServer.cpp
     #src/ThreadManager.cpp
     #src/XmlUtils.cpp
-
-    #src/MiCIconData.cpp
-    #src/MiCIconDataScript.cpp
-    #src/MiCItemData.cpp
-    #src/MiCItemDataScript.cpp
-    #src/MiDynamicMapData.cpp
-    #src/MiDynamicMapDataScript.cpp
-    #src/MiSpotData.cpp
-    #src/MiSpotDataScript.cpp
-    #src/MiZoneData.cpp
-    #src/MiZoneDataScript.cpp
 )
 
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ConfigCustom.cpp)
@@ -120,6 +111,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Message.h
     src/MessagePacket.h
     src/MessageQueue.h
+    src/Object.h
     src/Packet.h
     src/PacketException.h
     #src/PacketScript.h
@@ -145,25 +137,10 @@ SET(${PROJECT_NAME}_HDRS
     # Macros to temporarily disable warnings (wrapped around 3rd party libs).
     src/PushIgnore.h
     src/PopIgnore.h
-
-    #src/MiCIconData.h
-    #src/MiCIconDataScript.h
-    #src/MiCItemData.h
-    #src/MiCItemDataScript.h
-    #src/MiDynamicMapData.h
-    #src/MiDynamicMapDataScript.h
-    #src/MiSpotData.h
-    #src/MiSpotDataScript.h
-    #src/MiZoneData.h
-    #src/MiZoneDataScript.h
 )
 
 SET(${PROJECT_NAME}_SCHEMA
-    schema/cicondata.xml
-    schema/citemdata.xml
-    schema/dynamicmapdata.xml
-    schema/spotdata.xml
-    schema/zonedata.xml
+    schema/test.xml
 )
 
 # Make an absolute path version of the schema list for the channel server to use as depends
@@ -174,8 +151,7 @@ ENDFOREACH(schema ${${PROJECT_NAME}_SCHEMA})
 # Make it available to the parent scope
 SET(LIBFROST_SCHEMA ${LIBFROST_SCHEMA} PARENT_SCOPE)
 
-#STRUCTGEN_XML(${PROJECT_NAME}_STRUCTS
-SET(${PROJECT_NAME}_STRUCTS_REM
+OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     # Main schema
     schema/master.xml
 
@@ -183,71 +159,11 @@ SET(${PROJECT_NAME}_STRUCTS_REM
     ${${PROJECT_NAME}_SCHEMA}
 
     # Include paths
-    # <none>
+    schema
 
     # Output files
-    MiCIconDataPriv.h
-    MiCIconDataPriv.cpp
-    MiCIconDataPrivScript.h
-    MiCIconDataPrivScript.cpp
-    MiCItemDataPriv.h
-    MiCItemDataPriv.cpp
-    MiCItemDataPrivScript.h
-    MiCItemDataPrivScript.cpp
-    MiCItemBaseData.h
-    MiCItemBaseDataScript.h
-    MiCItemBaseDataScript.cpp
-    MiCItemMotionData.h
-    MiCItemMotionDataScript.h
-    MiCItemMotionDataScript.cpp
-    MiCItemSPEffectData.h
-    MiCItemSPEffectDataScript.h
-    MiCItemSPEffectDataScript.cpp
-
-    MiDynamicMapDataPriv.h
-    MiDynamicMapDataPriv.cpp
-    MiDynamicMapDataPrivScript.h
-    MiDynamicMapDataPrivScript.cpp
-
-    MiSpotDataPriv.h
-    MiSpotDataPriv.cpp
-    MiSpotDataPrivScript.h
-    MiSpotDataPrivScript.cpp
-
-    MiZoneDataPriv.h
-    MiZoneDataPriv.cpp
-    MiZoneDataPrivScript.h
-    MiZoneDataPrivScript.cpp
-    MiZoneBasicData.h
-    MiZoneBasicDataScript.h
-    MiZoneBasicDataScript.cpp
-    MiZoneFileData.h
-    MiZoneFileDataScript.h
-    MiZoneFileDataScript.cpp
-    MiZoneFogData.h
-    MiZoneFogDataScript.h
-    MiZoneFogDataScript.cpp
-    MiZoneCameraData.h
-    MiZoneCameraDataScript.h
-    MiZoneCameraDataScript.cpp
-    MiZoneSkyData.h
-    MiZoneSkyDataScript.h
-    MiZoneSkyDataScript.cpp
-    MiZoneGouraudData.h
-    MiZoneGouraudDataScript.h
-    MiZoneGouraudDataScript.cpp
-    MiZoneLensFlareData.h
-    MiZoneLensFlareDataScript.h
-    MiZoneLensFlareDataScript.cpp
-    MiZoneLensFlareLayerData.h
-    MiZoneLensFlareLayerDataScript.h
-    MiZoneLensFlareLayerDataScript.cpp
-    MiZoneBGMData.h
-    MiZoneBGMDataScript.h
-    MiZoneBGMDataScript.cpp
-    MiZoneOtherData.h
-    MiZoneOtherDataScript.h
-    MiZoneOtherDataScript.cpp
+    TestObject.h
+    TestObject.cpp
 )
 
 ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
@@ -255,7 +171,7 @@ ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
 
 TARGET_LINK_LIBRARIES(comp ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES}
     ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${SQLITE3_LIBRARIES}
-    squirrel sqstdlib ttvfs ttvfs_zip cassandra ${LIBUV_LIBRARIES})
+    squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 cassandra ${LIBUV_LIBRARIES})
 
 # List of unit tests to add to CTest.
 SET(${PROJECT_NAME}_TEST_SRCS
@@ -263,6 +179,7 @@ SET(${PROJECT_NAME}_TEST_SRCS
     Convert
     Decrypt
     DiffieHellman
+    GeneratedObjects
     Packet
     ScriptEngine
     String
