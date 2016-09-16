@@ -115,8 +115,8 @@ std::string GeneratorHeader::Generate(const MetaObject& obj)
 
     ss << "// libcomp Includes" << std::endl;
     ss << "#include <Convert.h>" << std::endl;
+    ss << "#include <CString.h>" << std::endl;
     ss << "#include <Object.h>" << std::endl;
-    ss << "#include <String.h>" << std::endl;
     ss << std::endl;
 
     ss << "// Standard C++11 Includes" << std::endl;
