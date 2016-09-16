@@ -28,7 +28,7 @@
 #define LIBCOMP_SRC_DECRYPT_H
 
 /// libcomp Includes
-#include "String.h"
+#include "CString.h"
 
 #include "PushIgnore.h"
 #include <openssl/blowfish.h>

@@ -58,6 +58,7 @@ ENDIF(BSD)
 SET(${PROJECT_NAME}_SRCS
     src/Compress.cpp
     src/Convert.cpp
+    src/CString.cpp
     src/Database.cpp
     src/DatabaseCassandra.cpp
     src/DatabaseQuery.cpp
@@ -79,7 +80,6 @@ SET(${PROJECT_NAME}_SRCS
     src/ReadOnlyPacket.cpp
     src/RingBuffer.cpp
     src/ScriptEngine.cpp
-    src/String.cpp
     #src/Structgen.cpp
     src/TcpConnection.cpp
     src/TcpServer.cpp
@@ -99,6 +99,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Compress.h
     src/Constants.h
     src/Convert.h
+    src/CString.h
     src/Database.h
     src/DatabaseCassandra.h
     src/DatabaseQuery.h
@@ -126,7 +127,6 @@ SET(${PROJECT_NAME}_HDRS
     src/ReadOnlyPacket.h
     src/RingBuffer.h
     src/ScriptEngine.h
-    src/String.h
     #src/Structgen.h
     src/TcpConnection.h
     src/TcpServer.h

@@ -24,7 +24,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "String.h"
+#include "CString.h"
 
 #include <regex_ext>
 #include <algorithm>

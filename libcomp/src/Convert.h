@@ -27,7 +27,7 @@
 #ifndef LIBCOMP_SRC_CONVERT_H
 #define LIBCOMP_SRC_CONVERT_H
 
-#include <String.h>
+#include <CString.h>
 
 namespace libcomp
 {

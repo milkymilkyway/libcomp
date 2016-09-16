@@ -28,7 +28,7 @@
 #define LIBCOMP_SRC_DATABASEQUERY_H
 
 // libcomp Includes
-#include "String.h"
+#include "CString.h"
 
 // Standard C++11 Includes
 #include <unordered_map>

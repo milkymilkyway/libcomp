@@ -29,7 +29,7 @@
 
 #include "Constants.h"
 #include "Convert.h"
-#include "String.h"
+#include "CString.h"
 
 #include <memory>
 #include <vector>

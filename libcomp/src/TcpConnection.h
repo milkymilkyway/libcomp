@@ -28,8 +28,8 @@
 #define LIBCOMP_SRC_TCPCONNECTION_H
 
 // libcomp Includes
+#include "CString.h"
 #include "Packet.h"
-#include "String.h"
 
 // Boost ASIO Includes
 #include "PushIgnore.h"

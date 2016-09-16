@@ -27,7 +27,7 @@
 #ifndef LIBCOMP_SRC_LOG_H
 #define LIBCOMP_SRC_LOG_H
 
-#include "String.h"
+#include "CString.h"
 
 #include <list>
 #include <mutex>

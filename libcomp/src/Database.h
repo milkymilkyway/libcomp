@@ -28,8 +28,8 @@
 #define LIBCOMP_SRC_DATABASE_H
 
 // libcomp Includes
+#include "CString.h"
 #include "DatabaseQuery.h"
-#include "String.h"
 
 namespace libcomp
 {

@@ -28,7 +28,7 @@
 #define LIBCOMP_SRC_TCPSERVER_H
 
 // libcomp Includes
-#include "String.h"
+#include "CString.h"
 
 // Boost ASIO Includes
 #include "PushIgnore.h"

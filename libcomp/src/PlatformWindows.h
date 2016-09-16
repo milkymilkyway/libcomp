@@ -27,7 +27,7 @@
 #ifndef LIBCOMP_SRC_PLATFORMWINDOWS_H
 #define LIBCOMP_SRC_PLATFORMWINDOWS_H
 
-#include "String.h"
+#include "CString.h"
 
 namespace libcomp
 {

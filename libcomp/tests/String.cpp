@@ -28,7 +28,7 @@
 #include <gtest/gtest.h>
 #include <PopIgnore.h>
 
-#include <String.h>
+#include <CString.h>
 
 using namespace libcomp;
 

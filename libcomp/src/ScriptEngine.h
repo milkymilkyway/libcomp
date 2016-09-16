@@ -28,7 +28,7 @@
 #define LIBCOMP_SRC_SCRIPTENGINE_H
 
 // libcomp Includes
-#include "String.h"
+#include "CString.h"
 
 // Squirrel Includes
 #include <squirrel.h>
