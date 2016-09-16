@@ -19,6 +19,32 @@
 INCLUDE(ExternalProject)
 
 ExternalProject_Add(
+    zlib-lib
+
+    GIT_REPOSITORY https://github.com/madler/zlib.git
+    GIT_TAG v1.2.8
+
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/zlib
+    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> "-DCMAKE_CXX_FLAGS=-std=c++11 ${SPECIAL_COMPILER_FLAGS}"
+
+    # Dump output to a log instead of the screen.
+    LOG_DOWNLOAD ON
+    LOG_CONFIGURE ON
+    LOG_BUILD ON
+    LOG_INSTALL ON
+
+    BUILD_BYPRODUCTS <INSTALL_DIR>/lib/libzlib.a
+)
+
+SET(ZLIB_INCLUDES "${INSTALL_DIR}/include")
+SET(ZLIB_LIBRARIES zlib)
+
+ADD_LIBRARY(zlib STATIC IMPORTED)
+ADD_DEPENDENCIES(zlib zlib-lib)
+SET_TARGET_PROPERTIES(zlib PROPERTIES IMPORTED_LOCATION
+    "${INSTALL_DIR}/lib/libz.a")
+
+ExternalProject_Add(
     cassandra-cpp
 
     GIT_REPOSITORY https://github.com/datastax/cpp-driver.git
