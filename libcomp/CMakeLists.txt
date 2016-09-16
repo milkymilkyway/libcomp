@@ -56,6 +56,8 @@ SET(SYSTEM_LIBRARIES ${SYSTEM_LIBRARIES} ${EXECINFO_LIBRARY})
 ENDIF(BSD)
 
 SET(${PROJECT_NAME}_SRCS
+    ${CMAKE_SOURCE_DIR}/deps/sqlite3/sqlite3.c
+
     src/Compress.cpp
     src/Convert.cpp
     src/CString.cpp
@@ -173,7 +175,7 @@ ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
     ${${PROJECT_NAME}_MOC_SRCS} ${${PROJECT_NAME}_STRUCTS})
 
 TARGET_LINK_LIBRARIES(comp ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES}
-    ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${SQLITE3_LIBRARIES}
+    ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
     squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 cassandra ${LIBUV_LIBRARIES})
 
 # List of unit tests to add to CTest.

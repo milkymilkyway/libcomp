@@ -45,19 +45,15 @@ INCLUDE(${CMAKE_MODULE_PATH}/DetermineOS.cmake)
 # Include all build code for external projects.
 INCLUDE(${CMAKE_MODULE_PATH}/external.cmake)
 
-# A database is needed.
-FIND_PACKAGE(SQLite3 REQUIRED)
-
-IF(NOT SQLITE3_FOUND)
-    MESSAGE(FATAL_ERROR "You must have SQLite3 installed.")
-ENDIF()
-
 # libuv is needed.
 FIND_PACKAGE(LibUV REQUIRED)
 
 IF(NOT LIBUV_FOUND)
     MESSAGE(FATAL_ERROR "You must have libuv installed.")
 ENDIF()
+
+# SQLite3 is included in the source repo.
+SET(SQLITE3_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/sqlite3")
 
 # Enable testing.
 INCLUDE(CTest)
