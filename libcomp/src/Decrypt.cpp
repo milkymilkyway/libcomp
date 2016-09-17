@@ -28,6 +28,7 @@
 #include "Config.h"
 #include "Exception.h"
 #include "Packet.h"
+#include "Platform.h"
 
 #include <openssl/crypto.h>
 #include <openssl/md5.h>
@@ -42,6 +43,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <wincrypt.h>
+
+#undef DecryptFile
+#undef EncryptFile
 #endif // _WIN32
 
 #include <fstream>
@@ -54,10 +58,39 @@ using namespace libcomp;
 /// Blowfish key for file encryption.
 static BF_KEY gFileEncryptionKey;
 
+// Initializer/finalizer sample for MSVC and GCC/Clang.
+// 2010-2016 Joe Lowe. Released into the public domain.
+// Source: http://stackoverflow.com/questions/1113409/
+#include <cstdio>
+#include <cstdlib>
+
+#ifdef __cplusplus
+    #define INITIALIZER(f) \
+        static void f(void); \
+        struct f##_t_ { f##_t_(void) { f(); } }; static f##_t_ f##_; \
+        static void f(void)
+#elif defined(_MSC_VER)
+    #pragma section(".CRT$XCU",read)
+    #define INITIALIZER2_(f,p) \
+        static void f(void); \
+        __declspec(allocate(".CRT$XCU")) void (*f##_)(void) = f; \
+        __pragma(comment(linker,"/include:" p #f "_")) \
+        static void f(void)
+    #ifdef _WIN64
+        #define INITIALIZER(f) INITIALIZER2_(f,"")
+    #else
+        #define INITIALIZER(f) INITIALIZER2_(f,"_")
+    #endif
+#else
+    #define INITIALIZER(f) \
+        static void f(void) __attribute__((constructor)); \
+        static void f(void)
+#endif
+
 /**
  * @brief Setup the Blowfish key when the application starts.
  */
-static __attribute__((constructor)) void InitDecrypt()
+INITIALIZER(InitDecrypt)
 {
     // Sanity check the configuration.
     assert(4  == strlen(Config::ENCRYPTED_FILE_MAGIC));
@@ -71,7 +104,12 @@ static __attribute__((constructor)) void InitDecrypt()
 /**
  * Header for an encrypted file.
  */
+#ifdef _WIN32
+#pragma pack(push, 1)
+typedef struct
+#else
 typedef struct __attribute__((packed))
+#endif // _WIN32
 {
     /// Magic to identify the file type.
     char magic[4];
@@ -79,6 +117,9 @@ typedef struct __attribute__((packed))
     /// Size (in bytes) of the file after decryption.
     uint32_t originalSize;
 } EncryptedFileHeader_t;
+#ifdef _WIN32
+#pragma pack(pop)
+#endif // _WIN32
 
 std::vector<char> Decrypt::DecryptFile(const std::string& path)
 {
@@ -200,14 +241,14 @@ String Decrypt::GenerateRandom(int sz)
     // Where to store the random data.
     std::vector<char> random;
 
-#ifdef WIN32
+#ifdef _WIN32
     HCRYPTPROV hCryptProv;
 
     PBYTE pbData = new BYTE[sz];
 
     if(nullptr == pbData)
     {
-        EXCEPTION(tr("Failed to allocate pbData"));
+        EXCEPTION("Failed to allocate pbData");
     }
 
     // On Windows, use the cryto API to generate the random data. Acquire a
@@ -217,7 +258,8 @@ String Decrypt::GenerateRandom(int sz)
     {
         delete[] pbData;
 
-        EXCEPTION(tr("CryptAcquireContext: %1").arg(getLastErrorString()));
+        EXCEPTION(libcomp::String("CryptAcquireContext: %1").Arg(
+            Platform::GetLastErrorString()));
     }
 
     // Generate the random data.
@@ -225,7 +267,8 @@ String Decrypt::GenerateRandom(int sz)
     {
         delete[] pbData;
 
-        EXCEPTION(tr("CryptGenRandom: %1").arg(getLastErrorString()));
+        EXCEPTION(libcomp::String("CryptGenRandom: %1").Arg(
+            Platform::GetLastErrorString()));
     }
 
     // Release the context.
@@ -233,13 +276,14 @@ String Decrypt::GenerateRandom(int sz)
     {
         delete[] pbData;
 
-        EXCEPTION(tr("CryptReleaseContext: %1").arg(getLastErrorString()));
+        EXCEPTION(libcomp::String("CryptReleaseContext: %1").Arg(
+            Platform::GetLastErrorString()));
     }
 
     // Convert the raw data to a QByteArray.
-    random = std::move(std::vector<char*>(reinterpret_cast<char*>(
-        pbData), sz));
-#else // WIN32
+    random = std::move(std::vector<char>(reinterpret_cast<char*>(
+        pbData), reinterpret_cast<char*>(pbData) + sz));
+#else // _WIN32
     // On Linux, use /dev/urandom.
     random = LoadFile("/dev/urandom", sz);
 
@@ -248,7 +292,7 @@ String Decrypt::GenerateRandom(int sz)
     {
         EXCEPTION("Failed to read from /dev/urandom");
     }
-#endif // WIN32
+#endif // _WIN32
 
     std::stringstream ss;
 
