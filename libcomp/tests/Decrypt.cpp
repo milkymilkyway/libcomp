@@ -104,19 +104,31 @@ TEST(GenerateSessionKey, ValueChangesBetweenCalls)
 TEST(Decrypt, LoadFile)
 {
     // Read the first 4 bytes from a file. Should be OK for a stream.
-    ASSERT_EQ(4, Decrypt::LoadFile("/dev/urandom", 4).size());
+#if _WIN32
+    EXPECT_EQ(4, Decrypt::LoadFile("c:\\windows\\explorer.exe", 4).size());
+#else
+    EXPECT_EQ(4, Decrypt::LoadFile("/dev/urandom", 4).size());
+#endif // _WIN32
 
     // Attempt to read an entire stream. This should fail.
-    ASSERT_EQ(0, Decrypt::LoadFile("/dev/urandom").size());
+    EXPECT_EQ(0, Decrypt::LoadFile("/dev/urandom").size());
 
     // We should be able to read the entire contents of a regular file.
-    ASSERT_NE(0, Decrypt::LoadFile("/etc/crontab").size());
+#if _WIN32
+    EXPECT_NE(0, Decrypt::LoadFile("c:\\windows\\system.ini").size());
+#else
+    EXPECT_NE(0, Decrypt::LoadFile("/etc/crontab").size());
+#endif // _WIN32
 
     // Try a directory.
-    ASSERT_EQ(0, Decrypt::LoadFile("/etc").size());
+#if _WIN32
+    EXPECT_EQ(0, Decrypt::LoadFile("c:\\windows").size());
+#else
+    EXPECT_EQ(0, Decrypt::LoadFile("/etc").size());
+#endif // _WIN32
 
     // Try a bad path.
-    ASSERT_EQ(0, Decrypt::LoadFile("/_bad_path_").size());
+    EXPECT_EQ(0, Decrypt::LoadFile("/_bad_path_").size());
 }
 
 TEST(GenDiffieHellman, EmptyArgsReturnError)
@@ -166,6 +178,12 @@ TEST(GenDiffieHellman, PaddingWorks)
 
 TEST(EncryptDecrypt, File)
 {
+#if _WIN32
+    #define TEMP_FILE "c:\\windows\\temp\\test.bin"
+#else
+    #define TEMP_FILE "/tmp/test.bin"
+#endif // _WIN32
+
     static const unsigned char decryptedFile[] = {
         0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x20, 0x74, 0x65,
         0x73, 0x74, 0x20, 0x66, 0x69, 0x6c, 0x65, 0x2e, 0x0a
@@ -201,9 +219,9 @@ TEST(EncryptDecrypt, File)
             sizeof(encryptedFile));
     }
 
-    ASSERT_TRUE(Decrypt::EncryptFile("/tmp/test.bin", decryptedData));
+    ASSERT_TRUE(Decrypt::EncryptFile(TEMP_FILE, decryptedData));
 
-    std::vector<char> dataCopy = Decrypt::LoadFile("/tmp/test.bin");
+    std::vector<char> dataCopy = Decrypt::LoadFile(TEMP_FILE);
 
     EXPECT_EQ(dataCopy.size(), encryptedData.size());
 
@@ -213,7 +231,7 @@ TEST(EncryptDecrypt, File)
             encryptedData.size()), 0);
     }
 
-    dataCopy = Decrypt::DecryptFile("/tmp/test.bin");
+    dataCopy = Decrypt::DecryptFile(TEMP_FILE);
 
     EXPECT_EQ(dataCopy.size(), decryptedData.size());
 
