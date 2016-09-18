@@ -15,10 +15,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-MACRO(ADD_FLAG_INSIDE flag compiler)
+FUNCTION(ADD_FLAG_INSIDE flag compiler)
+    # Sanity check the flag does not have spaces.
+    IF(flag MATCHES " ")
+        MESSAGE(FATAL_ERROR "Flag '${flag}' has spaces.")
+    ENDIF()
+
     # Check the flag matches the compiler.
     IF((
-            ("${flag}" MATCHES "^[-].*$") AND
+            ("${flag}" MATCHES "^[-][^D].*$") AND
             ("${compiler}" STREQUAL "MSVC")
         ) OR (
             ("${flag}" MATCHES "^/.*$") AND NOT
@@ -57,14 +62,14 @@ MACRO(ADD_FLAG_INSIDE flag compiler)
         STRING(REPLACE ";" " " flags "${flags}")
 
         # Update the flags.
-        SET(${flag_var} "${flags}")
+        SET(${flag_var} "${flags}" PARENT_SCOPE)
 
         # Debug print the flags.
-        # MESSAGE("${flag_var}=\"${${flag_var}}\" (ADD)")
+        # MESSAGE("${flag_var}=\"${${flag_var}}\" (ADD '${flag}')")
     ENDFOREACH(flag_var)
-ENDMACRO(ADD_FLAG_INSIDE)
+ENDFUNCTION(ADD_FLAG_INSIDE)
 
-MACRO(ADD_FLAGS_INSIDE compiler compiler_id flag_var)
+FUNCTION(ADD_FLAGS_INSIDE compiler compiler_id flag_var)
     FOREACH(flag ${ARGN})
         IF(
             ("${compiler}" STREQUAL "UNIX" AND NOT WIN32) OR
@@ -72,25 +77,27 @@ MACRO(ADD_FLAGS_INSIDE compiler compiler_id flag_var)
             ("${compiler}" STREQUAL "${compiler_id}") OR
             ("${compiler}" STREQUAL "ALL")
         )
-            ADD_FLAG_INSIDE("${flag}" "${compiler_id}"
-                CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-                CMAKE_C_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS_MINSIZEREL)
+            ADD_FLAG_INSIDE("${flag}" "${compiler_id}" "${flag_var}")
         ELSEIF(
             ("${compiler}" STREQUAL "AUTO") AND
             (
-                (("${flag}" MATCHES "^[-].*$") AND NOT
+                (("${flag}" MATCHES "^[-][^D].*$") AND NOT
                 ("${compiler_id}" STREQUAL "MSVC"))
                 OR
                 (("${flag}" MATCHES "^/.*$") AND
                 ("${compiler_id}" STREQUAL "MSVC"))
+                OR
+                ("${flag}" MATCHES "^[-]D.*$")
             )
         )
             ADD_FLAG_INSIDE("${flag}" "${compiler_id}" "${flag_var}")
         ENDIF()
     ENDFOREACH(flag)
-ENDMACRO(ADD_FLAGS_INSIDE)
 
-MACRO(REMOVE_FLAGS_INSIDE flag_var)
+    SET("${flag_var}" "${${flag_var}}" PARENT_SCOPE)
+ENDFUNCTION(ADD_FLAGS_INSIDE)
+
+FUNCTION(REMOVE_FLAGS_INSIDE flag_var)
     # Start with fresh flags.
     UNSET(flags)
 
@@ -129,11 +136,11 @@ MACRO(REMOVE_FLAGS_INSIDE flag_var)
     STRING(REPLACE ";" " " flags "${flags}")
 
     # Update the flags.
-    SET(${flag_var} "${flags}")
+    SET(${flag_var} "${flags}" PARENT_SCOPE)
 
     # Debug print the flags.
-    MESSAGE("${flag_var}=\"${${flag_var}}\" (REMOVE)")
-ENDMACRO(REMOVE_FLAGS_INSIDE)
+    # MESSAGE("${flag_var}=\"${${flag_var}}\" (REMOVE '${flag}')")
+ENDFUNCTION(REMOVE_FLAGS_INSIDE)
 
 MACRO(ADD_C_FLAGS compiler)
     FOREACH(flag_var CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
@@ -211,7 +218,12 @@ MACRO(ADD_COMPILER_FLAGS compiler)
         CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_RELWITHDEBINFO
         CMAKE_C_FLAGS_MINSIZEREL
+    )
+        ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
+            "${flag_var}" ${ARGN})
+    ENDFOREACH(flag_var)
 
+    FOREACH(flag_var
         CMAKE_CXX_FLAGS
         CMAKE_CXX_FLAGS_DEBUG
         CMAKE_CXX_FLAGS_RELEASE
@@ -224,35 +236,35 @@ MACRO(ADD_COMPILER_FLAGS compiler)
 ENDMACRO(ADD_COMPILER_FLAGS)
 
 MACRO(ADD_COMPILER_FLAGS_NONE compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_C_FLAGS ${ARGN})
     ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
         CMAKE_CXX_FLAGS ${ARGN})
 ENDMACRO(ADD_COMPILER_FLAGS_NONE)
 
 MACRO(ADD_COMPILER_FLAGS_DEBUG compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_C_FLAGS_DEBUG ${ARGN})
     ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
         CMAKE_CXX_FLAGS_DEBUG ${ARGN})
 ENDMACRO(ADD_COMPILER_FLAGS_DEBUG)
 
 MACRO(ADD_COMPILER_FLAGS_RELEASE compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_C_FLAGS_RELEASE ${ARGN})
     ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
         CMAKE_CXX_FLAGS_RELEASE ${ARGN})
 ENDMACRO(ADD_COMPILER_FLAGS_RELEASE)
 
 MACRO(ADD_COMPILER_FLAGS_RELWITHDEBINFO compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_C_FLAGS_RELWITHDEBINFO ${ARGN})
     ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
         CMAKE_CXX_FLAGS_RELWITHDEBINFO ${ARGN})
 ENDMACRO(ADD_COMPILER_FLAGS_RELWITHDEBINFO)
 
 MACRO(ADD_COMPILER_FLAGS_MINSIZEREL compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_C_FLAGS_MINSIZEREL ${ARGN})
     ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_CXX_COMPILER_ID}"
         CMAKE_CXX_FLAGS_MINSIZEREL ${ARGN})
@@ -263,33 +275,33 @@ MACRO(ADD_EXE_LINKER_FLAGS compiler)
         CMAKE_EXE_LINKER_FLAGS_RELEASE CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO
         CMAKE_EXE_LINKER_FLAGS_MINSIZEREL
     )
-        ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+        ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
             "${flag_var}" ${ARGN})
     ENDFOREACH(flag_var)
 ENDMACRO(ADD_EXE_LINKER_FLAGS)
 
 MACRO(ADD_EXE_LINKER_FLAGS_NONE compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_EXE_LINKER_FLAGS ${ARGN})
 ENDMACRO(ADD_EXE_LINKER_FLAGS_NONE)
 
 MACRO(ADD_EXE_LINKER_FLAGS_DEBUG compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_EXE_LINKER_FLAGS_DEBUG ${ARGN})
 ENDMACRO(ADD_EXE_LINKER_FLAGS_DEBUG)
 
 MACRO(ADD_EXE_LINKER_FLAGS_RELEASE compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_EXE_LINKER_FLAGS_RELEASE ${ARGN})
 ENDMACRO(ADD_EXE_LINKER_FLAGS_RELEASE)
 
 MACRO(ADD_EXE_LINKER_FLAGS_RELWITHDEBINFO compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${ARGN})
 ENDMACRO(ADD_EXE_LINKER_FLAGS_RELWITHDEBINFO)
 
 MACRO(ADD_EXE_LINKER_FLAGS_MINSIZEREL compiler)
-    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_EXE_LINKER_COMPILER_ID}"
+    ADD_FLAGS_INSIDE("${compiler}" "${CMAKE_C_COMPILER_ID}"
         CMAKE_EXE_LINKER_FLAGS_MINSIZEREL ${ARGN})
 ENDMACRO(ADD_EXE_LINKER_FLAGS_MINSIZEREL)
 

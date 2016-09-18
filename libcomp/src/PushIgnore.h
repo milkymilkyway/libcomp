@@ -51,3 +51,8 @@
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif // GCC_VERSION > 40201
 #endif // !defined(_MSC_VER)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4244) // possible loss of data
+#endif // defined(_MSC_VER)

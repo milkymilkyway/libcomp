@@ -28,3 +28,7 @@
 #if !defined(_MSC_VER) && GCC_VERSION >= 40600
 #pragma GCC diagnostic pop
 #endif // !defined(_MSC_VER) && GCC_VERSION >= 40600
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // defined(_MSC_VER)

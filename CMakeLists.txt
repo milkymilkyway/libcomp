@@ -59,13 +59,14 @@ INCLUDE(${CMAKE_MODULE_PATH}/DetermineOS.cmake)
 INCLUDE(${CMAKE_MODULE_PATH}/external.cmake)
 
 # PDB not found for library.
-ADD_LINKER_FLAGS(AUTO "/ignore:4099")
+ADD_LINKER_FLAGS(AUTO /ignore:4099)
 
 # UTF-8 source encoding for MSVC.
-ADD_COMPILER_FLAGS(AUTO "/utf-8")
+ADD_COMPILER_FLAGS(AUTO /utf-8)
 
-# Windows 7 (see: https://msdn.microsoft.com/en-us/library/6sehtctf.aspx)
-ADD_COMPILER_FLAGS(WIN32 "-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
+# Build for Windows 7 and higher.
+# See: https://msdn.microsoft.com/en-us/library/6sehtctf.aspx
+ADD_COMPILER_FLAGS(WIN32 -DWINVER=0x601 -D_WIN32_WINNT=0x0601)
 
 # Don't use full boost, just asio.
 ADD_DEFINITIONS(-DASIO_STANDALONE)
@@ -110,25 +111,28 @@ IF(NOT MSVC)
         ADD_COMPILER_FLAGS(AUTO -O3 -msse3)
     ENDIF(BUILD_OPTIMIZED)
 
-    ADD_LINKER_FLAGS_RELEASE(-s)
+    ADD_LINKER_FLAGS_RELEASE(AUTO -s)
 ENDIF(NOT MSVC)
 
 # Disable MSVC warnings about the secure CRT functions.
 ADD_COMPILER_FLAGS(WIN32 -D_CRT_SECURE_NO_WARNINGS)
 
 # Specifies the kind of exception handling with MSVC.
-ADD_COMPILER_FLAGS(AUTO "/EHsc")
+ADD_COMPILER_FLAGS(AUTO /EHsc)
 
 # If we are building in debug mode, define the debug flag.
-ADD_COMPILER_FLAGS_DEBUG(-DCOMP_HACK_DEBUG)
+ADD_COMPILER_FLAGS_DEBUG(AUTO -DCOMP_HACK_DEBUG)
 
 # If we are using gcc/clang/mingw, enable warnings under debug mode.
 ADD_COMPILER_FLAGS(AUTO -Werror -Wall -Wextra -Wshadow
     -Wconversion -Wsign-conversion -g)
 
+# Warning level 4 and treat warnings as errors (MSVC).
+# ADD_COMPILER_FLAGS(AUTO /W4 /WX)
+
 # When using gcc/clang/mingw, make sure everything defined is linked into
 # the application or library.
-ADD_EXE_LINKER_FLAGS("-Wl,--no-undefined")
+ADD_EXE_LINKER_FLAGS(AUTO -Wl,--no-undefined)
 
 # Place all executables in the same directory.
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/bin")

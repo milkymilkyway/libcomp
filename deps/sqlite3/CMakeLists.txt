@@ -21,6 +21,7 @@ MESSAGE("** Configuring ${PROJECT_NAME} **")
 
 REMOVE_COMPILER_FLAGS(AUTO -Wextra -Wconversion -Wsign-conversion)
 
-ADD_COMPILER_FLAGS(-Wno-sign-conversion)
+# 'GetVersionExA': was declared deprecated
+ADD_COMPILER_FLAGS(AUTO /wd4996)
 
 ADD_LIBRARY(${PROJECT_NAME} STATIC sqlite3.c)
