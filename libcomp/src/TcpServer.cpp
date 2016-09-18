@@ -32,8 +32,9 @@
 
 using namespace libcomp;
 
-TcpServer::TcpServer(String listenAddress, int16_t port) : mAcceptor(mService),
-    mDiffieHellman(nullptr), mListenAddress(listenAddress), mPort(port)
+TcpServer::TcpServer(String listenAddress, uint16_t port) :
+    mAcceptor(mService), mDiffieHellman(nullptr),
+    mListenAddress(listenAddress), mPort(port)
 {
 }
 

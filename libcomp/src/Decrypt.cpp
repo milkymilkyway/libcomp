@@ -172,7 +172,7 @@ bool Decrypt::EncryptFile(const std::string& path,
     std::ofstream out;
     out.open(path, std::ofstream::out | std::ofstream::binary);
     out.write(reinterpret_cast<const char*>(&header), sizeof(header));
-    out.write(&dataCopy[0], dataCopy.size());
+    out.write(&dataCopy[0], static_cast<std::streamsize>(dataCopy.size()));
 
     return out.good();
 }
@@ -190,7 +190,7 @@ std::vector<char> Decrypt::LoadFile(const std::string& path, int requestedSize)
 
         if(file.good() && 0 < fileSize)
         {
-            data.resize(fileSize);
+            data.resize(static_cast<std::vector<char>::size_type>(fileSize));
             file.read(&data[0], fileSize);
         }
     }
@@ -205,7 +205,8 @@ std::vector<char> Decrypt::LoadFile(const std::string& path, int requestedSize)
         {
             try
             {
-                data.reserve(fileSize);
+                data.reserve(static_cast<std::vector<
+                    char>::size_type>(fileSize));
                 data.assign(std::istreambuf_iterator<char>(file),
                     std::istreambuf_iterator<char>());
             }
@@ -455,7 +456,8 @@ String Decrypt::GenDiffieHellman(const String& g, const String& p,
     // If a specific output size was specified, pad the output to that size.
     if(0 < outputSize)
     {
-        result = result.RightJustified(outputSize, '0');
+        result = result.RightJustified(static_cast<size_t>(
+            outputSize), '0');
     }
 
     // We no longer need the converted string so free it.

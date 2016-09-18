@@ -380,7 +380,7 @@ void Packet::WriteS32(int32_t value)
 void Packet::WriteS32Big(int32_t value)
 {
     // Convert the value to big endian byte order and then write it.
-    WriteS32((int32_t)htobe32(value));
+    WriteS32((int32_t)htobe32((uint32_t)value));
 }
 
 void Packet::WriteS32Little(int32_t value)
@@ -422,7 +422,7 @@ void Packet::WriteS64(int64_t value)
 void Packet::WriteS64Big(int64_t value)
 {
     // Convert the value to big endian byte order and then write it.
-    WriteS64((int64_t)htobe64(value));
+    WriteS64((int64_t)htobe64((uint64_t)value));
 }
 
 void Packet::WriteS64Little(int64_t value)

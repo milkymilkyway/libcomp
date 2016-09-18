@@ -544,7 +544,7 @@ int32_t ReadOnlyPacket::ReadS32()
 int32_t ReadOnlyPacket::ReadS32Big()
 {
     // Return the value converted from big endian byte order.
-    return (int32_t)be32toh(ReadS32());
+    return (int32_t)be32toh((uint32_t)ReadS32());
 }
 
 int32_t ReadOnlyPacket::ReadS32Little()
@@ -606,7 +606,7 @@ int64_t ReadOnlyPacket::ReadS64()
 int64_t ReadOnlyPacket::ReadS64Big()
 {
     // Return the value converted from big endian byte order.
-    return (int64_t)be64toh(ReadS64());
+    return (int64_t)be64toh((uint64_t)ReadS64());
 }
 
 int64_t ReadOnlyPacket::ReadS64Little()

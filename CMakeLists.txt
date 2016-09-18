@@ -28,6 +28,12 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Utilities to add and remove compiler flags.
 INCLUDE(${CMAKE_MODULE_PATH}/flags.cmake)
 
+# Utilities for building with MSVC.
+INCLUDE(${CMAKE_MODULE_PATH}/msvc.cmake)
+
+# Make sure MSVC uses the right runtime.
+MSVC_RUNTIME(STATIC)
+
 # http://stackoverflow.com/questions/14933172/
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Require at least GCC 4.9.
@@ -42,13 +48,7 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         MESSAGE(FATAL_ERROR "Clang version must be at least 3.4!")
     ENDIF()
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd -DASIO_STANDALONE -D_WIN32_WINNT=0x0502 /utf-8")
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd -DASIO_STANDALONE -D_WIN32_WINNT=0x0502 /utf-8")
-
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT -DASIO_STANDALONE -D_WIN32_WINNT=0x0502 /utf-8")
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT -DASIO_STANDALONE -D_WIN32_WINNT=0x0502 /utf-8")
-
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
+    # There is nothing special needed for MSVC.
 ELSE()
     MESSAGE(WARNING "You are using an unsupported compiler!")
 ENDIF()
@@ -58,81 +58,77 @@ INCLUDE(${CMAKE_MODULE_PATH}/DetermineOS.cmake)
 # Include all build code for external projects.
 INCLUDE(${CMAKE_MODULE_PATH}/external.cmake)
 
+# PDB not found for library.
+ADD_LINKER_FLAGS(AUTO "/ignore:4099")
+
+# UTF-8 source encoding for MSVC.
+ADD_COMPILER_FLAGS(AUTO "/utf-8")
+
+# Windows 7 (see: https://msdn.microsoft.com/en-us/library/6sehtctf.aspx)
+ADD_COMPILER_FLAGS(WIN32 "-DWINVER=0x0601 -D_WIN32_WINNT=0x0601")
+
+# Don't use full boost, just asio.
+ADD_DEFINITIONS(-DASIO_STANDALONE)
+
 # SQLite3 is included in the source repo.
 SET(SQLITE3_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/sqlite3")
 
 # Enable testing.
 INCLUDE(CTest)
 
-# Default Linux (gcc/clang) builds to debug and MinGW builds to release.
-IF(NOT MSVC)
-IF(WIN32)
-    SET(CMAKE_BUILD_TYPE Release)
-ELSE(WIN32)
-    SET(CMAKE_BUILD_TYPE Debug)
-ENDIF(WIN32)
-
-# If the build should be optimized for new processors.
-SET(BUILD_SERVER FALSE)
+# If the build should be optimized.
+OPTION(BUILD_OPTIMIZED "Build an optimized release of the server." ON)
 
 # Determine if the system is big or little endian.
 INCLUDE(TestBigEndian)
 TEST_BIG_ENDIAN(LIBCOMP_ENDIAN)
 IF(${LIBCOMP_ENDIAN})
-    ADD_DEFINITIONS("-DLIBCOMP_BIGENDIAN")
+    ADD_DEFINITIONS(-DLIBCOMP_BIGENDIAN)
 ELSE(${LIBCOMP_ENDIAN})
-    ADD_DEFINITIONS("-DLIBCOMP_LITTLEENDIAN")
+    ADD_DEFINITIONS(-DLIBCOMP_LITTLEENDIAN)
 ENDIF(${LIBCOMP_ENDIAN})
 
-ADD_DEFINITIONS(-DASIO_STANDALONE)
+# Default Linux (gcc/clang) builds to debug and MinGW builds to release.
+IF(NOT MSVC)
+    IF(BUILD_OPTIMIZED)
+        SET(CMAKE_BUILD_TYPE Release)
+    ELSE()
+        SET(CMAKE_BUILD_TYPE Debug)
+    ENDIF()
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${SPECIAL_COMPILER_FLAGS}")
+    # Ensure C++11 support is on.
+    ADD_CXX_FLAGS(AUTO -std=c++11)
 
-# Determine basic gcc/clang/mingw flags for release mode.
-IF(BUILD_SERVER)
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -msse3 -s")
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -msse3 -s")
-ELSE(BUILD_SERVER)
-    SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -msse2 -s")
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -msse2 -s")
-ENDIF(BUILD_SERVER)
+    IF(NOT ("${SPECIAL_COMPILER_FLAGS}" STREQUAL ""))
+        ADD_CXX_FLAGS(AUTO "${SPECIAL_COMPILER_FLAGS}")
+    ENDIF()
+
+    # Determine basic gcc/clang/mingw flags for release mode.
+    IF(BUILD_OPTIMIZED)
+        ADD_COMPILER_FLAGS(AUTO -O3 -msse3)
+    ELSE(BUILD_OPTIMIZED)
+        ADD_COMPILER_FLAGS(AUTO -O3 -msse3)
+    ENDIF(BUILD_OPTIMIZED)
+
+    ADD_LINKER_FLAGS_RELEASE(-s)
 ENDIF(NOT MSVC)
 
-# If building on Microsoft Visual C++, we need these flags.
-IF(MSVC)
-SET(CMAKE_C_FLAGS "-D_CRT_SECURE_NO_WARNINGS")
-SET(CMAKE_CXX_FLAGS "-D_CRT_SECURE_NO_WARNINGS /EHsc")
-ENDIF(MSVC)
+# Disable MSVC warnings about the secure CRT functions.
+ADD_COMPILER_FLAGS(WIN32 -D_CRT_SECURE_NO_WARNINGS)
+
+# Specifies the kind of exception handling with MSVC.
+ADD_COMPILER_FLAGS(AUTO "/EHsc")
 
 # If we are building in debug mode, define the debug flag.
-SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DCOMP_HACK_DEBUG")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DCOMP_HACK_DEBUG")
+ADD_COMPILER_FLAGS_DEBUG(-DCOMP_HACK_DEBUG)
 
 # If we are using gcc/clang/mingw, enable warnings under debug mode.
-IF(NOT MSVC)
-SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -Wshadow -g")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Wshadow -g")
-
-# If we are using clang (very similar to gcc), disable this warning.
-IF(BUILD_CLANG)
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-sign-conversion")
-ELSE(BUILD_CLANG)
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wconversion")
-ENDIF(BUILD_CLANG)
-
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror")
-
-IF(NOT BSD)
-SET(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -Wno-delete-non-virtual-dtor")
-ENDIF(NOT BSD)
-ENDIF(NOT MSVC)
+ADD_COMPILER_FLAGS(AUTO -Werror -Wall -Wextra -Wshadow
+    -Wconversion -Wsign-conversion -g)
 
 # When using gcc/clang/mingw, make sure everything defined is linked into
 # the application or library.
-IF(NOT MSVC)
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-undefined")
-ENDIF(NOT MSVC)
+ADD_EXE_LINKER_FLAGS("-Wl,--no-undefined")
 
 # Place all executables in the same directory.
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/bin")
@@ -332,6 +328,7 @@ ENDMACRO(CREATE_GTESTS)
 # consequence, none of the tools can define their own structures to be
 # generated by objgen. This is not a big deal because for the most part
 # these should be defined in libcomp.
+ADD_SUBDIRECTORY(deps)
 ADD_SUBDIRECTORY(libobjgen)
 ADD_SUBDIRECTORY(tools)
 

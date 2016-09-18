@@ -300,8 +300,8 @@ SET_TARGET_PROPERTIES(sqstdlib PROPERTIES IMPORTED_LOCATION
 ExternalProject_Add(
     asio
 
-    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
-    GIT_TAG asio-1-11-0
+    GIT_REPOSITORY https://github.com/comphack/asio.git
+    GIT_TAG comp_hack
 
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/asio
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> "-DCMAKE_CXX_FLAGS=-std=c++11 ${SPECIAL_COMPILER_FLAGS}"

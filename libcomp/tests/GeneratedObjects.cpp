@@ -136,7 +136,7 @@ TEST(Object, TestObject)
         uint8_t Unsigned8;
         int8_t Signed8;
         uint16_t UINT16;
-        uint32_t Signed32;
+        int32_t Signed32;
         char string[16];
         float XYZ[3];
     } testData;

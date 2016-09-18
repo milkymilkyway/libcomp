@@ -50,7 +50,7 @@ class TcpConnection;
 class TcpServer
 {
 public:
-    TcpServer(String listenAddress, int16_t port);
+    TcpServer(String listenAddress, uint16_t port);
     virtual ~TcpServer();
 
     virtual int Start();
@@ -80,7 +80,7 @@ private:
     DH *mDiffieHellman;
 
     String mListenAddress;
-    int16_t mPort;
+    uint16_t mPort;
 };
 
 } // namespace libcomp
