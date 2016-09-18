@@ -19,6 +19,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.2.3)
 
 PROJECT(comp_hack)
 
+# Print the CMake version for debugging.
+MESSAGE("-- CMake version: ${CMAKE_VERSION}")
+
+# Include our custom cmake modules.
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# Utilities to add and remove compiler flags.
+INCLUDE(${CMAKE_MODULE_PATH}/flags.cmake)
+
 # http://stackoverflow.com/questions/14933172/
 IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # Require at least GCC 4.9.
@@ -43,12 +52,6 @@ ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 ELSE()
     MESSAGE(WARNING "You are using an unsupported compiler!")
 ENDIF()
-
-# Print the CMake version for debugging.
-MESSAGE("-- CMake version: ${CMAKE_VERSION}")
-
-# Include our custom cmake modules.
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 INCLUDE(${CMAKE_MODULE_PATH}/DetermineOS.cmake)
 
