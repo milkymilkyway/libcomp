@@ -229,7 +229,7 @@ bool DatabaseQueryCassandra::Next()
 
     if(nullptr != mRowIterator)
     {
-        result = cass_iterator_next(mRowIterator);
+        result = cass_iterator_next(mRowIterator) ? true : false;
     }
 
     return result;

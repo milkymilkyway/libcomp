@@ -213,6 +213,14 @@ protected:
      * Mutex to make the log thread safe.
      */
     std::mutex mLock;
+
+#ifdef _WIN32
+    /**
+     * @internal
+     * Windows standard output console color attributes.
+     */
+    uint16_t mConsoleAttributes;
+#endif
 };
 
 } // namespace libcomp

@@ -29,6 +29,11 @@
 #include <iostream>
 #include <cassert>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <wincon.h>
+#endif // _WIN32
+
 using namespace libcomp;
 
 /**
@@ -60,6 +65,21 @@ static void LogToStandardOutput(Log::Level_t level,
     const String& msg, void *pUserData)
 {
     // Console colors for each log level.
+#ifdef _WIN32
+    static const WORD gLogColors[Log::LOG_LEVEL_COUNT] = {
+        // Debug
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+        // Info
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
+            FOREGROUND_INTENSITY,
+        // Warning
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+        // Error
+        FOREGROUND_RED | FOREGROUND_INTENSITY,
+        // Critical
+        FOREGROUND_RED | FOREGROUND_INTENSITY,
+    };
+#else
     static const String gLogColors[Log::LOG_LEVEL_COUNT] = {
         "\e[1;32;40m", // Debug
         "\e[37;40m",   // Info
@@ -67,6 +87,7 @@ static void LogToStandardOutput(Log::Level_t level,
         "\e[1;31;40m", // Error
         "\e[1;37;41m", // Critical
     };
+#endif // _WIN32
 
     // This hook has no user data.
     (void)pUserData;
@@ -84,14 +105,37 @@ static void LogToStandardOutput(Log::Level_t level,
     // Each log level has a different color scheme.
     for(String m : msgs)
     {
+#if _WIN32
+        (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+            gLogColors[level]);
+
+        std::cout << m.ToUtf8();
+
+        (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+        std::cout << std::endl;
+#else
         std::cout << gLogColors[level] << m.ToUtf8()
             << "\e[0K\e[0m" << std::endl;
+#endif // _WIN32
     }
 
     // If there is more on the last line, print it as well.
     if(!last.IsEmpty())
     {
+#if _WIN32
+        (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+            gLogColors[level]);
+
+        std::cout << last.ToUtf8();
+
+        (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#else
         std::cout << gLogColors[level] << last.ToUtf8() << "\e[0K\e[0m";
+
+#endif // _WIN32
     }
 
     // Flush the output so the log messages are immediately avaliable.
@@ -100,6 +144,24 @@ static void LogToStandardOutput(Log::Level_t level,
 
 Log::Log() : mLogFile(nullptr)
 {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+
+    if(GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),
+        &consoleInfo))
+    {
+        mConsoleAttributes = consoleInfo.wAttributes;
+    }
+    else
+    {
+        mConsoleAttributes = FOREGROUND_RED | FOREGROUND_GREEN |
+            FOREGROUND_BLUE;
+    }
+
+    (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#endif // _WIN32
+
     // Default all log levels to enabled.
     for(int i = 0; i < LOG_LEVEL_COUNT; ++i)
     {
@@ -112,8 +174,13 @@ Log::~Log()
     // Lock the muxtex.
     std::lock_guard<std::mutex> lock(mLock);
 
+#ifdef _WIN32
+    (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+        mConsoleAttributes);
+#else
     // Clear the last line before the server exits.
     std::cout << "\e[0K\e[0m";
+#endif // _WIN32
 
     // Close the log file.
     delete mLogFile;
