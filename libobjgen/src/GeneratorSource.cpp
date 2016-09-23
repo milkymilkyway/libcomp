@@ -190,6 +190,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << "bool " << obj.GetName()
         << "::Save(libcomp::ObjectOutStream& stream) const" << std::endl;
     ss << "{" << std::endl;
+    ss << Tab() << "(void)stream;" << std::endl; /// @todo fix
+    ss << std::endl;
     ss << Tab() << "bool status = true;" << std::endl;
 
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
