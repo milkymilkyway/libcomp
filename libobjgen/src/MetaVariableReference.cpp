@@ -187,8 +187,11 @@ std::string MetaVariableReference::GetSaveCode(const std::string& name,
 
 std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
-    const std::string& root, size_t tabLevel) const
+    const std::string& root, const std::string& members,
+    size_t tabLevel) const
 {
+    (void)members;
+
     std::stringstream ss;
     ss << generator.Tab(tabLevel) << "if(" << name << ")" << std::endl;
     ss << generator.Tab(tabLevel) << "{" << std::endl;

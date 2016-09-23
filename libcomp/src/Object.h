@@ -31,7 +31,13 @@
 #include <stdint.h>
 #include <istream>
 #include <ostream>
+#include <unordered_map>
 #include <list>
+
+// tinyxml2 Includes
+#include <PushIgnore.h>
+#include <tinyxml2.h>
+#include <PopIgnore.h>
 
 namespace libcomp
 {
@@ -64,6 +70,11 @@ public:
 
     virtual bool Load(ObjectInStream& stream) = 0;
     virtual bool Save(ObjectOutStream& stream) const  = 0;
+
+protected:
+    virtual std::unordered_map<std::string, const tinyxml2::XMLElement*>
+        GetXmlMembers(const tinyxml2::XMLElement& root) const;
+    virtual std::string GetXmlText(const tinyxml2::XMLElement& root) const;
 };
 
 } // namespace libcomp

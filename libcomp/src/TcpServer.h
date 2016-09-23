@@ -67,6 +67,7 @@ protected:
         asio::ip::tcp::socket& socket);
 
     const DH* GetDiffieHellman() const;
+    void SetDiffieHellman(DH *pDiffieHellman);
 
     void AcceptHandler(asio::error_code errorCode,
         asio::ip::tcp::socket& socket);

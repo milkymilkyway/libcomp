@@ -230,12 +230,14 @@ std::string MetaVariableList::GetSaveCode(const std::string& name,
 
 std::string MetaVariableList::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
-    const std::string& root, size_t tabLevel) const
+    const std::string& root, const std::string& members,
+    size_t tabLevel) const
 {
     (void)generator;
     (void)name;
     (void)doc;
     (void)root;
+    (void)members;
     (void)tabLevel;
 
     /// @todo Fix

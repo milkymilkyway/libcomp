@@ -35,3 +35,49 @@ Object::Object()
 Object::~Object()
 {
 }
+
+std::unordered_map<std::string, const tinyxml2::XMLElement*>
+    Object::GetXmlMembers(const tinyxml2::XMLElement& root) const
+{
+    std::unordered_map<std::string, const tinyxml2::XMLElement*> members;
+
+    const tinyxml2::XMLElement *pMember = root.FirstChildElement("member");
+
+    while(nullptr != pMember)
+    {
+        const char *szName = pMember->Attribute("name");
+
+        if(nullptr != szName)
+        {
+            members[szName] = pMember;
+        }
+
+        pMember = pMember->NextSiblingElement("member");
+    }
+
+    return members;
+}
+
+std::string Object::GetXmlText(const tinyxml2::XMLElement& root) const
+{
+    std::string value;
+
+    const tinyxml2::XMLNode *pChild = root.FirstChild();
+
+    if(nullptr != pChild)
+    {
+        const tinyxml2::XMLText *pText = pChild->ToText();
+
+        if(nullptr != pText)
+        {
+            const char *szText = pText->Value();
+
+            if(nullptr != szText)
+            {
+                value = szText;
+            }
+        }
+    }
+
+    return value;
+}

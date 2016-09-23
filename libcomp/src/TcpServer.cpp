@@ -48,6 +48,30 @@ TcpServer::~TcpServer()
 
 int TcpServer::Start()
 {
+    // Check for a DH key pair.
+    if(nullptr == mDiffieHellman)
+    {
+        LOG_WARNING("Generating a DH key pair. "
+            "This could take several minutes.\n");
+
+        // Generate it since we don't have one yet.
+        mDiffieHellman = GenerateDiffieHellman();
+
+        // Check if the key was made.
+        if(nullptr == mDiffieHellman)
+        {
+            LOG_CRITICAL("Failed to generate Diffie-Hellman prime!\n");
+        }
+        else
+        {
+            LOG_WARNING(String("Please add the following to your "
+                "configuration XML: <prime>%1</prime>\n").Arg(
+                    TcpConnection::GetDiffieHellmanPrime(mDiffieHellman)
+                )
+            );
+        }
+    }
+
     asio::ip::tcp::endpoint endpoint;
 
     if(mListenAddress.IsEmpty() || "any" == mListenAddress.ToLower())
@@ -99,27 +123,7 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
     }
     else
     {
-        /// @todo Consider moving this.
-        if(nullptr == mDiffieHellman)
-        {
-            // Generate it since we don't have one yet.
-            mDiffieHellman = GenerateDiffieHellman();
-
-            if(nullptr == mDiffieHellman)
-            {
-                LOG_CRITICAL("Failed to generate Diffie-Hellman prime!\n");
-            }
-            else
-            {
-                LOG_WARNING(String("Please add the following to your "
-                    "configuration XML: <prime>%1</prime>\n").Arg(
-                        TcpConnection::GetDiffieHellmanPrime(mDiffieHellman)
-                    )
-                );
-            }
-        }
-
-        // Make sure it's correct now.
+        // Make sure the DH key pair is valid.
         if(nullptr != mDiffieHellman)
         {
             LOG_DEBUG(String("New connection from %1\n").Arg(
@@ -137,12 +141,26 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
                     AcceptHandler(acceptErrorCode, socket);
                 });
         }
+        else
+        {
+            LOG_CRITICAL("Somehow you got this far without a DH key pair!\n");
+        }
     }
 }
 
 const DH* TcpServer::GetDiffieHellman() const
 {
     return mDiffieHellman;
+}
+
+void TcpServer::SetDiffieHellman(DH *pDiffieHellman)
+{
+    if(nullptr != mDiffieHellman)
+    {
+        DH_free(pDiffieHellman);
+    }
+
+    mDiffieHellman = pDiffieHellman;
 }
 
 DH* TcpServer::GenerateDiffieHellman()

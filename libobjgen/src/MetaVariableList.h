@@ -68,7 +68,8 @@ public:
         const std::string& stream) const;
     virtual std::string GetXmlLoadCode(const Generator& generator,
         const std::string& name, const std::string& doc,
-        const std::string& root, size_t tabLevel = 1) const;
+        const std::string& root, const std::string& members,
+        size_t tabLevel = 1) const;
     virtual std::string GetXmlSaveCode(const Generator& generator,
         const std::string& name, const std::string& doc,
         const std::string& root, size_t tabLevel = 1) const;

@@ -582,12 +582,14 @@ public:
 
     virtual std::string GetXmlLoadCode(const Generator& generator,
         const std::string& name, const std::string& doc,
-        const std::string& root, size_t tabLevel = 1) const
+        const std::string& root, const std::string& members,
+        size_t tabLevel = 1) const
     {
         (void)generator;
         (void)name;
         (void)doc;
         (void)root;
+        (void)members;
         (void)tabLevel;
 
         /// @todo Fix

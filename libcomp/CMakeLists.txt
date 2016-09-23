@@ -143,6 +143,7 @@ SET(${PROJECT_NAME}_HDRS
 
 SET(${PROJECT_NAME}_SCHEMA
     schema/test.xml
+    schema/lobbyconfig.xml
 )
 
 # Make an absolute path version of the schema list for the channel server to use as depends
@@ -164,6 +165,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     schema
 
     # Output files
+    LobbyConfig.h
+    LobbyConfig.cpp
     TestObject.h
     TestObject.cpp
 )

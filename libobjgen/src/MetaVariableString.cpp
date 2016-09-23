@@ -613,16 +613,37 @@ std::string MetaVariableString::GetSaveCode(const std::string& name,
 
 std::string MetaVariableString::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
-    const std::string& root, size_t tabLevel) const
+    const std::string& root, const std::string& members,
+    size_t tabLevel) const
 {
     (void)generator;
     (void)name;
     (void)doc;
     (void)root;
-    (void)tabLevel;
+    (void)members;
 
-    /// @todo Fix
-    return std::string();
+    std::stringstream ss;
+    ss << generator.Tab(tabLevel) << "if(status)" << std::endl;
+    ss << generator.Tab(tabLevel) << "{" << std::endl;
+    ss << generator.Tab(tabLevel + 1) << "std::unordered_map<std::string, "
+        "const tinyxml2::XMLElement*>::const_iterator memberIterator = "
+        << members << ".find(" << generator.Escape(GetName())
+        << ");" << std::endl;
+    ss << std::endl;
+    ss << generator.Tab(tabLevel + 1) << "if(memberIterator != "
+        << members << ".end())" << std::endl;
+    ss << generator.Tab(tabLevel + 1) << "{" << std::endl;
+    ss << generator.Tab(tabLevel + 2) << "const tinyxml2::XMLElement *pMember"
+        << " = memberIterator->second;" << std::endl;
+    ss << generator.Tab(tabLevel + 2) << "if(!Set" << generator.GetCapitalName(
+        *this) << "(GetXmlText(*pMember)))" << std::endl;
+    ss << generator.Tab(tabLevel + 2) << "{" << std::endl;
+    ss << generator.Tab(tabLevel + 3) << "status = false;" << std::endl;
+    ss << generator.Tab(tabLevel + 2) << "}" << std::endl;
+    ss << generator.Tab(tabLevel + 1) << "}" << std::endl;
+    ss << generator.Tab(tabLevel) << "}" << std::endl;
+
+    return ss.str();
 }
 
 std::string MetaVariableString::GetXmlSaveCode(const Generator& generator,
