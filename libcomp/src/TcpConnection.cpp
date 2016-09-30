@@ -87,6 +87,20 @@ bool TcpConnection::Connect(const String& host, int port)
     return result;
 }
 
+void TcpConnection::QueuePacket(Packet& packet)
+{
+    ReadOnlyPacket copy(packet);
+
+    QueuePacket(copy);
+}
+
+void TcpConnection::QueuePacket(ReadOnlyPacket& packet)
+{
+    std::lock_guard<std::mutex> guard(mOutgoingMutex);
+
+    mOutgoingPackets.push_back(std::move(packet));
+}
+
 void TcpConnection::SendPacket(Packet& packet)
 {
     ReadOnlyPacket copy(packet);
@@ -96,22 +110,8 @@ void TcpConnection::SendPacket(Packet& packet)
 
 void TcpConnection::SendPacket(ReadOnlyPacket& packet)
 {
-    bool firstPacket;
-
-    ReadOnlyPacket finalPacket;
-    PreparePacket(packet, finalPacket);
-
-    {
-        std::lock_guard<std::mutex> guard(mOutgoingMutex);
-
-        firstPacket = mOutgoingPackets.empty();
-        mOutgoingPackets.push_back(std::move(finalPacket));
-    }
-
-    if(firstPacket)
-    {
-        SendNextPacket();
-    }
+    QueuePacket(packet);
+    FlushOutgoing();
 }
 
 bool TcpConnection::RequestPacket(size_t size)
@@ -234,17 +234,18 @@ void TcpConnection::Connect(const asio::ip::tcp::endpoint& endpoint)
     });
 }
 
-void TcpConnection::SendNextPacket()
+void TcpConnection::FlushOutgoing()
 {
-    std::lock_guard<std::mutex> guard(mOutgoingMutex);
+    std::list<ReadOnlyPacket> packets = GetCombinedPackets();
 
-    if(!mOutgoingPackets.empty() && !mSendingPacket)
+    if(!packets.empty())
     {
-        ReadOnlyPacket& packet = mOutgoingPackets.front();
+        PreparePackets(packets);
 
         mSendingPacket = true;
 
-        mSocket.async_send(asio::buffer(packet.ConstData(), packet.Size()), 0,
+        mSocket.async_send(asio::buffer(
+            mOutgoing.ConstData(), mOutgoing.Size()), 0,
             [this](asio::error_code errorCode, std::size_t length)
             {
                 bool sendAnother = false;
@@ -265,17 +266,15 @@ void TcpConnection::SendNextPacket()
                 {
                     std::lock_guard<std::mutex> outgoingGuard(mOutgoingMutex);
 
-                    if(mOutgoingPackets.empty() || length !=
-                        mOutgoingPackets.front().Size())
+                    uint32_t outgoingSize = mOutgoing.Size();
+
+                    if(0 == outgoingSize || length != outgoingSize)
                     {
                         SocketError();
                     }
                     else
                     {
-                        readOnlyPacket = mOutgoingPackets.front();
-
-                        mOutgoingPackets.pop_front();
-
+                        readOnlyPacket = mOutgoing;
                         sendAnother = !mOutgoingPackets.empty();
                         packetOk = true;
                     }
@@ -289,7 +288,7 @@ void TcpConnection::SendNextPacket()
 
                     if(sendAnother)
                     {
-                        SendNextPacket();
+                        FlushOutgoing();
                     }
                 }
             });
@@ -440,10 +439,30 @@ void TcpConnection::BroadcastPacket(const std::list<std::shared_ptr<
     }
 }
 
-void TcpConnection::PreparePacket(const ReadOnlyPacket& in,
-    ReadOnlyPacket& out)
+void TcpConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
 {
-    ReadOnlyPacket finalPacket(in);
+    // There should only be one!
+    if(packets.size() != 1)
+    {
+        LOG_CRITICAL("Critical packet error.\n");
+    }
 
-    out = finalPacket;
+    ReadOnlyPacket finalPacket(packets.front());
+
+    mOutgoing = finalPacket;
+}
+
+std::list<ReadOnlyPacket> TcpConnection::GetCombinedPackets()
+{
+    std::list<ReadOnlyPacket> packets;
+
+    std::lock_guard<std::mutex> guard(mOutgoingMutex);
+
+    if(!mSendingPacket && !mOutgoingPackets.empty())
+    {
+        packets.push_back(mOutgoingPackets.front());
+        mOutgoingPackets.pop_front();
+    }
+
+    return packets;
 }
