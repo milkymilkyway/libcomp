@@ -84,6 +84,7 @@ SET(${PROJECT_NAME}_SRCS
     src/TcpConnection.cpp
     src/TcpServer.cpp
     #src/ThreadManager.cpp
+    src/Worker.cpp
     #src/XmlUtils.cpp
 )
 
@@ -107,10 +108,12 @@ SET(${PROJECT_NAME}_HDRS
     src/DatabaseSQLite3.h
     src/Decrypt.h
     src/Endian.h
+    src/EnumMap.h
     #src/EngineLocker.h
     src/Exception.h
     src/LobbyConnection.h
     src/Log.h
+    src/Manager.h
     #src/MemoryFile.h
     src/Message.h
     src/MessageEncrypted.h
@@ -132,6 +135,7 @@ SET(${PROJECT_NAME}_HDRS
     src/TcpConnection.h
     src/TcpServer.h
     #src/ThreadManager.h
+    src/Worker.cpp
     #src/XmlUtils.h
 
     # These were generated and are not worth reading.
