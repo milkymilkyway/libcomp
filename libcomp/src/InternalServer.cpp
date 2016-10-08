@@ -26,48 +26,79 @@
 
 #include "InternalServer.h"
 
- // libcomp Includes
+// libcomp Includes
 #include "InternalConnection.h"
+#include "LobbyConnection.h"
 #include "Log.h"
+#include "MessageWorldNotification.h"
 
 using namespace libcomp;
 
-InternalServer::InternalServer(String listenAddress, uint16_t port) :
+InternalServer::InternalServer(const String& listenAddress, uint16_t port) :
     TcpServer(listenAddress, port)
 {
+    asio::io_service service;
+
+    // Connect to the world server.
+    std::shared_ptr<libcomp::LobbyConnection> lobbyConnection(
+        new libcomp::LobbyConnection(service,
+            libcomp::LobbyConnection::ConnectionMode_t::MODE_WORLD_UP));
+
+    std::shared_ptr<libcomp::MessageQueue<libcomp::Message::Message*>>
+        messageQueue(new libcomp::MessageQueue<libcomp::Message::Message*>());
+
+    lobbyConnection->SetSelf(lobbyConnection);
+    lobbyConnection->SetMessageQueue(messageQueue);
+
+    /// @todo Load this from the configuration.
+    lobbyConnection->Connect("127.0.0.1", 10666, false);
+
+    std::thread serviceThread([&service]()
+    {
+        service.run();
+    });
+
+    bool connected = libcomp::TcpConnection::STATUS_CONNECTED ==
+        lobbyConnection->GetStatus();
+
+    if(!connected)
+    {
+        LOG_CRITICAL("Failed to connect to the lobby server!\n");
+    }
+
+    libcomp::Message::Message *pMessage = messageQueue->Dequeue();
+
+    if(nullptr == dynamic_cast<libcomp::Message::WorldNotification*>(pMessage))
+    {
+        LOG_CRITICAL("Lobby server did not accept the world server "
+            "notification.\n");
+    }
+
+    delete pMessage;
+
+    lobbyConnection->Close();
+    serviceThread.join();
+    lobbyConnection.reset();
+    messageQueue.reset();
 }
 
 InternalServer::~InternalServer()
 {
-    //todo: stop workers
-
-    if (hostConnection != nullptr)
-    {
-        //todo: disconnect properly
-    }
-}
-
-bool InternalServer::ConnectToHostServer(asio::io_service& service, const String& host, int port)
-{
-    hostConnection = std::shared_ptr<libcomp::InternalConnection>(new libcomp::InternalConnection(service));
-    hostConnection->Connect(host, port, false);
-
-    bool connected = hostConnection->GetStatus() == libcomp::TcpConnection::STATUS_CONNECTED;
-    if (connected)
-    {
-        hostConnection->SetMessageQueue(mWorker.GetMessageQueue());
-    }
-    return connected;
+    /// @todo stop workers
 }
 
 std::shared_ptr<libcomp::TcpConnection> InternalServer::CreateConnection(
     asio::ip::tcp::socket& socket)
 {
-    auto connection = std::shared_ptr<libcomp::TcpConnection>(new InternalConnection(socket, CopyDiffieHellman(
-                                                GetDiffieHellman())
-                                            ));
+    auto connection = std::shared_ptr<libcomp::TcpConnection>(
+        new InternalConnection(socket, CopyDiffieHellman(
+            GetDiffieHellman())
+        )
+    );
 
-    std::dynamic_pointer_cast<libcomp::InternalConnection>(connection)->SetMessageQueue(mWorker.GetMessageQueue());
+    // Assign this to the only worker available.
+    std::dynamic_pointer_cast<libcomp::InternalConnection>(
+        connection)->SetMessageQueue(mWorker.GetMessageQueue());
 
     // Make sure this is called after connecting.
     connection->SetSelf(connection);

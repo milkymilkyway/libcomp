@@ -75,13 +75,16 @@ public:
 
     bool Connect(const String& host, int port = 0, bool async = true);
 
+    void Close();
+
     virtual void QueuePacket(Packet& packet);
     virtual void QueuePacket(ReadOnlyPacket& packet);
 
-    virtual void SendPacket(Packet& packet);
-    virtual void SendPacket(ReadOnlyPacket& packet);
+    virtual void SendPacket(Packet& packet, bool closeConnection = false);
+    virtual void SendPacket(ReadOnlyPacket& packet,
+        bool closeConnection = false);
 
-    void FlushOutgoing();
+    void FlushOutgoing(bool closeConnection = false);
 
     bool RequestPacket(size_t size);
 

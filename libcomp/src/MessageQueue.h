@@ -78,8 +78,10 @@ public:
             mQueueLock.lock();
         }
 
-        T item = mQueue.pop_front();
+        T item = mQueue.front();
+        mQueue.pop_front();
         mQueueLock.unlock();
+
         return item;
     }
 

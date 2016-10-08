@@ -33,18 +33,21 @@
 #include "Log.h"
 #include "MessageEncrypted.h"
 #include "MessagePacket.h"
+#include "MessagePong.h"
+#include "MessageWorldNotification.h"
 #include "TcpServer.h"
 
 using namespace libcomp;
 
-LobbyConnection::LobbyConnection(asio::io_service& io_service) :
-    libcomp::TcpConnection(io_service), mPacketParser(nullptr)
+LobbyConnection::LobbyConnection(asio::io_service& io_service,
+    ConnectionMode_t mode) : libcomp::TcpConnection(io_service),
+    mPacketParser(nullptr), mMode(mode)
 {
 }
 
 LobbyConnection::LobbyConnection(asio::ip::tcp::socket& socket,
     DH *pDiffieHellman) : libcomp::TcpConnection(socket, pDiffieHellman),
-    mPacketParser(nullptr)
+    mPacketParser(nullptr), mMode(ConnectionMode_t::MODE_NORMAL)
 {
 }
 
@@ -72,21 +75,69 @@ void LobbyConnection::ConnectionSuccess()
 
     if(ROLE_CLIENT == GetRole())
     {
-        mPacketParser = &LobbyConnection::ParseClientEncryptionStart;
-
         libcomp::Packet packet;
 
-        packet.WriteU32Big(1);
-        packet.WriteU32Big(8);
-
-        // Send a packet after connecting.
-        SendPacket(packet);
-
-        // Now read the first reply.
-        if(!RequestPacket(strlen(DH_BASE_STRING) + 2 * DH_KEY_HEX_SIZE +
-            4 * sizeof(uint32_t)))
+        switch(mMode)
         {
-            SocketError("Failed to request more data.");
+            case ConnectionMode_t::MODE_NORMAL:
+            {
+                mPacketParser = &LobbyConnection::ParseClientEncryptionStart;
+
+                // Now read the first reply.
+                if(!RequestPacket(strlen(DH_BASE_STRING) + 2 *
+                    DH_KEY_HEX_SIZE + 4 * sizeof(uint32_t)))
+                {
+                    SocketError("Failed to request more data.");
+                }
+
+                packet.WriteU32Big(1);
+                packet.WriteU32Big(8);
+
+                // Send a packet after connecting.
+                SendPacket(packet);
+
+                break;
+            }
+            case ConnectionMode_t::MODE_PING:
+            {
+                mPacketParser = &LobbyConnection::ParseServerEncryptionStart;
+
+                // Read the PONG packet.
+                if(!RequestPacket(2 * sizeof(uint32_t)))
+                {
+                    SocketError("Failed to request more data.");
+                }
+
+                packet.WriteU32Big(2);
+                packet.WriteU32Big(8);
+
+                // Send a packet after connecting.
+                SendPacket(packet);
+
+                break;
+            }
+            case ConnectionMode_t::MODE_WORLD_UP:
+            {
+                mPacketParser = &LobbyConnection::ParseServerEncryptionStart;
+
+                // Read the reply packet.
+                if(!RequestPacket(2 * sizeof(uint32_t)))
+                {
+                    SocketError("Failed to request more data.");
+                }
+
+                /// @todo Read the server port from the configuraton
+                /// or have the server pass it in.
+                packet.WriteU32Big(3 | (18666 << 16));
+                packet.WriteU32Big(8);
+
+                // Send a packet after connecting.
+                SendPacket(packet);
+
+                break;
+            }
+            default:
+                break;
         }
     }
     else
@@ -105,6 +156,15 @@ void LobbyConnection::ConnectionEncrypted()
 {
     LOG_DEBUG("Connection encrypted!\n");
 
+    SendMessage([](const std::shared_ptr<libcomp::TcpConnection>& self){
+        return new libcomp::Message::Encrypted(self);
+    });
+}
+
+void LobbyConnection::SendMessage(const std::function<
+    libcomp::Message::Message*(const std::shared_ptr<
+    libcomp::TcpConnection>&)>& messageAllocFunction)
+{
     bool errorFound = false;
 
     // Check for the message queue.
@@ -128,7 +188,7 @@ void LobbyConnection::ConnectionEncrypted()
     // Notify the task about the encryption.
     if(!errorFound)
     {
-        mMessageQueue->Enqueue(new libcomp::Message::Encrypted(self));
+        mMessageQueue->Enqueue(messageAllocFunction(self));
     }
 
     // Start reading until we have the packet sizes.
@@ -317,6 +377,73 @@ void LobbyConnection::ParseServerEncryptionStart(libcomp::Packet& packet)
             if(!RequestPacket(DH_KEY_HEX_SIZE + sizeof(uint32_t)))
             {
                 SocketError("Failed to request more data.");
+            }
+        }
+        else if(0 == packet.Left() && 2 == first && 8 == second)
+        {
+            // Remove the packet.
+            packet.Clear();
+
+            // This is a ping, issue a pong or notify pong received.
+            if(ROLE_CLIENT == GetRole())
+            {
+                // This is a pong, notify it was received.
+                LOG_DEBUG("Got a PONG from the server.\n");
+
+                SendMessage([&](const std::shared_ptr<libcomp::TcpConnection>&){
+                    return new libcomp::Message::Pong();
+                });
+            }
+            else
+            {
+                // This is a ping, issue a pong.
+                LOG_DEBUG("Got a PING from the client.\n");
+
+                libcomp::Packet reply;
+
+                reply.WriteU32Big(2);
+                reply.WriteU32Big(8);
+
+                // Send the pong and then close the connection.
+                SendPacket(reply, true);
+            }
+        }
+        else if(0 == packet.Left() && 3 == (first & 0xFFFF) && 8 == second)
+        {
+            // Remove the packet.
+            packet.Clear();
+
+            // This is a world server notification.
+            if(ROLE_CLIENT == GetRole())
+            {
+                // This is a pong, notify it was received.
+                LOG_DEBUG("Lobby server got the notification.\n");
+
+                SendMessage([&](const std::shared_ptr<libcomp::TcpConnection>&){
+                    return new libcomp::Message::WorldNotification(
+                        libcomp::String(), 0);
+                });
+            }
+            else
+            {
+                // This is a ping, issue a pong.
+                LOG_DEBUG("Got a world server notification.\n");
+
+                uint16_t worldServerPort = static_cast<uint16_t>(
+                    (first >> 16) & 0xFFFF);
+
+                SendMessage([&](const std::shared_ptr<libcomp::TcpConnection>&){
+                    return new libcomp::Message::WorldNotification(
+                        GetRemoteAddress(), worldServerPort);
+                });
+
+                libcomp::Packet reply;
+
+                reply.WriteU32Big(3);
+                reply.WriteU32Big(8);
+
+                // Send the pong and then close the connection.
+                SendPacket(reply, true);
             }
         }
         else

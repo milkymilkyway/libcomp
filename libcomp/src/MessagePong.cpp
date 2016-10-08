@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/InternalServer.h
+ * @file libcomp/src/MessagePong.cpp
  * @ingroup libcomp
  *
- * @author HACKfrost
+ * @author COMP Omega <compomega@tutanota.com>
  *
- * @brief Internal server class.
+ * @brief Indicates that the server responded to the ping.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,31 +24,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCOMP_SRC_INTERNALSERVER_H
-#define LIBCOMP_SRC_INTERNALSERVER_H
+#include "MessagePong.h"
 
-// libcomp Includes
-#include "InternalConnection.h"
-#include "TcpServer.h"
-#include "Worker.h"
+using namespace libcomp;
 
-namespace libcomp
+Message::Pong::Pong()
 {
+}
 
-class InternalServer : public libcomp::TcpServer
+Message::Pong::~Pong()
 {
-public:
-    InternalServer(const String& listenAddress, uint16_t port);
-    virtual ~InternalServer();
+}
 
-protected:
-    virtual std::shared_ptr<libcomp::TcpConnection> CreateConnection(
-        asio::ip::tcp::socket& socket);
-
-    /// @todo replace with multiple workers for multi-threading
-    libcomp::Worker mWorker;
-};
-
-} // namespace libcomp
-
-#endif // LIBCOMP_SRC_INTERNALSERVER_H
+Message::MessageType Message::Pong::GetType() const
+{
+    return MessageType::MESSAGE_TYPE_CONNECTION;
+}

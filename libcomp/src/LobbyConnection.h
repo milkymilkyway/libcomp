@@ -31,6 +31,9 @@
 #include "MessageQueue.h"
 #include "TcpConnection.h"
 
+// Standard C++11 Includes
+#include <functional>
+
 namespace libcomp
 {
 
@@ -44,7 +47,15 @@ class Message;
 class LobbyConnection : public libcomp::TcpConnection
 {
 public:
-    LobbyConnection(asio::io_service& io_service);
+    enum class ConnectionMode_t
+    {
+        MODE_NORMAL,
+        MODE_PING,
+        MODE_WORLD_UP,
+    };
+
+    LobbyConnection(asio::io_service& io_service,
+        ConnectionMode_t mode = ConnectionMode_t::MODE_NORMAL);
     LobbyConnection(asio::ip::tcp::socket& socket, DH *pDiffieHellman);
     virtual ~LobbyConnection();
 
@@ -54,6 +65,9 @@ public:
         libcomp::Message::Message*>>& messageQueue);
 
 protected:
+    void SendMessage(const std::function<libcomp::Message::Message*(const
+        std::shared_ptr<libcomp::TcpConnection>&)>& messageAllocFunction);
+
     typedef void (LobbyConnection::*PacketParser_t)(libcomp::Packet& packet);
 
     void ParseClientEncryptionStart(libcomp::Packet& packet);
@@ -75,6 +89,8 @@ protected:
     virtual std::list<ReadOnlyPacket> GetCombinedPackets();
 
     PacketParser_t mPacketParser;
+
+    ConnectionMode_t mMode;
 
     std::shared_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
 };

@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/InternalServer.h
+ * @file libcomp/src/MessageWorldNotification.cpp
  * @ingroup libcomp
  *
- * @author HACKfrost
+ * @author COMP Omega <compomega@tutanota.com>
  *
- * @brief Internal server class.
+ * @brief Indicates that a world server has been started.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,31 +24,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCOMP_SRC_INTERNALSERVER_H
-#define LIBCOMP_SRC_INTERNALSERVER_H
+#include "MessageWorldNotification.h"
 
-// libcomp Includes
-#include "InternalConnection.h"
-#include "TcpServer.h"
-#include "Worker.h"
+using namespace libcomp;
 
-namespace libcomp
+Message::WorldNotification::WorldNotification(const libcomp::String& address,
+    uint16_t port) : mAddress(address), mPort(port)
 {
+}
 
-class InternalServer : public libcomp::TcpServer
+Message::WorldNotification::~WorldNotification()
 {
-public:
-    InternalServer(const String& listenAddress, uint16_t port);
-    virtual ~InternalServer();
+}
 
-protected:
-    virtual std::shared_ptr<libcomp::TcpConnection> CreateConnection(
-        asio::ip::tcp::socket& socket);
+libcomp::String Message::WorldNotification::GetAddress() const
+{
+    return mAddress;
+}
 
-    /// @todo replace with multiple workers for multi-threading
-    libcomp::Worker mWorker;
-};
+uint16_t Message::WorldNotification::GetPort() const
+{
+    return mPort;
+}
 
-} // namespace libcomp
-
-#endif // LIBCOMP_SRC_INTERNALSERVER_H
+Message::MessageType Message::WorldNotification::GetType() const
+{
+    return MessageType::MESSAGE_TYPE_CONNECTION;
+}

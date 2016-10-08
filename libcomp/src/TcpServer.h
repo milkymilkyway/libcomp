@@ -51,7 +51,7 @@ class TcpConnection;
 class TcpServer
 {
 public:
-    TcpServer(String listenAddress, uint16_t port);
+    TcpServer(const String& listenAddress, uint16_t port);
     virtual ~TcpServer();
 
     virtual int Start();
@@ -77,8 +77,10 @@ protected:
         asio::ip::tcp::socket& socket);
 
     std::list<std::shared_ptr<TcpConnection>> mConnections;
-private:
+
     asio::io_service mService;
+
+private:
     asio::ip::tcp::acceptor mAcceptor;
 
     std::thread mServiceThread;
