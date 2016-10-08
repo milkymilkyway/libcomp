@@ -67,7 +67,6 @@ SET(${PROJECT_NAME}_SRCS
     #src/EngineLocker.cpp
     src/Exception.cpp
     src/InternalConnection.cpp
-    src/InternalServer.cpp
     src/LobbyConnection.cpp
     src/Log.cpp
     #src/MemoryFile.cpp
@@ -116,7 +115,6 @@ SET(${PROJECT_NAME}_HDRS
     #src/EngineLocker.h
     src/Exception.h
     src/InternalConnection.h
-    src/InternalServer.h
     src/LobbyConnection.h
     src/Log.h
     src/Manager.h
