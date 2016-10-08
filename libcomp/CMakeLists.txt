@@ -55,6 +55,7 @@ SET(SYSTEM_LIBRARIES ${SYSTEM_LIBRARIES} ${EXECINFO_LIBRARY})
 ENDIF(BSD)
 
 SET(${PROJECT_NAME}_SRCS
+    src/BaseServer.cpp
     src/Compress.cpp
     src/Convert.cpp
     src/CString.cpp
@@ -100,6 +101,7 @@ ENDIF()
 # This is a list of all header files. Adding the header files here ensures they
 # are listed in the source files for IDE projects.
 SET(${PROJECT_NAME}_HDRS
+    src/BaseServer.h
     src/Compress.h
     src/Constants.h
     src/Convert.h

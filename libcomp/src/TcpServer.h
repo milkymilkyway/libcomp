@@ -67,6 +67,8 @@ public:
     static DH* CopyDiffieHellman(const DH *pDiffieHellman);
 
 protected:
+    virtual int Run();
+
     virtual std::shared_ptr<TcpConnection> CreateConnection(
         asio::ip::tcp::socket& socket);
 

@@ -109,8 +109,15 @@ int TcpServer::Start()
         mService.run();
     });
 
+    int returnCode = Run();
+
     mServiceThread.join();
 
+    return returnCode;
+}
+
+int TcpServer::Run()
+{
     return 0;
 }
 

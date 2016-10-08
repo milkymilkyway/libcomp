@@ -56,7 +56,7 @@ public:
     /**
      * @brief Start the worker thread.
      */
-    void Start();
+    void Start(bool blocking = false);
 
     /**
      * @brief Main loop of the worker thread.

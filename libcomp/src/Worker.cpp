@@ -55,20 +55,34 @@ void Worker::AddManager(const std::shared_ptr<Manager>& manager)
     }
 }
 
-void Worker::Start()
+void Worker::Start(bool blocking)
 {
-    mThread = new std::thread([this](std::shared_ptr<MessageQueue<
-        Message::Message*>> messageQueue)
+    if(blocking)
     {
         mRunning = true;
 
         while(mRunning)
         {
-            Run(messageQueue.get());
+            Run(mMessageQueue.get());
         }
 
         mRunning = false;
-    }, mMessageQueue);
+    }
+    else
+    {
+        mThread = new std::thread([this](std::shared_ptr<MessageQueue<
+            Message::Message*>> messageQueue)
+        {
+            mRunning = true;
+
+            while(mRunning)
+            {
+                Run(messageQueue.get());
+            }
+
+            mRunning = false;
+        }, mMessageQueue);
+    }
 }
 
 void Worker::Run(MessageQueue<Message::Message*> *pMessageQueue)
