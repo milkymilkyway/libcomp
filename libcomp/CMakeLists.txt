@@ -65,6 +65,7 @@ SET(${PROJECT_NAME}_SRCS
     src/DatabaseQueryCassandra.cpp
     src/DatabaseSQLite3.cpp
     src/Decrypt.cpp
+    src/EncryptedConnection.cpp
     #src/EngineLocker.cpp
     src/Exception.cpp
     src/InternalConnection.cpp
@@ -112,6 +113,7 @@ SET(${PROJECT_NAME}_HDRS
     src/DatabaseQueryCassandra.h
     src/DatabaseSQLite3.h
     src/Decrypt.h
+    src/EncryptedConnection.h
     src/Endian.h
     src/EnumMap.h
     #src/EngineLocker.h

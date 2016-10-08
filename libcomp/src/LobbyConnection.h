@@ -28,23 +28,12 @@
 #define LIBCOMP_SRC_LOBBYCONNECTION_H
 
 // libcomp Includes
-#include "MessageQueue.h"
-#include "TcpConnection.h"
-
-// Standard C++11 Includes
-#include <functional>
+#include "EncryptedConnection.h"
 
 namespace libcomp
 {
 
-namespace Message
-{
-
-class Message;
-
-} // namespace Message
-
-class LobbyConnection : public libcomp::TcpConnection
+class LobbyConnection : public libcomp::EncryptedConnection
 {
 public:
     enum class ConnectionMode_t
@@ -61,38 +50,12 @@ public:
 
     virtual void ConnectionSuccess();
 
-    void SetMessageQueue(const std::shared_ptr<MessageQueue<
-        libcomp::Message::Message*>>& messageQueue);
-
 protected:
-    void SendMessage(const std::function<libcomp::Message::Message*(const
-        std::shared_ptr<libcomp::TcpConnection>&)>& messageAllocFunction);
+    virtual bool ParseExtensionConnection(libcomp::Packet& packet);
 
-    typedef void (LobbyConnection::*PacketParser_t)(libcomp::Packet& packet);
-
-    void ParseClientEncryptionStart(libcomp::Packet& packet);
-    void ParseServerEncryptionStart(libcomp::Packet& packet);
-    void ParseServerEncryptionFinish(libcomp::Packet& packet);
-    void ParsePacket(libcomp::Packet& packet);
-    void ParsePacket(libcomp::Packet& packet,
-        uint32_t paddedSize, uint32_t realSize);
-
-    virtual void SocketError(const libcomp::String& errorMessage =
-        libcomp::String());
-
-    virtual void ConnectionEncrypted();
-
-    virtual void PacketReceived(libcomp::Packet& packet);
-
-    virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
-
-    virtual std::list<ReadOnlyPacket> GetCombinedPackets();
-
-    PacketParser_t mPacketParser;
+    void ParseExtension(libcomp::Packet& packet);
 
     ConnectionMode_t mMode;
-
-    std::shared_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
 };
 
 } // namespace libcomp
