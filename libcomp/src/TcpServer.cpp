@@ -30,6 +30,13 @@
 #include "Log.h"
 #include "TcpConnection.h"
 
+#ifdef _WIN32
+ // Standard C++ Includes
+#include <algorithm>
+#include <stdio.h>  /* defines FILENAME_MAX */
+#include <direct.h>
+#endif
+
 using namespace libcomp;
 
 TcpServer::TcpServer(String listenAddress, uint16_t port) :
@@ -105,6 +112,68 @@ int TcpServer::Start()
     mServiceThread.join();
 
     return 0;
+}
+
+bool TcpServer::ReadConfig(objects::ServerConfig* config, std::string filename)
+{
+    tinyxml2::XMLDocument doc;
+
+#ifdef _WIN32
+    char buff[FILENAME_MAX];
+    auto result = _getcwd(buff, FILENAME_MAX);
+    std::string executingDirectory(buff);
+
+    libcomp::String filePath = executingDirectory + "\\config\\" + filename;
+#else
+    libcomp::String filePath = "/etc/comp_hack/" + filename;
+#endif
+
+    if (tinyxml2::XML_SUCCESS != doc.LoadFile(filePath.C()))
+    {
+        LOG_WARNING(libcomp::String("Failed to parse config file: %1\n").Arg(
+            filePath));
+        return false;
+    }
+    else
+    {
+        LOG_DEBUG(libcomp::String("Reading config file: %1\n").Arg(
+            filePath));
+        return ReadConfig(config, doc);
+    }
+}
+
+bool TcpServer::ReadConfig(objects::ServerConfig* config, tinyxml2::XMLDocument& doc)
+{
+    const tinyxml2::XMLElement *pRoot = doc.RootElement();
+    const tinyxml2::XMLElement *pObject = nullptr;
+
+    if (nullptr != pRoot)
+    {
+        pObject = pRoot->FirstChildElement("object");
+    }
+
+    if (nullptr == pObject || !config->Load(doc, *pObject))
+    {
+        LOG_WARNING("Failed to load config file\n");
+        return false;
+    }
+    else
+    {
+        //Set the shared members
+        LOG_DEBUG(libcomp::String("DH Pair: %1\n").Arg(
+            config->GetDiffieHellmanKeyPair()));
+
+        SetDiffieHellman(LoadDiffieHellman(
+            config->GetDiffieHellmanKeyPair()));
+
+        if (nullptr == GetDiffieHellman())
+        {
+            LOG_WARNING("Failed to load DH key pair from config file\n");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 std::shared_ptr<TcpConnection> TcpServer::CreateConnection(

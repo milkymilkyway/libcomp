@@ -73,7 +73,7 @@ public:
     static std::vector<char> GenerateDiffieHellmanSharedData(
         DH *pDiffieHellman, const String& otherPublic);
 
-    bool Connect(const String& host, int port = 0);
+    bool Connect(const String& host, int port = 0, bool async = true);
 
     virtual void QueuePacket(Packet& packet);
     virtual void QueuePacket(ReadOnlyPacket& packet);
@@ -100,7 +100,7 @@ public:
         TcpConnection>>& connections, ReadOnlyPacket& packet);
 
 protected:
-    virtual void Connect(const asio::ip::tcp::endpoint& endpoint);
+    virtual void Connect(const asio::ip::tcp::endpoint& endpoint, bool async = true);
 
     virtual void SocketError(const String& errorMessage = String());
 
@@ -117,6 +117,9 @@ protected:
     void SetEncryptionKey(const void *pData, size_t dataSize);
 
 private:
+    void HandleConnection(asio::error_code errorCode);
+    void SendNextPacket();
+
     asio::ip::tcp::socket mSocket;
 
 protected:

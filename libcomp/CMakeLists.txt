@@ -66,6 +66,8 @@ SET(${PROJECT_NAME}_SRCS
     src/Decrypt.cpp
     #src/EngineLocker.cpp
     src/Exception.cpp
+    src/InternalConnection.cpp
+    src/InternalServer.cpp
     src/LobbyConnection.cpp
     src/Log.cpp
     #src/MemoryFile.cpp
@@ -111,6 +113,8 @@ SET(${PROJECT_NAME}_HDRS
     src/EnumMap.h
     #src/EngineLocker.h
     src/Exception.h
+    src/InternalConnection.h
+    src/InternalServer.h
     src/LobbyConnection.h
     src/Log.h
     src/Manager.h
@@ -135,7 +139,7 @@ SET(${PROJECT_NAME}_HDRS
     src/TcpConnection.h
     src/TcpServer.h
     #src/ThreadManager.h
-    src/Worker.cpp
+    src/Worker.h
     #src/XmlUtils.h
 
     # These were generated and are not worth reading.
@@ -149,7 +153,10 @@ SET(${PROJECT_NAME}_HDRS
 
 SET(${PROJECT_NAME}_SCHEMA
     schema/test.xml
+    schema/channelconfig.xml
     schema/lobbyconfig.xml
+    schema/serverconfig.xml
+    schema/worldconfig.xml
 )
 
 # Make an absolute path version of the schema list for the channel server to use as depends
@@ -171,8 +178,14 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     schema
 
     # Output files
+    ChannelConfig.h
+    ChannelConfig.cpp
     LobbyConfig.h
     LobbyConfig.cpp
+    ServerConfig.h
+    ServerConfig.cpp
+    WorldConfig.h
+    WorldConfig.cpp
     TestObject.h
     TestObject.cpp
 )

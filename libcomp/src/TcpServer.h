@@ -29,6 +29,7 @@
 
 // libcomp Includes
 #include "CString.h"
+#include "ServerConfig.h"
 
 // Boost ASIO Includes
 #include "PushIgnore.h"
@@ -55,6 +56,9 @@ public:
 
     virtual int Start();
 
+    bool ReadConfig(objects::ServerConfig* config, std::string filename);
+    virtual bool ReadConfig(objects::ServerConfig* config, tinyxml2::XMLDocument& doc);
+
     static DH* GenerateDiffieHellman();
     static DH* LoadDiffieHellman(const String& prime);
     static DH* LoadDiffieHellman(const std::vector<char>& data);
@@ -71,12 +75,13 @@ protected:
 
     void AcceptHandler(asio::error_code errorCode,
         asio::ip::tcp::socket& socket);
+
+    std::list<std::shared_ptr<TcpConnection>> mConnections;
 private:
     asio::io_service mService;
     asio::ip::tcp::acceptor mAcceptor;
 
     std::thread mServiceThread;
-    std::list<std::shared_ptr<TcpConnection>> mConnections;
 
     DH *mDiffieHellman;
 
