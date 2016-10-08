@@ -80,6 +80,9 @@ protected:
 
     virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
 
+    virtual bool DecompressPacket(libcomp::Packet& packet,
+        uint32_t& paddedSize, uint32_t& realSize, uint32_t& dataStart);
+
     virtual std::list<ReadOnlyPacket> GetCombinedPackets();
 
     PacketParser_t mPacketParser;

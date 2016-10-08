@@ -486,11 +486,20 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
     // Decrypt the packet
     Decrypt::DecryptPacket(mEncryptionKey, packet);
 
+    // This is where to find the data.
+    uint32_t dataStart = 2 * sizeof(uint32_t);
+
+    // Decompress the packet.
+    if(!DecompressPacket(packet, paddedSize, realSize, dataStart))
+    {
+        return;
+    }
+
     // Move the packet into a read only copy.
     ReadOnlyPacket copy(packet);
 
     // Make sure we are at the right spot (right after the sizes).
-    copy.Seek(2 * sizeof(uint32_t));
+    copy.Seek(dataStart);
 
     // Calculate how much data is padding.
     uint32_t padding = paddedSize - realSize;
@@ -587,6 +596,17 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
     {
         SocketError("Corrupt packet has extra data.");
     }
+}
+
+bool EncryptedConnection::DecompressPacket(libcomp::Packet& packet,
+    uint32_t& paddedSize, uint32_t& realSize, uint32_t& dataStart)
+{
+    (void)packet;
+    (void)paddedSize;
+    (void)realSize;
+    (void)dataStart;
+
+    return true;
 }
 
 void EncryptedConnection::PacketReceived(libcomp::Packet& packet)

@@ -56,6 +56,7 @@ ENDIF(BSD)
 
 SET(${PROJECT_NAME}_SRCS
     src/BaseServer.cpp
+    src/ChannelConnection.cpp
     src/Compress.cpp
     src/Convert.cpp
     src/CString.cpp
@@ -103,6 +104,7 @@ ENDIF()
 # are listed in the source files for IDE projects.
 SET(${PROJECT_NAME}_HDRS
     src/BaseServer.h
+    src/ChannelConnection.h
     src/Compress.h
     src/Constants.h
     src/Convert.h
