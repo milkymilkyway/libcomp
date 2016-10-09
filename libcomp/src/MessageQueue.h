@@ -105,6 +105,17 @@ public:
         destinationQueue.splice(destinationQueue.end(), tempQueue);
     }
 
+    void DequeueAny(std::list<T>& destinationQueue)
+    {
+        std::list<T> tempQueue;
+
+        mQueueLock.lock();
+        mQueue.swap(tempQueue);
+        mQueueLock.unlock();
+
+        destinationQueue.splice(destinationQueue.end(), tempQueue);
+    }
+
 private:
     std::list<T> mQueue;
     std::mutex mQueueLock;

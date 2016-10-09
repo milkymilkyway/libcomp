@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/BaseServer.cpp
+ * @file libcomp/src/Shutdown.h
  * @ingroup libcomp
  *
  * @author COMP Omega <compomega@tutanota.com>
  *
- * @brief Base server class.
+ * @brief Shutdown signal handler.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,31 +24,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BaseServer.h"
+#ifndef LIBCOMP_SRC_SHUTDOWN_H
+#define LIBCOMP_SRC_SHUTDOWN_H
 
-using namespace libcomp;
-
-BaseServer::BaseServer(const String& listenAddress, uint16_t port) :
-    TcpServer(listenAddress, port)
+namespace libcomp
 {
-}
 
-BaseServer::~BaseServer()
+class BaseServer;
+
+namespace Shutdown
 {
-}
 
-int BaseServer::Run()
-{
-    // Run the main worker in this thread, blocking until done.
-    mMainWorker.Start(true);
+void Configure(libcomp::BaseServer *pServer);
 
-    // Stop the network service (this will kill any existing connections).
-    mService.stop();
+void Complete();
 
-    return 0;
-}
+} // namespace Shutdown
 
-void BaseServer::Shutdown()
-{
-    mMainWorker.Shutdown();
-}
+} // namespace libcomp
+
+#endif // LIBCOMP_SRC_SHUTDOWN_H

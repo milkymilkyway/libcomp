@@ -76,6 +76,7 @@ SET(${PROJECT_NAME}_SRCS
     src/MessageEncrypted.cpp
     src/MessagePacket.cpp
     src/MessagePong.cpp
+    src/MessageShutdown.cpp
     src/MessageWorldNotification.cpp
     src/Object.cpp
     src/Packet.cpp
@@ -86,6 +87,7 @@ SET(${PROJECT_NAME}_SRCS
     src/ReadOnlyPacket.cpp
     src/RingBuffer.cpp
     src/ScriptEngine.cpp
+    src/Shutdown.cpp
     #src/Structgen.cpp
     src/TcpConnection.cpp
     src/TcpServer.cpp
@@ -130,6 +132,7 @@ SET(${PROJECT_NAME}_HDRS
     src/MessagePacket.h
     src/MessagePong.h
     src/MessageQueue.h
+    src/MessageShutdown.h
     src/MessageWorldNotification.h
     src/Object.h
     src/Packet.h
@@ -143,6 +146,7 @@ SET(${PROJECT_NAME}_HDRS
     src/ReadOnlyPacket.h
     src/RingBuffer.h
     src/ScriptEngine.h
+    src/Shutdown.h
     #src/Structgen.h
     src/TcpConnection.h
     src/TcpServer.h
@@ -221,6 +225,7 @@ SET(${PROJECT_NAME}_TEST_SRCS
     Packet
     ScriptEngine
     String
+    VectorStream
     #XmlUtils
 )
 

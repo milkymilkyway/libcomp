@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/BaseServer.cpp
+ * @file libcomp/src/MessageShutdown.h
  * @ingroup libcomp
  *
  * @author COMP Omega <compomega@tutanota.com>
  *
- * @brief Base server class.
+ * @brief Indicates that the server should shutdown cleanly.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,31 +24,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BaseServer.h"
+#ifndef LIBCOMP_SRC_MESSAGESHUTDOWN_H
+#define LIBCOMP_SRC_MESSAGESHUTDOWN_H
 
-using namespace libcomp;
+// libcomp Includes
+#include "CString.h"
+#include "Message.h"
 
-BaseServer::BaseServer(const String& listenAddress, uint16_t port) :
-    TcpServer(listenAddress, port)
+// Standard C++11 Includes
+#include <memory>
+
+namespace libcomp
 {
-}
 
-BaseServer::~BaseServer()
+namespace Message
 {
-}
 
-int BaseServer::Run()
+class Shutdown : public Message
 {
-    // Run the main worker in this thread, blocking until done.
-    mMainWorker.Start(true);
+public:
+    Shutdown();
+    virtual ~Shutdown();
 
-    // Stop the network service (this will kill any existing connections).
-    mService.stop();
+    virtual MessageType GetType() const;
+};
 
-    return 0;
-}
+} // namespace Message
 
-void BaseServer::Shutdown()
-{
-    mMainWorker.Shutdown();
-}
+} // namespace libcomp
+
+#endif // LIBCOMP_SRC_MESSAGESHUTDOWN_H

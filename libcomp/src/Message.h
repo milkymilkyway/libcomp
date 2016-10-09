@@ -35,6 +35,7 @@ namespace Message
 
 enum class MessageType
 {
+    MESSAGE_TYPE_SYSTEM,
     MESSAGE_TYPE_PACKET,
     MESSAGE_TYPE_CONNECTION,
 };

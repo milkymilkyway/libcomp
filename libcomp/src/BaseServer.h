@@ -40,6 +40,8 @@ public:
     BaseServer(const String& listenAddress, uint16_t port);
     virtual ~BaseServer();
 
+    virtual void Shutdown();
+
 protected:
     virtual int Run();
 
