@@ -209,7 +209,7 @@ TARGET_LINK_LIBRARIES(comp ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES}
     ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} sqlite3
     squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 cassandra uv)
 
-ADD_DEPENDENCIES(comp asio)
+ADD_DEPENDENCIES(comp asio sqrat)
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(comp advapi32 iphlpapi psapi shell32 userenv ws2_32)
