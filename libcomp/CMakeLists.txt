@@ -220,7 +220,10 @@ SET(${PROJECT_NAME}_TEST_SRCS
     Cassandra
     Convert
     Decrypt
-    DiffieHellman
+
+    # This test can take too long so disable it for now.
+    # DiffieHellman
+
     GeneratedObjects
     Packet
     ScriptEngine
