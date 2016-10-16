@@ -17,6 +17,11 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2.3)
 
+# Only show Debug and Release configurations in Visual Studio.
+IF(CMAKE_CONFIGURATION_TYPES)
+    SET(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+ENDIF()
+
 PROJECT(comp_hack)
 
 # Print the CMake version for debugging.
