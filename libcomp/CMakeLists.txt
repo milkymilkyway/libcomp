@@ -83,7 +83,7 @@ SET(${PROJECT_NAME}_SRCS
     src/PacketException.cpp
     #src/PacketScript.cpp
     src/PlatformWindows.cpp
-    #src/PEFile.cpp
+    src/PEFile.cpp
     src/ReadOnlyPacket.cpp
     src/RingBuffer.cpp
     src/ScriptEngine.cpp
@@ -138,8 +138,8 @@ SET(${PROJECT_NAME}_HDRS
     src/Packet.h
     src/PacketException.h
     #src/PacketScript.h
-    #src/PEFile.h
-    #src/PEFormat.h
+    src/PEFile.h
+    src/PEFormat.h
     #src/Platform.h
     #src/PlatformLinux.h
     #src/PlatformWindows.h
