@@ -69,6 +69,8 @@ std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
     {
         auto var = *it;
 
+        if(var->IsInherited()) continue;
+
         ss << var->GetAccessDeclarations(*this, obj, var->GetName());
         ss << std::endl;
     }
@@ -78,6 +80,8 @@ std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;
+
+        if(var->IsInherited()) continue;
 
         ss << Tab() << var->GetDeclaration(GetMemberName(var)) << std::endl;
     }

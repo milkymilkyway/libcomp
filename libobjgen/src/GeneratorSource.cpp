@@ -104,6 +104,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     {
         auto var = *it;
 
+        if(var->IsInherited()) continue;
+
         std::string destructor = var->GetDestructorCode(*this,
             obj, GetMemberName(var));
 
@@ -141,6 +143,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     {
         auto var = *it;
 
+        if(var->IsInherited()) continue;
+
         std::string validator = var->GetValidCondition(
             GetMemberName(var), true);
 
@@ -169,6 +173,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     {
         auto var = *it;
 
+        if(var->IsInherited()) continue;
+
         std::string code = var->GetLoadCode(GetMemberName(var), "stream");
 
         if(!code.empty())
@@ -192,11 +198,13 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << "{" << std::endl;
     ss << Tab() << "(void)stream;" << std::endl; /// @todo fix
     ss << std::endl;
-    ss << Tab() << "bool status = true;" << std::endl;
+    ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Save(stream)") + "; " << std::endl;
 
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;
+
+        if(var->IsInherited()) continue;
 
         std::string code = var->GetSaveCode(GetMemberName(var), "stream");
 
@@ -230,6 +238,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;
+
+        if(var->IsInherited()) continue;
 
         std::string code = var->GetXmlLoadCode(*this, GetMemberName(var),
             "doc", "root", "members");
@@ -290,6 +300,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;
+
+        if(var->IsInherited()) continue;
 
         ss << var->GetAccessFunctions(*this, obj, GetMemberName(var));
         ss << std::endl;

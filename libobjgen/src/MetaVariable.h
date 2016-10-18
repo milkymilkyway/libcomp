@@ -70,6 +70,9 @@ public:
     virtual bool IsCaps() const;
     virtual void SetCaps(bool caps);
 
+    virtual bool IsInherited() const;
+    virtual void SetInherited(const bool inherited);
+
     virtual bool IsValid(const std::vector<char>& data) const;
     virtual bool IsValid(const void *pData, size_t dataSize) const = 0;
 
@@ -100,6 +103,8 @@ public:
     virtual std::string GetArgument(const std::string& name) const;
     virtual std::string GetGetterCode(const Generator& generator,
         const std::string& name, size_t tabLevel = 1) const;
+    virtual std::string GetInternalGetterCode(const Generator& generator,
+        const std::string& name) const;
     virtual std::string GetSetterCode(const Generator& generator,
         const std::string& name, const std::string argument,
         size_t tabLevel = 1) const;
@@ -125,6 +130,7 @@ private:
     UUID mUUID;
     bool mCaps;
     std::string mName;
+    bool mInherited;
 };
 
 } // namespace libobjgen

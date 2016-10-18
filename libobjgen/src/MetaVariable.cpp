@@ -35,7 +35,7 @@
 
 using namespace libobjgen;
 
-MetaVariable::MetaVariable() : mCaps(false)
+MetaVariable::MetaVariable() : mCaps(false), mInherited(false)
 {
 }
 
@@ -47,6 +47,16 @@ std::string MetaVariable::GetName() const
 void MetaVariable::SetName(const std::string& name)
 {
     mName = name;
+}
+
+bool MetaVariable::IsInherited() const
+{
+    return mInherited;
+}
+
+void MetaVariable::SetInherited(const bool inherited)
+{
+    mInherited = inherited;
 }
 
 std::string MetaVariable::GetError() const
@@ -108,6 +118,12 @@ std::string MetaVariable::GetGetterCode(const Generator& generator,
     ss << generator.Tab(tabLevel) << "return " << name << ";" << std::endl;
 
     return ss.str();
+}
+
+std::string MetaVariable::GetInternalGetterCode(const Generator& generator,
+    const std::string& name) const
+{
+    return IsInherited() ? ("Get" + generator.GetCapitalName(*this) + "()") : name;
 }
 
 std::string MetaVariable::GetSetterCode(const Generator& generator,
@@ -195,8 +211,18 @@ std::string MetaVariable::GetConstructorCode(const Generator& generator,
     else
     {
         std::stringstream ss;
-        ss << generator.Tab(tabLevel) << name << " = " << code
-            << ";" << std::endl;
+        if(IsInherited())
+        {
+            ss << generator.Tab(tabLevel) << "Set"
+                << generator.GetCapitalName(*this) << "(" << code << ")"
+                << ";" << std::endl;
+            
+        }
+        else
+        {
+            ss << generator.Tab(tabLevel) << name << " = " << code
+                << ";" << std::endl;
+        }
 
         code = ss.str();
     }
@@ -217,15 +243,28 @@ std::string MetaVariable::GetDestructorCode(const Generator& generator,
 
 bool MetaVariable::BaseLoad(const tinyxml2::XMLElement& element)
 {
-    const char *szCaps = element.Attribute("caps");
-
-    if(nullptr != szCaps)
+    for(const char *a : { "caps", "inherited" })
     {
-        std::string caps(szCaps);
+        std::string aName(a);
+        const char *szAttr = element.Attribute(a);
 
-        std::transform(caps.begin(), caps.end(), caps.begin(), ::tolower);
+        if(nullptr != szAttr)
+        {
+            std::string attr(szAttr);
 
-        SetCaps("1" == caps || "true" == caps || "on" == caps || "yes" == caps);
+            std::transform(attr.begin(), attr.end(), attr.begin(), ::tolower);
+
+            bool value = "1" == attr || "true" == attr || "on" == attr || "yes" == attr;
+
+            if(aName == "caps")
+            {
+                SetCaps(value);
+            }
+            else if(aName == "inherited")
+            {
+                SetInherited(value);
+            }
+        }
     }
 
     return true;
@@ -236,6 +275,11 @@ bool MetaVariable::BaseSave(tinyxml2::XMLElement& element) const
     if(IsCaps())
     {
         element.SetAttribute("caps", "true");
+    }
+
+    if(IsInherited())
+    {
+        element.SetAttribute("inherited", "true");
     }
 
     return true;

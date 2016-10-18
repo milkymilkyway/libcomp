@@ -165,19 +165,16 @@ SET(${PROJECT_NAME}_HDRS
 
 SET(${PROJECT_NAME}_SCHEMA
     schema/test.xml
-    schema/channelconfig.xml
-    schema/lobbyconfig.xml
     schema/serverconfig.xml
-    schema/worldconfig.xml
 )
 
 # Make an absolute path version of the schema list for the channel server to use as depends
 FOREACH(schema ${${PROJECT_NAME}_SCHEMA})
-    SET(LIBFROST_SCHEMA ${LIBFROST_SCHEMA} ${CMAKE_CURRENT_SOURCE_DIR}/${schema})
+    SET(${PROJECT_NAME}_SCHEMA ${${PROJECT_NAME}_SCHEMA} ${CMAKE_CURRENT_SOURCE_DIR}/${schema})
 ENDFOREACH(schema ${${PROJECT_NAME}_SCHEMA})
 
 # Make it available to the parent scope
-SET(LIBFROST_SCHEMA ${LIBFROST_SCHEMA} PARENT_SCOPE)
+SET(${PROJECT_NAME}_SCHEMA ${${PROJECT_NAME}_SCHEMA} PARENT_SCOPE)
 
 OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     # Main schema
@@ -190,14 +187,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     schema
 
     # Output files
-    ChannelConfig.h
-    ChannelConfig.cpp
-    LobbyConfig.h
-    LobbyConfig.cpp
     ServerConfig.h
     ServerConfig.cpp
-    WorldConfig.h
-    WorldConfig.cpp
     TestObject.h
     TestObject.cpp
 )
