@@ -17,6 +17,9 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2.3)
 
+# Use folders to organize the projects and files.
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Only show Debug and Release configurations in Visual Studio.
 IF(CMAKE_CONFIGURATION_TYPES)
     SET(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -327,6 +330,10 @@ MACRO(CREATE_GTESTS)
             # Generate the test executable.
             ADD_EXECUTABLE(${ttest} "tests/${test}.cpp")
 
+            # Add this to the project folder.
+            SET_TARGET_PROPERTIES(${ttest} PROPERTIES FOLDER
+                "Tests/${PROJECT_NAME}")
+
             # Link the libraries to the test executable.
             TARGET_LINK_LIBRARIES(${ttest} gtest ${TEST_LIBS}
                 ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
@@ -418,7 +425,7 @@ ADD_SUBDIRECTORY(libtester)
 # Add all the documentation targets to a single target "doc".
 GET_PROPERTY(targets GLOBAL PROPERTY DOC_TARGETS)
 ADD_CUSTOM_TARGET(doc DEPENDS ${targets})
-
+SET_TARGET_PROPERTIES(doc PROPERTIES FOLDER "SpecialTargets")
 #ADD_SUBDIRECTORY(docs)
 
 IF(NOT BSD)

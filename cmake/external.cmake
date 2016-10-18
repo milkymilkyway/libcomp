@@ -40,6 +40,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(zlib-lib INSTALL_DIR)
 
+SET_TARGET_PROPERTIES(zlib-lib PROPERTIES FOLDER "Dependencies")
+
 SET(ZLIB_INCLUDES "${INSTALL_DIR}/include")
 SET(ZLIB_LIBRARIES zlib)
 
@@ -81,6 +83,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(openssl INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(openssl PROPERTIES FOLDER "Dependencies")
 
 SET(OPENSSL_INCLUDE_DIR "${INSTALL_DIR}/include")
 SET(OPENSSL_ROOT_DIR "${INSTALL_DIR}")
@@ -136,6 +140,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(libuv INSTALL_DIR)
 
+SET_TARGET_PROPERTIES(libuv PROPERTIES FOLDER "Dependencies")
+
 SET(LIBUV_INCLUDE_DIRS "${INSTALL_DIR}/include")
 SET(LIBUV_ROOT_DIR "${INSTALL_DIR}")
 
@@ -173,6 +179,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(cassandra-cpp INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(cassandra-cpp PROPERTIES FOLDER "Dependencies")
 
 SET(CASSANDRA_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
@@ -213,6 +221,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(ttvfs-ex INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(ttvfs-ex PROPERTIES FOLDER "Dependencies")
 
 SET(TTVFS_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
@@ -272,6 +282,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(sqrat INSTALL_DIR)
 
+SET_TARGET_PROPERTIES(sqrat PROPERTIES FOLDER "Dependencies")
+
 SET(SQRAT_INCLUDE_DIRS "${INSTALL_DIR}/include")
 SET(SQRAT_DEFINES "-DSCRAT_USE_CXX11_OPTIMIZATIONS=1")
 
@@ -300,6 +312,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(civet INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(civet PROPERTIES FOLDER "Dependencies")
 
 SET(CIVETWEB_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
@@ -351,6 +365,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(squirrel3 INSTALL_DIR)
 
+SET_TARGET_PROPERTIES(squirrel3 PROPERTIES FOLDER "Dependencies")
+
 SET(SQUIRREL_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
 ADD_LIBRARY(squirrel STATIC IMPORTED)
@@ -399,6 +415,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(asio INSTALL_DIR)
 
+SET_TARGET_PROPERTIES(asio PROPERTIES FOLDER "Dependencies")
+
 SET(ASIO_INCLUDE_DIRS "${INSTALL_DIR}/src/asio/asio/include")
 
 ExternalProject_Add(
@@ -421,6 +439,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(tinyxml2-ex INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(tinyxml2-ex PROPERTIES FOLDER "Dependencies")
 
 SET(TINYXML2_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
@@ -461,6 +481,8 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(googletest INSTALL_DIR)
+
+SET_TARGET_PROPERTIES(googletest PROPERTIES FOLDER "Dependencies")
 
 SET(GTEST_INCLUDE_DIRS "${INSTALL_DIR}/include")
 
