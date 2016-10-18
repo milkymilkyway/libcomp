@@ -106,6 +106,6 @@ script:
   - sudo mkdir /etc/comp_hack
   - sudo cp contrib/testing/lobby.xml /etc/comp_hack/
   - mkdir -p build && cd build && cmake -G "${GENERATOR}" .. && cmake --build .
-  - bin/comp_lobby --testing &
+  - bin/comp_lobby &
   - sleep 10
   - cmake --build . --target Experimental
