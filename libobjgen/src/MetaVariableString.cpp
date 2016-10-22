@@ -434,9 +434,11 @@ std::string MetaVariableString::GetValidCondition(const std::string& name,
     return ss.str();
 }
 
-std::string MetaVariableString::GetLoadCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableString::GetLoadCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::string code;
 
     if(MetaObject::IsValidIdentifier(name) &&
@@ -561,9 +563,11 @@ std::string MetaVariableString::GetLoadCode(const std::string& name,
     return code;
 }
 
-std::string MetaVariableString::GetSaveCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableString::GetSaveCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::string code;
 
     if(MetaObject::IsValidIdentifier(name) &&

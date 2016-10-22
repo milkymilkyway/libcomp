@@ -544,37 +544,43 @@ public:
         return condition;
     }
 
-    virtual std::string GetLoadCode(const std::string& name,
-        const std::string& stream) const
+    virtual std::string GetLoadCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const
     {
+        (void)generator;
+
         std::string code;
 
         if(MetaObject::IsValidIdentifier(name) &&
             MetaObject::IsValidIdentifier(stream))
         {
-            std::stringstream ss;
-            ss << stream << ".stream.read(reinterpret_cast<char*>(&"
-                << name << "), sizeof(" << name << ")).good()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableIntLoad",
+                replacements);
         }
 
         return code;
     }
 
-    virtual std::string GetSaveCode(const std::string& name,
-        const std::string& stream) const
+    virtual std::string GetSaveCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const
     {
+        (void)generator;
+
         std::string code;
 
         if(MetaObject::IsValidIdentifier(name) &&
             MetaObject::IsValidIdentifier(stream))
         {
-            std::stringstream ss;
-            ss << stream << ".stream.write(reinterpret_cast<const char*>(&"
-                << name << "), sizeof(" << name << ")).good()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableIntSave",
+                replacements);
         }
 
         return code;
@@ -602,22 +608,13 @@ public:
     {
         (void)doc;
 
-        std::stringstream ss;
-        ss << generator.Tab(tabLevel) << "{" << std::endl;
-        ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLElement *pMember = "
-            "doc.NewElement(\"member\");" << std::endl;
-        ss << generator.Tab(tabLevel + 1) << "pMember->SetAttribute(\"name\", "
-            << generator.Escape(GetName()) <<  ");" << std::endl;
-        ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLText *pText = "
-            "doc.NewText(libcomp::String(\"%1\").Arg("
-            << GetInternalGetterCode(generator, name) << ").C());" << std::endl;
-        ss << generator.Tab(tabLevel + 1) << "pMember->InsertEndChild(pText);"
-            << std::endl;
-        ss << generator.Tab(tabLevel + 1) << root
-            << ".InsertEndChild(pMember);" << std::endl;
-        ss << generator.Tab(tabLevel) << "}" << std::endl;
+        std::map<std::string, std::string> replacements;
+        replacements["@VAR_NAME@"] = generator.Escape(GetName());
+        replacements["@VAR_GETTER@"] = GetInternalGetterCode(generator, name);
+        replacements["@ROOT@"] = root;
 
-        return ss.str();
+        return generator.ParseTemplate(tabLevel, "VariableIntXmlSave",
+            replacements);
     }
 };
 

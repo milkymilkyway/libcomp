@@ -175,7 +175,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
         if(var->IsInherited()) continue;
 
-        std::string code = var->GetLoadCode(GetMemberName(var), "stream");
+        std::string code = var->GetLoadCode(*this, GetMemberName(var),
+            "stream");
 
         if(!code.empty())
         {
@@ -206,7 +207,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
         if(var->IsInherited()) continue;
 
-        std::string code = var->GetSaveCode(GetMemberName(var), "stream");
+        std::string code = var->GetSaveCode(*this, GetMemberName(var),
+            "stream");
 
         if(!code.empty())
         {

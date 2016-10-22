@@ -34,6 +34,8 @@ INCLUDE_DIRECTORIES(${LIBOBJGEN_INCLUDES})
 INCLUDE_DIRECTORIES(${CASSANDRA_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${TINYXML2_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${TTVFS_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/res)
 
 SET(${PROJECT_NAME}_SRCS
     src/Generator.cpp
@@ -47,6 +49,8 @@ SET(${PROJECT_NAME}_SRCS
     src/MetaVariableReference.cpp
     src/MetaVariableString.cpp
     src/UUID.cpp
+
+    ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
 )
 
 SET(${PROJECT_NAME}_HDRS
@@ -62,6 +66,24 @@ SET(${PROJECT_NAME}_HDRS
     src/MetaVariableReference.h
     src/MetaVariableString.h
     src/UUID.h
+
+    ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
+)
+
+FILE(GLOB ${PROJECT_NAME}_TEMPLATES "res/*.cpp")
+
+ADD_CUSTOM_COMMAND(
+    OUTPUT
+        ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
+        ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_CURRENT_BINARY_DIR}/res
+    COMMAND ${TTVFS_GEN_PATH} ResourceTemplate ResourceTemplateSize
+        ${CMAKE_CURRENT_SOURCE_DIR}/res
+        ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
+        ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
+    DEPENDS ttvfs-ex ${${PROJECT_NAME}_TEMPLATES}
+    COMMENT "Generating resource file for libobjgen templates"
 )
 
 ADD_LIBRARY(objgen STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
@@ -69,7 +91,7 @@ ADD_LIBRARY(objgen STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 SET_TARGET_PROPERTIES(objgen PROPERTIES FOLDER "Libraries")
 
 TARGET_LINK_LIBRARIES(objgen ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} tinyxml2
-    cassandra uv)
+    cassandra uv ttvfs ttvfs_zip)
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(objgen advapi32 iphlpapi psapi shell32 userenv ws2_32)

@@ -28,13 +28,97 @@
 
 // libobjgen Includes
 #include "MetaVariable.h"
+#include "ResourceTemplate.h"
 
 // Standard C++11 Includes
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+#include <cassert>
 
 using namespace libobjgen;
+
+Generator::Generator()
+{
+    mVfs.AddArchiveLoader(new ttvfs::VFSZipArchiveLoader);
+
+    ttvfs::CountedPtr<ttvfs::MemFile> pMemoryFile = new ttvfs::MemFile(
+        "templates.zip", ResourceTemplate, static_cast<uint32_t>(
+        ResourceTemplateSize));
+
+    assert(mVfs.AddArchive(pMemoryFile, ""));
+}
+
+std::vector<char> Generator::GetTemplate(const std::string& name) const
+{
+    std::vector<char> data;
+
+    ttvfs::File *vf = mVfs.GetFile(std::string(name + ".cpp").c_str());
+
+    if(!vf)
+    {
+        return std::vector<char>();
+    }
+
+    size_t fileSize = static_cast<size_t>(vf->size());
+
+    data.resize(fileSize);
+
+    if(!vf->open("rb"))
+    {
+        return std::vector<char>();
+    }
+
+    if(fileSize != vf->read(&data[0], fileSize))
+    {
+        return std::vector<char>();
+    }
+
+    return data;
+}
+
+std::string Generator::ParseTemplate(size_t tabLevel, const std::string& name,
+    const std::map<std::string, std::string>& replacements) const
+{
+    std::vector<char> templ = GetTemplate(name);
+
+    if(templ.empty())
+    {
+        return std::string();
+    }
+
+    std::string code(templ.begin(), templ.end());
+
+    for(auto pair : replacements)
+    {
+        size_t pos = 0;
+
+        while((pos = code.find(pair.first, pos)) != std::string::npos)
+        {
+            code.replace(pos, pair.first.length(), pair.second);
+            pos += pair.second.length();
+        }
+    }
+
+    std::string indent = Tab(tabLevel);
+
+    if(!indent.empty())
+    {
+        indent = std::string("\n") + indent;
+
+        size_t pos = 0;
+
+        while((pos = code.find("\n", pos)) != std::string::npos)
+        {
+            code.replace(pos, 1, indent);
+            pos += indent.length();
+        }
+
+        code = indent + code;
+    }
+
+    return code;
+}
 
 std::string Generator::Tab(size_t count) const
 {

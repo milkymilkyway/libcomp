@@ -167,18 +167,22 @@ std::string MetaVariableReference::GetValidCondition(
     return ss.str();
 }
 
-std::string MetaVariableReference::GetLoadCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableReference::GetLoadCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::stringstream ss;
     ss << name << " && " << name << "->Load(" << stream << ")";
 
     return ss.str();
 }
 
-std::string MetaVariableReference::GetSaveCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableReference::GetSaveCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::stringstream ss;
     ss << name << " && " << name << "->Save(" << stream << ")";
 

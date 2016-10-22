@@ -88,10 +88,10 @@ public:
     virtual std::string GetConstructValue() const = 0;
     virtual std::string GetValidCondition(const std::string& name,
         bool recursive = false) const = 0;
-    virtual std::string GetLoadCode(const std::string& name,
-        const std::string& stream) const = 0;
-    virtual std::string GetSaveCode(const std::string& name,
-        const std::string& stream) const = 0;
+    virtual std::string GetLoadCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const = 0;
+    virtual std::string GetSaveCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const = 0;
     virtual std::string GetXmlLoadCode(const Generator& generator,
         const std::string& name, const std::string& doc,
         const std::string& root, const std::string& members,

@@ -31,6 +31,12 @@
 #include <memory>
 #include <string>
 
+// VFS Includes
+#include "PushIgnore.h"
+#include <ttvfs/ttvfs.h>
+#include <ttvfs/ttvfs_zip.h>
+#include "PopIgnore.h"
+
 namespace libobjgen
 {
 
@@ -40,7 +46,14 @@ class MetaVariable;
 class Generator
 {
 public:
+    Generator();
+
     virtual std::string Generate(const MetaObject& obj) = 0;
+
+    std::vector<char> GetTemplate(const std::string& name) const;
+
+    std::string ParseTemplate(size_t tabLevel, const std::string& name,
+        const std::map<std::string, std::string>& replacements) const;
 
     virtual std::string Tab(size_t count = 1) const;
 
@@ -55,6 +68,9 @@ public:
         const std::shared_ptr<MetaVariable>& var) const;
 
     static std::string Escape(const std::string& str);
+
+private:
+    mutable ttvfs::Root mVfs;
 };
 
 } // namespace libobjgen

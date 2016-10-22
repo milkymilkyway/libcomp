@@ -162,15 +162,17 @@ std::string MetaVariableList::GetValidCondition(const std::string& name,
     return code;
 }
 
-std::string MetaVariableList::GetLoadCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableList::GetLoadCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::string code;
 
     if(mElementType && MetaObject::IsValidIdentifier(name) &&
         MetaObject::IsValidIdentifier(stream))
     {
-        code = mElementType->GetLoadCode("element", stream);
+        code = mElementType->GetLoadCode(generator, "element", stream);
 
         if(!code.empty())
         {
@@ -197,15 +199,17 @@ std::string MetaVariableList::GetLoadCode(const std::string& name,
     return code;
 }
 
-std::string MetaVariableList::GetSaveCode(const std::string& name,
-    const std::string& stream) const
+std::string MetaVariableList::GetSaveCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
 {
+    (void)generator;
+
     std::string code;
 
     if(mElementType && MetaObject::IsValidIdentifier(name) &&
         MetaObject::IsValidIdentifier(stream))
     {
-        code = mElementType->GetSaveCode("element", stream);
+        code = mElementType->GetSaveCode(generator, "element", stream);
 
         if(!code.empty())
         {
