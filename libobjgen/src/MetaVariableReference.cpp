@@ -149,9 +149,11 @@ std::string MetaVariableReference::GetConstructValue() const
     return ss.str();
 }
 
-std::string MetaVariableReference::GetValidCondition(
+std::string MetaVariableReference::GetValidCondition(const Generator& generator,
     const std::string& name, bool recursive) const
 {
+    (void)generator;
+
     std::stringstream ss;
 
     if(recursive)
@@ -170,23 +172,23 @@ std::string MetaVariableReference::GetValidCondition(
 std::string MetaVariableReference::GetLoadCode(const Generator& generator,
     const std::string& name, const std::string& stream) const
 {
-    (void)generator;
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@STREAM@"] = stream;
 
-    std::stringstream ss;
-    ss << name << " && " << name << "->Load(" << stream << ")";
-
-    return ss.str();
+    return generator.ParseTemplate(0, "VariableReferenceLoad",
+        replacements);
 }
 
 std::string MetaVariableReference::GetSaveCode(const Generator& generator,
     const std::string& name, const std::string& stream) const
 {
-    (void)generator;
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@STREAM@"] = stream;
 
-    std::stringstream ss;
-    ss << name << " && " << name << "->Save(" << stream << ")";
-
-    return ss.str();
+    return generator.ParseTemplate(0, "VariableReferenceSave",
+        replacements);
 }
 
 std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
@@ -196,26 +198,24 @@ std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
 {
     (void)members;
 
-    std::stringstream ss;
-    ss << generator.Tab(tabLevel) << "if(" << name << ")" << std::endl;
-    ss << generator.Tab(tabLevel) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "status = " << name << "->Load("
-        << doc << ", " << root << ");" << std::endl;
-    ss << generator.Tab(tabLevel) << "}" << std::endl;
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@DOC@"] = doc;
+    replacements["@ROOT@"] = root;
 
-    return ss.str();
+    return generator.ParseTemplate(tabLevel, "VariableReferenceXmlLoad",
+        replacements);
 }
 
 std::string MetaVariableReference::GetXmlSaveCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
-    std::stringstream ss;
-    ss << generator.Tab(tabLevel) << "if(" << name << ")" << std::endl;
-    ss << generator.Tab(tabLevel) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "status = " << name << "->Save("
-        << doc << ", " << root << ");" << std::endl;
-    ss << generator.Tab(tabLevel) << "}" << std::endl;
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@DOC@"] = doc;
+    replacements["@ROOT@"] = root;
 
-    return ss.str();
+    return generator.ParseTemplate(tabLevel, "VariableReferenceXmlSave",
+        replacements);
 }

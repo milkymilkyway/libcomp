@@ -129,7 +129,7 @@ std::string MetaVariable::GetInternalGetterCode(const Generator& generator,
 std::string MetaVariable::GetSetterCode(const Generator& generator,
     const std::string& name, const std::string argument, size_t tabLevel) const
 {
-    std::string condition = GetValidCondition(argument);
+    std::string condition = GetValidCondition(generator, argument);
 
     std::stringstream ss;
 

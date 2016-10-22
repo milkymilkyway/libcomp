@@ -477,9 +477,10 @@ public:
         return arg;
     }
 
-    virtual std::string GetValidCondition(const std::string& name,
-        bool recursive = false) const
+    virtual std::string GetValidCondition(const Generator& generator,
+        const std::string& name, bool recursive = false) const
     {
+        (void)generator;
         (void)recursive;
 
         std::string minimumCondition;

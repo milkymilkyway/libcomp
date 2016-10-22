@@ -145,7 +145,7 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
         if(var->IsInherited()) continue;
 
-        std::string validator = var->GetValidCondition(
+        std::string validator = var->GetValidCondition(*this,
             GetMemberName(var), true);
 
         if(!validator.empty())

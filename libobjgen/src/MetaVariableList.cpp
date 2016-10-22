@@ -134,28 +134,25 @@ std::string MetaVariableList::GetConstructValue() const
     return std::string();
 }
 
-std::string MetaVariableList::GetValidCondition(const std::string& name,
-    bool recursive) const
+std::string MetaVariableList::GetValidCondition(const Generator& generator,
+    const std::string& name, bool recursive) const
 {
+    (void)generator;
+
     std::string code;
 
     if(mElementType)
     {
-        code = mElementType->GetValidCondition("value", recursive);
+        code = mElementType->GetValidCondition(generator, "value", recursive);
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "for(auto value : " << name << ") { ";
-            ss << "if(!(" << code << ")) { ";
-            ss << "return false; ";
-            ss << "} ";
-            ss << "} ";
-            ss << "return true; ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_VALID_CODE@"] = code;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableArrayValidCondition",
+                replacements);
         }
     }
 
@@ -176,23 +173,14 @@ std::string MetaVariableList::GetLoadCode(const Generator& generator,
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "if(" << stream << ".dynamicSizes.empty()) ";
-            ss << "{ return false; } ";
-            ss << "uint16_t elementCount = " << stream
-                << ".dynamicSizes.front(); ";
-            ss << stream << ".dynamicSizes.pop_front(); ";
-            ss << "for(uint16_t i = 0; i < elementCount; ++i) { ";
-            ss << mElementType->GetCodeType() << " element; ";
-            ss << "if(!(" << code << ")) ";
-            ss << "{ return false; } ";
-            ss << name << ".push_back(element); ";
-            ss << "} ";
-            ss << "return " << stream << ".stream.good(); ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+            replacements["@VAR_LOAD_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableListLoad",
+                replacements);
         }
     }
 
@@ -213,19 +201,13 @@ std::string MetaVariableList::GetSaveCode(const Generator& generator,
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "for(auto element : " << name << ") { ";
-            ss << "if(!(" << code << ")) { ";
-            ss << "return false; ";
-            ss << "} ";
-            ss << "} ";
-            ss << stream << ".dynamicSizes.push_back(static_cast<uint16_t>("
-                << name << ".size())); ";
-            ss << "return " << stream << ".stream.good(); ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_SAVE_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableListSave",
+                replacements);
         }
     }
 
@@ -256,15 +238,13 @@ std::string MetaVariableList::GetXmlSaveCode(const Generator& generator,
 
     if(mElementType)
     {
-        std::stringstream ss;
-        ss << generator.Tab(tabLevel) << "for(auto element : "
-            << name << ")" << std::endl;
-        ss << generator.Tab(tabLevel) << "{" << std::endl;
-        ss << mElementType->GetXmlSaveCode(generator, "element", doc,
-            root, tabLevel + 1);
-        ss << generator.Tab(tabLevel) << "}" << std::endl;
+        std::map<std::string, std::string> replacements;
+        replacements["@VAR_NAME@"] = name;
+        replacements["@VAR_XML_SAVE_CODE@"] = mElementType->GetXmlSaveCode(
+            generator, "element", doc, root, tabLevel + 1);
 
-        code = ss.str();
+        code = generator.ParseTemplate(0, "VariableListXmlSave",
+            replacements);
     }
 
     return code;

@@ -394,9 +394,10 @@ std::string MetaVariableString::GetConstructValue() const
     return code;
 }
 
-std::string MetaVariableString::GetValidCondition(const std::string& name,
-    bool recursive) const
+std::string MetaVariableString::GetValidCondition(const Generator& generator,
+    const std::string& name, bool recursive) const
 {
+    (void)generator;
     (void)recursive;
 
     std::string regex = GetRegularExpression();
@@ -444,120 +445,44 @@ std::string MetaVariableString::GetLoadCode(const Generator& generator,
     if(MetaObject::IsValidIdentifier(name) &&
         MetaObject::IsValidIdentifier(stream))
     {
-        std::stringstream ss;
+        if(Encoding_t::ENCODING_UTF8 != mEncoding)
+        {
+            std::stringstream ss;
+            ss << name << " = libcomp::Convert::FromEncoding("
+                << EncodingToComp(mEncoding) << ", szValue); ";
+            code = ss.str();
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << name << " = szValue; ";
+            code = ss.str();
+        }
+
+        std::map<std::string, std::string> replacements;
+        replacements["@LENGTH_TYPE@"] = LengthSizeType();
+        replacements["@FIXED_LENGTH@"] = std::to_string(mSize + 1);
+        replacements["@SET_CODE@"] = code;
+        replacements["@STREAM@"] = stream;
 
         if(0 == mSize)
         {
             if(0 == mLengthSize)
             {
-                ss << "( [&]() -> bool { ";
-                ss << "std::vector<char> s; ";
-                ss << "char c; ";
-                ss << "do { ";
-                ss << stream << ".stream.read(&c, sizeof(c)); ";
-                ss << "if(" << stream << ".stream.good()) { ";
-                ss << "s.push_back(c); ";
-                ss << "} ";
-                ss << "} ";
-                ss << "while(0 != c && " << stream << ".stream.good()); ";
-                ss << "if(!" << stream << ".stream.good()) { return false; } ";
-
-                if(Encoding_t::ENCODING_UTF8 != mEncoding)
-                {
-                    ss << name << " = libcomp::Convert::FromEncoding("
-                        << EncodingToComp(mEncoding) << ", s); ";
-                }
-                else
-                {
-                    ss << name << " = s; ";
-                }
-
-                ss << "return " << stream << ".stream.good(); } )()";
+                code = generator.ParseTemplate(0, "VariableStringLoadNull",
+                    replacements);
             }
             else
             {
-#if 1
-            // This is the not retarted version.
-            ss << "( [&]() -> bool { ";
-            ss << LengthSizeType() << " len; ";
-            ss << stream << ".stream.read(reinterpret_cast<char*>(&len), "
-                << "sizeof(len)); ";
-            ss << "if(!" << stream << ".stream.good()) ";
-            ss << "{ return false; } ";
-            ss << "if(0 == len) ";
-            ss << "{ return true; } ";
-            ss << "char *szValue = new char[len + 1]; ";
-            ss << "szValue[len] = 0; ";
-            ss << stream << ".stream.read(szValue, len); ";
-            ss << "if(!" << stream << ".stream.good()) " ;
-            ss << "{ delete[] szValue; return false; } ";
-
-            if(Encoding_t::ENCODING_UTF8 != mEncoding)
-            {
-                ss << name << " = libcomp::Convert::FromEncoding("
-                    << EncodingToComp(mEncoding) << ", szValue); ";
-            }
-            else
-            {
-                ss << name << " = szValue; ";
-            }
-
-            ss << "delete[] szValue; ";
-            ss << "return " << stream << ".stream.good(); } )()";
-#else
-            ss << "( [&]() -> bool { ";
-            ss << LengthSizeType() << " len; ";
-            ss << "if(" << stream << ".dynamicSizes.empty()) ";
-            ss << "{ return false; } ";
-            ss << "len = static_cast<" << LengthSizeType() << ">("
-                << stream << ".dynamicSizes.front()); ";
-            ss << stream << ".dynamicSizes.pop_front(); ";
-            ss << "if(0 == len) ";
-            ss << "{ return true; } ";
-            ss << "char *szValue = new char[len + 1]; ";
-            ss << "szValue[len] = 0; ";
-            ss << stream << ".stream.read(szValue, len); ";
-            ss << "if(!" << stream << ".stream.good()) " ;
-            ss << "{ delete[] szValue; return false; } ";
-
-            if(Encoding_t::ENCODING_UTF8 != mEncoding)
-            {
-                ss << name << " = libcomp::Convert::FromEncoding("
-                    << EncodingToComp(mEncoding) << ", szValue); ";
-            }
-            else
-            {
-                ss << name << " = szValue; ";
-            }
-
-            ss << "delete[] szValue; ";
-            ss << "return " << stream << ".stream.good(); } )()";
-#endif
+                code = generator.ParseTemplate(0, "VariableStringLoadDynamic",
+                    replacements);
             }
         }
         else
         {
-            ss << "( [&]() -> bool { ";
-            ss << "char szValue[" << (mSize + 1) << "]; ";
-            ss << "szValue[" << mSize << "] = 0; ";
-            ss << stream << ".stream.read(szValue, sizeof(szValue) - 1); ";
-            ss << "if(!" << stream << ".stream.good())" ;
-            ss << "{ return false; } ";
-            
-            if(Encoding_t::ENCODING_UTF8 != mEncoding)
-            {
-                ss << name << " = libcomp::Convert::FromEncoding("
-                    << EncodingToComp(mEncoding) << ", szValue); ";
-            }
-            else
-            {
-                ss << name << " = szValue; ";
-            }
-
-            ss << "return " << stream << ".stream.good(); } )()";
+            code = generator.ParseTemplate(0, "VariableStringLoadFixed",
+                replacements);
         }
-
-        code = ss.str();
     }
 
     return code;
@@ -573,7 +498,11 @@ std::string MetaVariableString::GetSaveCode(const Generator& generator,
     if(MetaObject::IsValidIdentifier(name) &&
         MetaObject::IsValidIdentifier(stream))
     {
-        std::stringstream ss;
+        std::map<std::string, std::string> replacements;
+        replacements["@FIXED_LENGTH@"] = std::to_string(mSize);
+        replacements["@ENCODING@"] = EncodingToComp(mEncoding);
+        replacements["@VAR_NAME@"] = name;
+        replacements["@STREAM@"] = stream;
 
         if(0 == mSize)
         {
@@ -581,35 +510,20 @@ std::string MetaVariableString::GetSaveCode(const Generator& generator,
         }
         else
         {
-            ss << "( [&]() -> bool { ";
-            ss << "static const char zero[" << mSize << "] = { 0 }; ";
-
             if(Encoding_t::ENCODING_UTF8 != mEncoding)
             {
-                ss << "std::vector<char> value = libcomp::Convert::ToEncoding("
-                    << EncodingToComp(mEncoding) << ", " << name << "); ";
-                ss << "if(!value.empty()) { " << stream
-                    << ".stream.write(&value[0], "
-                    << "static_cast<std::streamsize>(value.size())); ";
+                replacements["@ENCODE_CODE@"] = generator.ParseTemplate(0,
+                    "VariableStringToEncoding", replacements);
             }
             else
             {
-                ss << "std::string value = " << name << ".ToUtf8(); ";
-                ss << "if(!value.empty()) { " << stream
-                    << ".stream.write(value.c_str(), "
-                    << "static_cast<std::streamsize>(value.size())); ";
+                replacements["@ENCODE_CODE@"] = generator.ParseTemplate(0,
+                    "VariableStringToUnicode", replacements);
             }
 
-            ss << " } ";
-            ss << "if(" << stream << ".stream.good() && " << mSize
-                << " != value.size()) { "
-                << stream << ".stream.write(zero, static_cast<std::streamsize>("
-                << mSize << ") - static_cast<std::streamsize>(value.size())); ";
-            ss << " } ";
-            ss << "return " << stream << ".stream.good(); } )()";
+            code = generator.ParseTemplate(0, "VariableStringSaveFixed",
+                replacements);
         }
-
-        code = ss.str();
     }
 
     return code;
@@ -620,58 +534,31 @@ std::string MetaVariableString::GetXmlLoadCode(const Generator& generator,
     const std::string& root, const std::string& members,
     size_t tabLevel) const
 {
-    (void)generator;
     (void)name;
     (void)doc;
     (void)root;
-    (void)members;
 
-    std::stringstream ss;
-    ss << generator.Tab(tabLevel) << "if(status)" << std::endl;
-    ss << generator.Tab(tabLevel) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "std::unordered_map<std::string, "
-        "const tinyxml2::XMLElement*>::const_iterator memberIterator = "
-        << members << ".find(" << generator.Escape(GetName())
-        << ");" << std::endl;
-    ss << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "if(memberIterator != "
-        << members << ".end())" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 2) << "const tinyxml2::XMLElement *pMember"
-        << " = memberIterator->second;" << std::endl;
-    ss << generator.Tab(tabLevel + 2) << "if(!Set" << generator.GetCapitalName(
-        *this) << "(GetXmlText(*pMember)))" << std::endl;
-    ss << generator.Tab(tabLevel + 2) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 3) << "status = false;" << std::endl;
-    ss << generator.Tab(tabLevel + 2) << "}" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "}" << std::endl;
-    ss << generator.Tab(tabLevel) << "}" << std::endl;
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+    replacements["@VAR_NAME@"] = generator.Escape(GetName());
+    replacements["@MEMBERS@"] = members;
 
-    return ss.str();
+    return generator.ParseTemplate(tabLevel, "VariableStringXmlLoad",
+        replacements);
 }
 
 std::string MetaVariableString::GetXmlSaveCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, size_t tabLevel) const
 {
-    (void)doc;
+    std::map<std::string, std::string> replacements;
+    replacements["@GETTER@"] = GetInternalGetterCode(generator, name);
+    replacements["@VAR_NAME@"] = generator.Escape(GetName());
+    replacements["@ROOT@"] = root;
+    replacements["@DOC@"] = doc;
 
-    std::stringstream ss;
-    ss << generator.Tab(tabLevel) << "{" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLElement *pMember = "
-        "doc.NewElement(\"member\");" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "pMember->SetAttribute(\"name\", "
-            << generator.Escape(GetName()) <<  ");" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "tinyxml2::XMLText *pText = "
-        "doc.NewText(" << GetInternalGetterCode(generator, name) << ".C());" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "pText->SetCData(true);" << std::endl;
-    ss << generator.Tab(tabLevel + 1) << "pMember->InsertEndChild(pText);"
-        << std::endl;
-    ss << generator.Tab(tabLevel + 1) << root << ".InsertEndChild(pMember);"
-        << std::endl;
-    ss << generator.Tab(tabLevel) << "}" << std::endl;
-
-    return ss.str();
+    return generator.ParseTemplate(tabLevel, "VariableStringXmlSave",
+        replacements);
 }
 
 std::string MetaVariableString::EncodingToString(Encoding_t encoding)

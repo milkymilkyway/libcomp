@@ -203,28 +203,23 @@ std::string MetaVariableArray::GetConstructValue() const
     }
 }
 
-std::string MetaVariableArray::GetValidCondition(const std::string& name,
-    bool recursive) const
+std::string MetaVariableArray::GetValidCondition(const Generator& generator,
+    const std::string& name, bool recursive) const
 {
     std::string code;
 
     if(mElementType)
     {
-        code = mElementType->GetValidCondition("value", recursive);
+        code = mElementType->GetValidCondition(generator, "value", recursive);
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "for(auto value : " << name << ") { ";
-            ss << "if(!(" << code << ")) { ";
-            ss << "return false; ";
-            ss << "} ";
-            ss << "} ";
-            ss << "return true; ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_VALID_CODE@"] = code;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableArrayValidCondition",
+                replacements);
         }
     }
 
@@ -245,17 +240,13 @@ std::string MetaVariableArray::GetLoadCode(const Generator& generator,
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "for(auto& value : " << name << ") { ";
-            ss << "if(!(" << code << ")) { ";
-            ss << "return false; ";
-            ss << "} ";
-            ss << "} ";
-            ss << "return " << stream << ".stream.good(); ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_LOAD_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableArrayLoad",
+                replacements);
         }
     }
 
@@ -276,17 +267,13 @@ std::string MetaVariableArray::GetSaveCode(const Generator& generator,
 
         if(!code.empty())
         {
-            std::stringstream ss;
-            ss << "( [&]() -> bool { ";
-            ss << "for(auto value : " << name << ") { ";
-            ss << "if(!(" << code << ")) { ";
-            ss << "return false; ";
-            ss << "} ";
-            ss << "} ";
-            ss << "return " << stream << ".stream.good(); ";
-            ss << "} )()";
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_SAVE_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
 
-            code = ss.str();
+            code = generator.ParseTemplate(0, "VariableArraySave",
+                replacements);
         }
     }
 
@@ -332,12 +319,13 @@ std::string MetaVariableArray::GetAccessDeclarations(const Generator& generator,
 
     if(mElementType)
     {
-        ss << generator.Tab(tabLevel) << mElementType->GetCodeType() << " Get"
-            << generator.GetCapitalName(*this)
-            << "(size_t index) const;" << std::endl;
-        ss << generator.Tab(tabLevel) << "bool Set"
-            << generator.GetCapitalName(*this) << "(size_t index, "
-            << mElementType->GetArgument(name) << ");" << std::endl;
+        std::map<std::string, std::string> replacements;
+        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+        replacements["@VAR_ARGUMENT@"] = mElementType->GetArgument(name);
+
+        ss << generator.ParseTemplate(tabLevel,
+            "VariableArrayAccessDeclarations", replacements);
     }
 
     return ss.str();
@@ -351,33 +339,19 @@ std::string MetaVariableArray::GetAccessFunctions(const Generator& generator,
 
     if(mElementType)
     {
-        ss << mElementType->GetCodeType() << " " << object.GetName()
-            << "::" << "Get" << generator.GetCapitalName(*this)
-            << "(size_t index) const" << std::endl;
-        ss << "{" << std::endl;
-        ss << generator.Tab(1) << "if(" << mElementCount
-            << " <= index)" << std::endl;
-        ss << generator.Tab(1) << "{" << std::endl;
-        ss << generator.Tab(2) << "return " << mElementType->GetCodeType()
-            << "{};" << std::endl;
-        ss << generator.Tab(1) << "}" << std::endl;
-        ss << mElementType->GetGetterCode(generator, name + "[index]");
-        ss << "}" << std::endl;
-        ss << std::endl;
+        std::map<std::string, std::string> replacements;
+        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+        replacements["@OBJECT_NAME@"] = object.GetName();
+        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+        replacements["@VAR_ARGUMENT@"] = mElementType->GetArgument(GetName());
+        replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
+        replacements["@VAR_GETTER_CODE@"] = mElementType->GetGetterCode(
+            generator, name + "[index]");
+        replacements["@VAR_SETTER_CODE@"] = mElementType->GetSetterCode(
+            generator, name + "[index]", GetName());
 
-        ss << "bool " << object.GetName() << "::" << "Set"
-            << generator.GetCapitalName(*this) << "(size_t index, "
-            << mElementType->GetArgument(GetName()) << ")" << std::endl;
-        ss << "{" << std::endl;
-        ss << generator.Tab(1) << "if(" << mElementCount
-            << " <= index)" << std::endl;
-        ss << generator.Tab(1) << "{" << std::endl;
-        ss << generator.Tab(2) << "return false;" << std::endl;
-        ss << generator.Tab(1) << "}" << std::endl;
-        ss << std::endl;
-        ss << mElementType->GetSetterCode(generator,
-            name + "[index]", GetName());
-        ss << "}" << std::endl;
+        ss << generator.ParseTemplate(0, "VariableArrayAccessFunctions",
+            replacements);
     }
 
     return ss.str();
