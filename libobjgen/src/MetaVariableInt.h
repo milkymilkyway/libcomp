@@ -70,6 +70,9 @@ public:
         return sizeof(T);
     }
 
+    // You must specialize this.
+    virtual MetaVariableType_t GetMetaType() const;
+
     virtual std::string GetType() const
     {
         std::stringstream ss;

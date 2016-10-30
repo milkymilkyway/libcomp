@@ -48,6 +48,11 @@ size_t MetaVariableReference::GetSize() const
     return 16u; // Size of a UUID.
 }
 
+MetaVariable::MetaVariableType_t MetaVariableReference::GetMetaType() const
+{
+    return MetaVariable::MetaVariableType_t::TYPE_REF;
+}
+
 std::string MetaVariableReference::GetType() const
 {
     return mReferenceType + "*";
@@ -124,6 +129,12 @@ bool MetaVariableReference::Save(tinyxml2::XMLDocument& doc,
 
     /// @todo Fix
     return BaseSave(root);
+}
+
+uint16_t MetaVariableReference::GetDynamicSizeCount() const
+{
+    /// @todo Lookup the reference type and call this for that type!
+    return 0;
 }
 
 std::string MetaVariableReference::GetCodeType() const

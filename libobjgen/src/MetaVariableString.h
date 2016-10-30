@@ -70,6 +70,8 @@ public:
     void SetSize(size_t size);
     virtual size_t GetSize() const;
 
+    virtual MetaVariableType_t GetMetaType() const;
+
     virtual std::string GetType() const;
 
     virtual bool IsCoreType() const;

@@ -55,6 +55,11 @@ std::shared_ptr<MetaVariable> MetaVariableList::GetElementType() const
     return mElementType;
 }
 
+MetaVariable::MetaVariableType_t MetaVariableList::GetMetaType() const
+{
+    return MetaVariable::MetaVariableType_t::TYPE_LIST;
+}
+
 std::string MetaVariableList::GetType() const
 {
     return "list";
@@ -112,6 +117,11 @@ bool MetaVariableList::Save(tinyxml2::XMLDocument& doc,
 
     /// @todo Fix
     return true;
+}
+
+uint16_t MetaVariableList::GetDynamicSizeCount() const
+{
+    return 1;
 }
 
 std::string MetaVariableList::GetCodeType() const

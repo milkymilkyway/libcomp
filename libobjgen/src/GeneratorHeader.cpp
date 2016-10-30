@@ -65,6 +65,9 @@ std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
     ss << Tab(2) << "tinyxml2::XMLElement& root) const;"
         << std::endl << std::endl;
 
+    ss << Tab() << "virtual uint16_t GetDynamicSizeCount() const;" << std::endl;
+    ss << std::endl;
+
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;

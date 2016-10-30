@@ -57,6 +57,11 @@ size_t MetaVariableArray::GetSize() const
     }
 }
 
+uint16_t MetaVariableArray::GetDynamicSizeCount() const
+{
+    return 1;
+}
+
 std::shared_ptr<MetaVariable> MetaVariableArray::GetElementType() const
 {
     return mElementType;
@@ -70,6 +75,11 @@ size_t MetaVariableArray::GetElementCount() const
 void MetaVariableArray::SetElementCount(size_t elementCount)
 {
     mElementCount = elementCount;
+}
+
+MetaVariable::MetaVariableType_t MetaVariableArray::GetMetaType() const
+{
+    return MetaVariable::MetaVariableType_t::TYPE_ARRAY;
 }
 
 std::string MetaVariableArray::GetType() const

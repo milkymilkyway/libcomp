@@ -129,6 +129,11 @@ void MetaVariableString::SetSize(size_t size)
     mSize = size;
 }
 
+MetaVariable::MetaVariableType_t MetaVariableString::GetMetaType() const
+{
+    return MetaVariable::MetaVariableType_t::TYPE_STRING;
+}
+
 std::string MetaVariableString::GetType() const
 {
     return "string";

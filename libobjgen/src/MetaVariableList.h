@@ -43,6 +43,8 @@ public:
 
     std::shared_ptr<MetaVariable> GetElementType() const;
 
+    virtual MetaVariableType_t GetMetaType() const;
+
     virtual std::string GetType() const;
 
     virtual bool IsCoreType() const;
@@ -57,6 +59,8 @@ public:
         const tinyxml2::XMLElement& root);
     virtual bool Save(tinyxml2::XMLDocument& doc,
         tinyxml2::XMLElement& root) const;
+
+    virtual uint16_t GetDynamicSizeCount() const;
 
     virtual std::string GetCodeType() const;
     virtual std::string GetConstructValue() const;

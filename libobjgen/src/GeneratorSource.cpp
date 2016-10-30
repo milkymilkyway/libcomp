@@ -298,6 +298,13 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << "}" << std::endl;
     ss << std::endl;
 
+    ss << "uint16_t " << obj.GetName()
+        << "::GetDynamicSizeCount() const" << std::endl;
+    ss << "{" << std::endl;
+    ss << Tab() << "return " << obj.GetDynamicSizeCount() << ";" << std::endl;
+    ss << "}" << std::endl;
+    ss << std::endl;
+
     // Accessor Functions
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {

@@ -33,6 +33,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <list>
+#include <memory>
 
 // tinyxml2 Includes
 #include <PushIgnore.h>
@@ -70,6 +71,15 @@ public:
 
     virtual bool Load(ObjectInStream& stream) = 0;
     virtual bool Save(ObjectOutStream& stream) const  = 0;
+
+    //virtual bool Load(std::istream& stream) = 0;
+    //virtual bool Save(std::ostream& stream) const  = 0;
+
+    virtual uint16_t GetDynamicSizeCount() const = 0;
+
+    static std::list<std::shared_ptr<Object>> LoadBinaryData(
+        std::istream& stream, const std::function<
+        std::shared_ptr<Object>()>& objectAllocator);
 
 protected:
     virtual std::unordered_map<std::string, const tinyxml2::XMLElement*>
