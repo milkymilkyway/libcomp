@@ -103,8 +103,8 @@ script:
   - sudo mkdir /etc/comp_hack
   - sudo cp contrib/testing/lobby.xml /etc/comp_hack/
   - mkdir -p build && cd build && cmake -G "${GENERATOR}" .. && cmake --build .
-  - make doc
-  - make guide
+  - cmake --build . --target doc
+  - cmake --build . --target guide
   - bin/comp_lobby &
   - sleep 10
   - nodetool status
