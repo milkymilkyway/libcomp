@@ -290,6 +290,18 @@ std::string MetaVariableArray::GetSaveCode(const Generator& generator,
     return code;
 }
 
+std::string MetaVariableArray::GetLoadRawCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
+{
+    return GetLoadCode(generator, name, stream);
+}
+
+std::string MetaVariableArray::GetSaveRawCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
+{
+    return GetSaveCode(generator, name, stream);
+}
+
 std::string MetaVariableArray::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, const std::string& members,

@@ -56,6 +56,11 @@ std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
     ss << Tab() << "virtual bool Save(libcomp::ObjectOutStream& stream) const;"
         << std::endl << std::endl;
 
+    ss << Tab() << "virtual bool Load(std::istream& stream);"
+        << std::endl << std::endl;
+    ss << Tab() << "virtual bool Save(std::ostream& stream) const;"
+        << std::endl << std::endl;
+
     ss << Tab() << "virtual bool Load("
         "const tinyxml2::XMLDocument& doc, " << std::endl;
     ss << Tab(2) << "const tinyxml2::XMLElement& root);"

@@ -114,6 +114,10 @@ public:
         const std::string& name, const std::string& stream) const = 0;
     virtual std::string GetSaveCode(const Generator& generator,
         const std::string& name, const std::string& stream) const = 0;
+    virtual std::string GetLoadRawCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const = 0;
+    virtual std::string GetSaveRawCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const = 0;
     virtual std::string GetXmlLoadCode(const Generator& generator,
         const std::string& name, const std::string& doc,
         const std::string& root, const std::string& members,

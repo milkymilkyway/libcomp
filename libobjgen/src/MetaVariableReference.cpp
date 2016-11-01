@@ -202,6 +202,28 @@ std::string MetaVariableReference::GetSaveCode(const Generator& generator,
         replacements);
 }
 
+std::string MetaVariableReference::GetLoadRawCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
+{
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@STREAM@"] = stream;
+
+    return generator.ParseTemplate(0, "VariableReferenceLoadRaw",
+        replacements);
+}
+
+std::string MetaVariableReference::GetSaveRawCode(const Generator& generator,
+    const std::string& name, const std::string& stream) const
+{
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@STREAM@"] = stream;
+
+    return generator.ParseTemplate(0, "VariableReferenceSaveRaw",
+        replacements);
+}
+
 std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
     const std::string& root, const std::string& members,

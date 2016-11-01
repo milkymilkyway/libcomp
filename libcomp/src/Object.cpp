@@ -26,14 +26,33 @@
 
 #include "Object.h"
 
+// libcomp Includes
+#include <ReadOnlyPacket.h>
+#include <VectorStream.h>
+
 using namespace libcomp;
 
-Object::Object()
+Object::Object() : mUUID()
 {
 }
 
 Object::~Object()
 {
+}
+
+bool Object::LoadPacket(libcomp::ReadOnlyPacket& p)
+{
+    std::vector<char> data;
+
+    if(0 != p.Left())
+    {
+        data = p.ReadArray(p.Left());
+    }
+
+    VectorStream<char> buffer(data);
+    std::istream in(&buffer);
+
+    return Load(in);
 }
 
 std::unordered_map<std::string, const tinyxml2::XMLElement*>
@@ -141,4 +160,9 @@ std::list<std::shared_ptr<Object>> Object::LoadBinaryData(
     }
 
     return objects;
+}
+
+libobjgen::UUID Object::GetUUID() const
+{
+    return mUUID;
 }

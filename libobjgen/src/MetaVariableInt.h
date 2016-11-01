@@ -551,6 +551,18 @@ public:
     virtual std::string GetLoadCode(const Generator& generator,
         const std::string& name, const std::string& stream) const
     {
+        return GetLoadRawCode(generator, name, stream + std::string(".stream"));
+    }
+
+    virtual std::string GetSaveCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const
+    {
+        return GetSaveRawCode(generator, name, stream + std::string(".stream"));
+    }
+
+    virtual std::string GetLoadRawCode(const Generator& generator,
+        const std::string& name, const std::string& stream) const
+    {
         (void)generator;
 
         std::string code;
@@ -569,7 +581,7 @@ public:
         return code;
     }
 
-    virtual std::string GetSaveCode(const Generator& generator,
+    virtual std::string GetSaveRawCode(const Generator& generator,
         const std::string& name, const std::string& stream) const
     {
         (void)generator;

@@ -27,6 +27,9 @@
 #ifndef LIBCOMP_SRC_OBJECT_H
 #define LIBCOMP_SRC_OBJECT_H
 
+// libobjgen Includes
+#include <UUID.h>
+
 // Standard C++11 Includes
 #include <stdint.h>
 #include <istream>
@@ -42,6 +45,8 @@
 
 namespace libcomp
 {
+
+class ReadOnlyPacket;
 
 class ObjectInStream
 {
@@ -72,8 +77,10 @@ public:
     virtual bool Load(ObjectInStream& stream) = 0;
     virtual bool Save(ObjectOutStream& stream) const  = 0;
 
-    //virtual bool Load(std::istream& stream) = 0;
-    //virtual bool Save(std::ostream& stream) const  = 0;
+    virtual bool Load(std::istream& stream) = 0;
+    virtual bool Save(std::ostream& stream) const  = 0;
+
+    virtual bool LoadPacket(libcomp::ReadOnlyPacket& p);
 
     virtual uint16_t GetDynamicSizeCount() const = 0;
 
@@ -81,10 +88,14 @@ public:
         std::istream& stream, const std::function<
         std::shared_ptr<Object>()>& objectAllocator);
 
+    libobjgen::UUID GetUUID() const;
+
 protected:
     virtual std::unordered_map<std::string, const tinyxml2::XMLElement*>
         GetXmlMembers(const tinyxml2::XMLElement& root) const;
     virtual std::string GetXmlText(const tinyxml2::XMLElement& root) const;
+
+    libobjgen::UUID mUUID;
 };
 
 } // namespace libcomp
