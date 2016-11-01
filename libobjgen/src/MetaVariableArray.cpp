@@ -253,7 +253,7 @@ std::string MetaVariableArray::GetLoadCode(const Generator& generator,
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
             replacements["@VAR_LOAD_CODE@"] = code;
-            replacements["@STREAM@"] = stream;
+            replacements["@STREAM@"] = stream + std::string(".stream");
 
             code = generator.ParseTemplate(0, "VariableArrayLoad",
                 replacements);
@@ -280,7 +280,7 @@ std::string MetaVariableArray::GetSaveCode(const Generator& generator,
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
             replacements["@VAR_SAVE_CODE@"] = code;
-            replacements["@STREAM@"] = stream;
+            replacements["@STREAM@"] = stream + std::string(".stream");
 
             code = generator.ParseTemplate(0, "VariableArraySave",
                 replacements);
@@ -293,13 +293,55 @@ std::string MetaVariableArray::GetSaveCode(const Generator& generator,
 std::string MetaVariableArray::GetLoadRawCode(const Generator& generator,
     const std::string& name, const std::string& stream) const
 {
-    return GetLoadCode(generator, name, stream);
+    (void)generator;
+
+    std::string code;
+
+    if(mElementType && MetaObject::IsValidIdentifier(name) &&
+        MetaObject::IsValidIdentifier(stream))
+    {
+        code = mElementType->GetLoadRawCode(generator, "value", stream);
+
+        if(!code.empty())
+        {
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_LOAD_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
+
+            code = generator.ParseTemplate(0, "VariableArrayLoad",
+                replacements);
+        }
+    }
+
+    return code;
 }
 
 std::string MetaVariableArray::GetSaveRawCode(const Generator& generator,
     const std::string& name, const std::string& stream) const
 {
-    return GetSaveCode(generator, name, stream);
+    (void)generator;
+
+    std::string code;
+
+    if(mElementType && MetaObject::IsValidIdentifier(name) &&
+        MetaObject::IsValidIdentifier(stream))
+    {
+        code = mElementType->GetSaveRawCode(generator, "value", stream);
+
+        if(!code.empty())
+        {
+            std::map<std::string, std::string> replacements;
+            replacements["@VAR_NAME@"] = name;
+            replacements["@VAR_SAVE_CODE@"] = code;
+            replacements["@STREAM@"] = stream;
+
+            code = generator.ParseTemplate(0, "VariableArraySave",
+                replacements);
+        }
+    }
+
+    return code;
 }
 
 std::string MetaVariableArray::GetXmlLoadCode(const Generator& generator,

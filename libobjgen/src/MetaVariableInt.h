@@ -567,8 +567,7 @@ public:
 
         std::string code;
 
-        if(MetaObject::IsValidIdentifier(name) &&
-            MetaObject::IsValidIdentifier(stream))
+        if(MetaObject::IsValidIdentifier(name))
         {
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
@@ -588,8 +587,7 @@ public:
 
         std::string code;
 
-        if(MetaObject::IsValidIdentifier(name) &&
-            MetaObject::IsValidIdentifier(stream))
+        if(MetaObject::IsValidIdentifier(name))
         {
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
