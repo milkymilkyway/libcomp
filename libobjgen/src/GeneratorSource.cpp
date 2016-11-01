@@ -227,9 +227,9 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
     // Load (raw binary)
     ss << "bool " << obj.GetName()
-        << "::Load(std::istream& stream)" << std::endl;
+        << "::Load(std::istream& stream, bool flat)" << std::endl;
     ss << "{" << std::endl;
-    ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Load(stream)") + ";" << std::endl;
+    ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Load(stream, flat)") + ";" << std::endl;
 
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
@@ -257,11 +257,11 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
     // Save (raw binary)
     ss << "bool " << obj.GetName()
-        << "::Save(std::ostream& stream) const" << std::endl;
+        << "::Save(std::ostream& stream, bool flat) const" << std::endl;
     ss << "{" << std::endl;
     ss << Tab() << "(void)stream;" << std::endl; /// @todo fix
     ss << std::endl;
-    ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Save(stream)") + "; " << std::endl;
+    ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Save(stream, flat)") + "; " << std::endl;
 
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {

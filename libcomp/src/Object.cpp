@@ -27,8 +27,9 @@
 #include "Object.h"
 
 // libcomp Includes
+#include <Packet.h>
+#include <PacketStream.h>
 #include <ReadOnlyPacket.h>
-#include <VectorStream.h>
 
 using namespace libcomp;
 
@@ -42,17 +43,18 @@ Object::~Object()
 
 bool Object::LoadPacket(libcomp::ReadOnlyPacket& p)
 {
-    std::vector<char> data;
-
-    if(0 != p.Left())
-    {
-        data = p.ReadArray(p.Left());
-    }
-
-    VectorStream<char> buffer(data);
+    ReadOnlyPacketStream buffer(p);
     std::istream in(&buffer);
 
-    return Load(in);
+    return Load(in, true);
+}
+
+bool Object::SavePacket(libcomp::Packet& p) const
+{
+    PacketStream buffer(p);
+    std::ostream out(&buffer);
+
+    return Save(out, true);
 }
 
 std::unordered_map<std::string, const tinyxml2::XMLElement*>

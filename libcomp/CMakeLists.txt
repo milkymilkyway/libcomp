@@ -146,6 +146,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Packet.h
     src/PacketException.h
     #src/PacketScript.h
+    src/PacketStream.h
     src/PEFile.h
     src/PEFormat.h
     #src/Platform.h

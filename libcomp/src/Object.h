@@ -46,6 +46,7 @@
 namespace libcomp
 {
 
+class Packet;
 class ReadOnlyPacket;
 
 class ObjectInStream
@@ -77,10 +78,16 @@ public:
     virtual bool Load(ObjectInStream& stream) = 0;
     virtual bool Save(ObjectOutStream& stream) const  = 0;
 
-    virtual bool Load(std::istream& stream) = 0;
-    virtual bool Save(std::ostream& stream) const  = 0;
+    virtual bool Load(std::istream& stream, bool flat = false) = 0;
+    virtual bool Save(std::ostream& stream, bool flat = false) const  = 0;
+
+    virtual bool Load(const tinyxml2::XMLDocument& doc,
+        const tinyxml2::XMLElement& root) = 0;
+    virtual bool Save(tinyxml2::XMLDocument& doc,
+        tinyxml2::XMLElement& root) const = 0;
 
     virtual bool LoadPacket(libcomp::ReadOnlyPacket& p);
+    virtual bool SavePacket(libcomp::Packet& p) const;
 
     virtual uint16_t GetDynamicSizeCount() const = 0;
 
