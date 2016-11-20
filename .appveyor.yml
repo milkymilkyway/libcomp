@@ -21,4 +21,4 @@ before_build:
 
 build_script:
   - cmake -DCMAKE_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
-  - nmake
+  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%platform%"
