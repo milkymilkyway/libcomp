@@ -14,6 +14,10 @@ configuration:
 init:
   - if platform==x64 (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015_64) else (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015)
   - if platform==x64 (set generator=Visual Studio 14 2015 Win64) else (set generator=Visual Studio 14 2015)
+  - if platform==x64 (set msplatform=x64) else (set msplatform=Win32)
+  - echo "Platform:      %platform%"
+  - echo "MS Platform:   %msplatform%"
+  - echo "Configuration: %configuration%"
 
 before_build:
   - md build
@@ -21,4 +25,4 @@ before_build:
 
 build_script:
   - cmake -DCMAKE_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
-  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%platform%"
+  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%msplatform%"
