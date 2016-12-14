@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/Database.h
+ * @file libcomp/src/ConnectionMessage.h
  * @ingroup libcomp
  *
- * @author COMP Omega <compomega@tutanota.com>
+ * @author HACKfrost
  *
- * @brief Base class to handle the database.
+ * @brief Base message class for connection based messages.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,36 +24,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCOMP_SRC_DATABASE_H
-#define LIBCOMP_SRC_DATABASE_H
+#include "Message.h"
 
-// libcomp Includes
-#include "CString.h"
-#include "DatabaseQuery.h"
+#ifndef LIBCOMP_SRC_CONNECTIONMESSAGE_H
+#define LIBCOMP_SRC_CONNECTIONMESSAGE_H
 
 namespace libcomp
 {
 
-class Database
+namespace Message
+{
+
+enum class ConnectionMessageType
+{
+    CONNECTION_MESSAGE_ENCRYPTED,
+    CONNECTION_MESSAGE_CONNECTION_CLOSED,
+    CONNECTION_MESSAGE_WORLD_NOTIFICATION,
+};
+
+class ConnectionMessage : public Message
 {
 public:
-    virtual bool Open(const String& address, const String& username = String(),
-        const String& password = String()) = 0;
-    virtual bool Close() = 0;
-    virtual bool IsOpen() const = 0;
+    virtual ~ConnectionMessage() { }
 
-    virtual DatabaseQuery Prepare(const String& query) = 0;
-    virtual bool Execute(const String& query);
-    virtual bool Exists() = 0;
-    virtual bool Setup() = 0;
-    virtual bool Use() = 0;
-
-    String GetLastError() const;
-
-protected:
-    String mError;
+    virtual MessageType GetType() const { return MessageType::MESSAGE_TYPE_CONNECTION; }
+    virtual ConnectionMessageType GetConnectionMessageType() const = 0;
 };
+
+} // namespace Message
 
 } // namespace libcomp
 
-#endif // LIBCOMP_SRC_DATABASE_H
+#endif // LIBCOMP_SRC_CONNECTIONMESSAGE_H

@@ -62,6 +62,7 @@ SET(${PROJECT_NAME}_SRCS
     src/LobbyConnection.cpp
     src/Log.cpp
     #src/MemoryFile.cpp
+    src/MessageConnectionClosed.cpp
     src/MessageEncrypted.cpp
     src/MessagePacket.cpp
     src/MessagePong.cpp
@@ -97,6 +98,7 @@ SET(${PROJECT_NAME}_HDRS
     src/BaseServer.h
     src/ChannelConnection.h
     src/Compress.h
+    src/ConnectionMessage.h
     src/Constants.h
     src/Convert.h
     src/CString.h
@@ -121,6 +123,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Manager.h
     #src/MemoryFile.h
     src/Message.h
+    src/MessageConnectionClosed.h
     src/MessageEncrypted.h
     src/MessagePacket.h
     src/MessagePong.h
@@ -129,6 +132,7 @@ SET(${PROJECT_NAME}_HDRS
     src/MessageWorldNotification.h
     src/Object.h
     src/Packet.h
+    src/PacketCodes.h
     src/PacketException.h
     #src/PacketScript.h
     src/PacketStream.h
@@ -173,10 +177,14 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     schema
 
     # Output files
+    ChannelDescription.h
+    ChannelDescription.cpp
     ServerConfig.h
     ServerConfig.cpp
     TestObject.h
     TestObject.cpp
+    WorldDescription.h
+    WorldDescription.cpp
 )
 
 ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}

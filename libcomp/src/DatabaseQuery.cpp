@@ -68,6 +68,14 @@ bool DatabaseQueryImpl::GetMap(const String& name, std::unordered_map<
     return false;
 }
 
+bool DatabaseQueryImpl::GetRows(std::list<std::unordered_map<
+    std::string, std::vector<char>>>& rows)
+{
+    (void)rows;
+
+    return false;
+}
+
 DatabaseQuery::DatabaseQuery(DatabaseQueryImpl *pImpl, const String& query) :
     mImpl(pImpl)
 {
@@ -204,6 +212,19 @@ bool DatabaseQuery::GetMap(const String& name, std::unordered_map<
     if(nullptr != mImpl)
     {
         result = mImpl->GetMap(name, values);
+    }
+
+    return result;
+}
+
+bool DatabaseQuery::GetRows(std::list<std::unordered_map<
+    std::string, std::vector<char>>>& rows)
+{
+    bool result = false;
+
+    if(nullptr != mImpl)
+    {
+        result = mImpl->GetRows(rows);
     }
 
     return result;

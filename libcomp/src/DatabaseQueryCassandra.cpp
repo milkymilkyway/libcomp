@@ -513,6 +513,60 @@ bool DatabaseQueryCassandra::GetMap(const String& name,
     return result;
 }
 
+bool DatabaseQueryCassandra::GetRows(std::list<std::unordered_map<
+    std::string, std::vector<char>> >& rows)
+{
+    bool result = true;
+
+    if(nullptr != mResult)
+    {
+        size_t colCount = cass_result_column_count(mResult);
+
+        std::vector<std::string> colNames;
+        for(size_t i = 0; i < colCount; i++)
+        {
+            const char* colName;
+            size_t nameLength;
+            cass_result_column_name(mResult, i, &colName, &nameLength);
+            colNames.push_back(std::string(colName, nameLength));
+        }
+
+        CassIterator* rowIter = cass_iterator_from_result(mResult);
+
+        while(cass_iterator_next(rowIter))
+        {
+            const CassRow* pRow = cass_iterator_get_row(rowIter);
+            std::unordered_map<std::string, std::vector<char>> m;
+            for(size_t k = 0; k < colCount; k++)
+            {
+                const CassValue* pValue = cass_row_get_column(pRow, k);
+
+                const cass_byte_t *pValueData;
+                size_t valueSize;
+
+                if(CASS_OK == cass_value_get_bytes(pValue, &pValueData, &valueSize))
+                {
+                    std::vector<char> value;
+                    value.insert(value.begin(),
+                        reinterpret_cast<const char*>(pValueData),
+                        reinterpret_cast<const char*>(pValueData) +
+                        valueSize);
+
+                    auto colName = colNames[k];
+                    m[colName] = value;
+                }
+                else
+                {
+                    result = false;
+                }
+            }
+            rows.push_back(m);
+        }
+    }
+
+    return result;
+}
+
 bool DatabaseQueryCassandra::BatchNext()
 {
     bool result = false;

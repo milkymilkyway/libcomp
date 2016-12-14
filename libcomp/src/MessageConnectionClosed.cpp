@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/Database.h
+ * @file libcomp/src/MessageConnectionClosed.cpp
  * @ingroup libcomp
  *
- * @author COMP Omega <compomega@tutanota.com>
+ * @author HACKfrost
  *
- * @brief Base class to handle the database.
+ * @brief Indicates that a connection has closed and should be cleaned up.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,36 +24,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCOMP_SRC_DATABASE_H
-#define LIBCOMP_SRC_DATABASE_H
+#include "MessageConnectionClosed.h"
 
-// libcomp Includes
-#include "CString.h"
-#include "DatabaseQuery.h"
+using namespace libcomp;
 
-namespace libcomp
+Message::ConnectionClosed::ConnectionClosed(std::shared_ptr<TcpConnection> connection) :
+    mConnection(connection)
 {
+}
 
-class Database
+Message::ConnectionClosed::~ConnectionClosed()
 {
-public:
-    virtual bool Open(const String& address, const String& username = String(),
-        const String& password = String()) = 0;
-    virtual bool Close() = 0;
-    virtual bool IsOpen() const = 0;
+}
 
-    virtual DatabaseQuery Prepare(const String& query) = 0;
-    virtual bool Execute(const String& query);
-    virtual bool Exists() = 0;
-    virtual bool Setup() = 0;
-    virtual bool Use() = 0;
+std::shared_ptr<TcpConnection> Message::ConnectionClosed::GetConnection() const
+{
+    return mConnection;
+}
 
-    String GetLastError() const;
-
-protected:
-    String mError;
-};
-
-} // namespace libcomp
-
-#endif // LIBCOMP_SRC_DATABASE_H
+Message::ConnectionMessageType Message::ConnectionClosed::GetConnectionMessageType() const
+{
+    return ConnectionMessageType::CONNECTION_MESSAGE_CONNECTION_CLOSED;
+}
