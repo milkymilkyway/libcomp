@@ -57,6 +57,31 @@ bool Object::SavePacket(libcomp::Packet& p) const
     return Save(out, true);
 }
 
+const tinyxml2::XMLElement*
+    Object::GetXmlChild(const tinyxml2::XMLElement& root, const std::string name) const
+{
+    auto children = GetXmlChildren(root, name);
+    return children.size() > 0 ? children.front() : nullptr;
+}
+
+const std::list<const tinyxml2::XMLElement*>
+    Object::GetXmlChildren(const tinyxml2::XMLElement& root, const std::string name) const
+{
+    std::list<const tinyxml2::XMLElement*> retval;
+
+    const tinyxml2::XMLElement *cMember = root.FirstChildElement();
+    while(nullptr != cMember)
+    {
+        if(name == cMember->Name())
+        {
+            retval.push_back(cMember);
+        }
+
+        cMember = cMember->NextSiblingElement();
+    }
+    return retval;
+}
+
 std::unordered_map<std::string, const tinyxml2::XMLElement*>
     Object::GetXmlMembers(const tinyxml2::XMLElement& root) const
 {

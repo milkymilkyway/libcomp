@@ -1,10 +1,10 @@
 /**
- * @file libobjgen/src/MetaVariableReference.h
+ * @file libobjgen/src/MetaVariableMap.h
  * @ingroup libobjgen
  *
- * @author COMP Omega <compomega@tutanota.com>
+ * @author HACKfrost
  *
- * @brief Meta data for a member variable that is a reference to another object.
+ * @brief Meta data for a member variable that is a map of variables.
  *
  * This file is part of the COMP_hack Object Generator Library (libobjgen).
  *
@@ -24,8 +24,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBOBJGEN_SRC_METAVARIABLEREFERENCE_H
-#define LIBOBJGEN_SRC_METAVARIABLEREFERENCE_H
+#ifndef LIBOBJGEN_SRC_METAVARIABLEMAP_H
+#define LIBOBJGEN_SRC_METAVARIABLEMAP_H
 
 // libobjgen Includes
 #include "MetaVariable.h"
@@ -33,20 +33,21 @@
 namespace libobjgen
 {
 
-class MetaVariableReference : public MetaVariable
+class MetaVariableMap : public MetaVariable
 {
 public:
-    MetaVariableReference();
-    virtual ~MetaVariableReference();
+    MetaVariableMap(const std::shared_ptr<MetaVariable>& keyElementType,
+                    const std::shared_ptr<MetaVariable>& valueElementType);
+    virtual ~MetaVariableMap();
 
     virtual size_t GetSize() const;
+
+    std::shared_ptr<MetaVariable> GetKeyElementType() const;
+    std::shared_ptr<MetaVariable> GetValueElementType() const;
 
     virtual MetaVariableType_t GetMetaType() const;
 
     virtual std::string GetType() const;
-
-    std::string GetReferenceType() const;
-    bool SetReferenceType(const std::string& referenceType);
 
     virtual bool IsCoreType() const;
     virtual bool IsValid() const;
@@ -83,10 +84,22 @@ public:
         const std::string& parent, size_t tabLevel = 1,
         const std::string elemName = "member") const;
 
+    virtual std::string GetAccessDeclarations(const Generator& generator,
+        const MetaObject& object, const std::string& name,
+        size_t tabLevel = 1) const;
+    virtual std::string GetAccessFunctions(const Generator& generator,
+        const MetaObject& object, const std::string& name) const;
+    virtual std::string GetUtilityDeclarations(const Generator& generator,
+        const std::string& name, size_t tabLevel = 1) const;
+    virtual std::string GetUtilityFunctions(const Generator& generator,
+        const MetaObject& object, const std::string& name) const;
+
 private:
-    std::string mReferenceType;
+    std::shared_ptr<MetaVariable> mKeyElementType;
+
+    std::shared_ptr<MetaVariable> mValueElementType;
 };
 
 } // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLEREFERENCE_H
+#endif // LIBOBJGEN_SRC_METAVARIABLEMAP_H

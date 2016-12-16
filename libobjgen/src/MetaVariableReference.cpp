@@ -83,9 +83,8 @@ bool MetaVariableReference::IsCoreType() const
 
 bool MetaVariableReference::IsValid() const
 {
-    /// @todo Fix
-    return MetaObject::IsValidIdentifier(mReferenceType) &&
-        MetaObject::IsValidIdentifier(GetName());
+    // Validating that the object exists happens elsewhere
+    return MetaObject::IsValidIdentifier(mReferenceType);
 }
 
 bool MetaVariableReference::IsValid(const void *pData, size_t dataSize) const
@@ -125,34 +124,19 @@ bool MetaVariableReference::Load(const tinyxml2::XMLDocument& doc,
 
     bool status = true;
 
-    const char *szRType = root.Attribute("rtype");
-
-    if(nullptr != szRType)
-    {
-        SetReferenceType(std::string(szRType));
-    }
-    else
-    {
-        mError = "Reference type is required.";
-        status = false;
-    }
+    //Reference type should already be set
 
     return status && BaseLoad(root) && IsValid();
 }
 
 bool MetaVariableReference::Save(tinyxml2::XMLDocument& doc,
-    tinyxml2::XMLElement& root) const
+    tinyxml2::XMLElement& parent, const char* elementName) const
 {
-    tinyxml2::XMLElement *pVariableElement = doc.NewElement("member");
-    pVariableElement->SetAttribute("type", GetType().c_str());
+    tinyxml2::XMLElement *pVariableElement = doc.NewElement(elementName);
+    pVariableElement->SetAttribute("type", (GetReferenceType() + "*").c_str());
     pVariableElement->SetAttribute("name", GetName().c_str());
 
-    if(!GetReferenceType().empty())
-    {
-        pVariableElement->SetAttribute("rtype", GetReferenceType().c_str());
-    }
-
-    root.InsertEndChild(pVariableElement);
+    parent.InsertEndChild(pVariableElement);
 
     return BaseSave(*pVariableElement);
 }
@@ -252,15 +236,15 @@ std::string MetaVariableReference::GetSaveRawCode(const Generator& generator,
 
 std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
     const std::string& name, const std::string& doc,
-    const std::string& root, const std::string& members,
-    size_t tabLevel) const
+    const std::string& node, size_t tabLevel) const
 {
-    (void)members;
+    (void)node;
 
     std::map<std::string, std::string> replacements;
     replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_CODE_TYPE@"] = GetCodeType();
     replacements["@DOC@"] = doc;
-    replacements["@ROOT@"] = root;
+    replacements["@PARENT@"] = node;
 
     return generator.ParseTemplate(tabLevel, "VariableReferenceXmlLoad",
         replacements);
@@ -268,12 +252,16 @@ std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
 
 std::string MetaVariableReference::GetXmlSaveCode(const Generator& generator,
     const std::string& name, const std::string& doc,
-    const std::string& root, size_t tabLevel) const
+    const std::string& parent, size_t tabLevel, const std::string elemName) const
 {
+    (void)name;
+
     std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_NAME@"] = generator.Escape(GetName());
+    replacements["@VAR_XML_NAME@"] = GetName();
+    replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
     replacements["@DOC@"] = doc;
-    replacements["@ROOT@"] = root;
+    replacements["@PARENT@"] = parent;
 
     return generator.ParseTemplate(tabLevel, "VariableReferenceXmlSave",
         replacements);

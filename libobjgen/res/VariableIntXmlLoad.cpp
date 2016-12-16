@@ -1,24 +1,13 @@
-if (status)
+([&]() -> @VAR_CODE_TYPE@
 {
-    std::unordered_map<std::string,
-        const tinyxml2::XMLElement*>::const_iterator memberIterator =
-        @MEMBERS@.find(@VAR_NAME@);
-
-    if(memberIterator != @MEMBERS@.end())
+    try
     {
-        const tinyxml2::XMLElement *pMember = memberIterator->second;
-
-        try
-        {
-            long val = std::stol(GetXmlText(*pMember));
-            if (!Set@VAR_CAMELCASE_NAME@((@VAR_CODE_TYPE@)val))
-            {
-                status = false;
-            }
-        }
-        catch(...)
-        {
-            status = false;
-        }
+        auto retval = libcomp::String(GetXmlText(*@NODE@)).ToInteger<@VAR_CODE_TYPE@>(&status);
+        return status ? retval : @VAR_CODE_TYPE@{};
     }
-}
+    catch (...)
+    {
+        status = false;
+        return @VAR_CODE_TYPE@{};
+    }
+})()

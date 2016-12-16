@@ -67,6 +67,7 @@ public:
         TYPE_STRING,
         TYPE_ARRAY,
         TYPE_LIST,
+        TYPE_MAP,
         TYPE_REF,
     };
 
@@ -104,7 +105,7 @@ public:
     virtual bool Load(const tinyxml2::XMLDocument& doc,
         const tinyxml2::XMLElement& root) = 0;
     virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& root) const = 0;
+        tinyxml2::XMLElement& parent, const char* elementName) const = 0;
 
     virtual uint16_t GetDynamicSizeCount() const;
 
@@ -122,13 +123,14 @@ public:
         const std::string& name, const std::string& stream) const = 0;
     virtual std::string GetXmlLoadCode(const Generator& generator,
         const std::string& name, const std::string& doc,
-        const std::string& root, const std::string& members,
-        size_t tabLevel = 1) const = 0;
+        const std::string& node, size_t tabLevel = 1) const = 0;
     virtual std::string GetXmlSaveCode(const Generator& generator,
         const std::string& name, const std::string& doc,
-        const std::string& root, size_t tabLevel = 1) const = 0;
+        const std::string& parent, size_t tabLevel = 1,
+        const std::string elemName = "member") const = 0;
     virtual std::string GetDeclaration(const std::string& name) const;
     virtual std::string GetArgument(const std::string& name) const;
+    virtual std::string GetDefaultValueCode() const;
     virtual std::string GetGetterCode(const Generator& generator,
         const std::string& name, size_t tabLevel = 1) const;
     virtual std::string GetInternalGetterCode(const Generator& generator,
@@ -140,6 +142,10 @@ public:
         const MetaObject& object, const std::string& name,
         size_t tabLevel = 1) const;
     virtual std::string GetAccessFunctions(const Generator& generator,
+        const MetaObject& object, const std::string& name) const;
+    virtual std::string GetUtilityDeclarations(const Generator& generator,
+        const std::string& name, size_t tabLevel = 1) const;
+    virtual std::string GetUtilityFunctions(const Generator& generator,
         const MetaObject& object, const std::string& name) const;
     virtual std::string GetConstructorCode(const Generator& generator,
         const MetaObject& object, const std::string& name,

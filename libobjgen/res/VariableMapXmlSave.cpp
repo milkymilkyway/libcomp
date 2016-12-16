@@ -9,9 +9,17 @@
         @PARENT@ = pMember;
     }
 
-    for(auto element : @GETTER@)
+    for(auto kv : @GETTER@)
     {
-        @VAR_XML_SAVE_CODE@
+        {
+            auto element = kv.first;
+            @VAR_XML_KEY_SAVE_CODE@
+        }
+        
+        {
+            auto element = kv.second;
+            @VAR_XML_VALUE_SAVE_CODE@
+        }
     }
 
     @PARENT@ = temp;

@@ -2,7 +2,7 @@
 {
     uint32_t elementCount = static_cast<uint32_t>(@VAR_NAME@.size());
 
-    @STREAM@.write(reinterperet_cast<char*>(&elementCount),
+    @STREAM@.write(reinterpret_cast<char*>(&elementCount),
         sizeof(elementCount));
 
     if(!@STREAM@.good())

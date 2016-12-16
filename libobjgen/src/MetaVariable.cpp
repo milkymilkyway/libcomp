@@ -150,6 +150,11 @@ std::string MetaVariable::GetArgument(const std::string& name) const
     return arg;
 }
 
+std::string MetaVariable::GetDefaultValueCode() const
+{
+    return GetCodeType() + "{}";
+}
+
 std::string MetaVariable::GetGetterCode(const Generator& generator,
     const std::string& name, size_t tabLevel) const
 {
@@ -230,6 +235,26 @@ std::string MetaVariable::GetAccessFunctions(const Generator& generator,
     ss << "}" << std::endl;
 
     return ss.str();
+}
+
+std::string MetaVariable::GetUtilityDeclarations(const Generator& generator,
+    const std::string& name, size_t tabLevel) const
+{
+    (void)generator;
+    (void)name;
+    (void)tabLevel;
+
+    return "";
+}
+
+std::string MetaVariable::GetUtilityFunctions(const Generator& generator,
+    const MetaObject& object, const std::string& name) const
+{
+    (void)generator;
+    (void)object;
+    (void)name;
+
+    return "";
 }
 
 std::string MetaVariable::GetConstructorCode(const Generator& generator,

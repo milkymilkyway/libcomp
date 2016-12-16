@@ -31,6 +31,7 @@
 #include "MetaVariableArray.h"
 #include "MetaVariableInt.h"
 #include "MetaVariableList.h"
+#include "MetaVariableMap.h"
 #include "MetaVariableReference.h"
 #include "MetaVariableString.h"
 
@@ -66,12 +67,13 @@ std::string MetaObject::GetError() const
 
 bool MetaObject::SetName(const std::string& name)
 {
-    bool result = true;
+    if(IsValidIdentifier(name))
+    {
+        mName = name;
+        return true;
+    }
 
-    /// @todo Validate the name.
-    mName = name;
-
-    return result;
+    return false;
 }
 
 bool MetaObject::SetBaseObject(const std::string& baseObject)
@@ -219,14 +221,6 @@ bool MetaObject::Load(const tinyxml2::XMLDocument& doc,
                 {
                     error = error || LoadMember(doc, szName, pMember, result);
                 }
-                else if(std::string("array") == pMember->Name())
-                {
-                    error = error || LoadArray(doc, szName, pMember, result);
-                }
-                else if(std::string("list") == pMember->Name())
-                {
-                    error = error || LoadList(doc, szName, pMember, result);
-                }
 
                 pMember = pMember->NextSiblingElement();
             }
@@ -272,23 +266,15 @@ bool MetaObject::Load(const tinyxml2::XMLDocument& doc,
 bool MetaObject::LoadMember(const tinyxml2::XMLDocument& doc,
     const char *szName, const tinyxml2::XMLElement *pMember, bool& result)
 {
-    bool error = false;
-
-    const char *szMemberType = pMember->Attribute("type");
     const char *szMemberName = pMember->Attribute("name");
 
-    if(nullptr != szMemberType && nullptr != szMemberName)
+    if(nullptr != szMemberName && IsValidIdentifier(szMemberName))
     {
-        std::shared_ptr<MetaVariable> var = CreateType(
-            szMemberType);
-
+        std::shared_ptr<MetaVariable> var = GetVariable(doc, szName, szMemberName, pMember);
         if(var)
         {
             var->SetName(szMemberName);
-        }
 
-        if(var && var->Load(doc, *pMember))
-        {
             if(AddVariable(szMemberName, var))
             {
                 // At least one variable is added now. The result
@@ -304,8 +290,152 @@ bool MetaObject::LoadMember(const tinyxml2::XMLDocument& doc,
                     << "already exist.";
 
                 mError = ss.str();
-                error = true;
             }
+        }
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << "Member variable for object '" << szName
+            << "' does not have a valid name attribute.";
+
+        mError = ss.str();
+    }
+
+    return mError.length() > 0;
+}
+
+std::shared_ptr<MetaVariable> MetaObject::GetVariable(const tinyxml2::XMLDocument& doc,
+    const char *szName, const char *szMemberName, const tinyxml2::XMLElement *pMember)
+{
+    std::shared_ptr<MetaVariable> retval = nullptr;
+
+    const char *szMemberType = pMember->Attribute("type");
+    if(nullptr == szMemberType)
+    {
+        std::stringstream ss;
+        ss << "Member variable '" << szMemberName
+            << "' for object '" << szName
+            << "' does not have a type attribute.";
+
+        mError = ss.str();
+    }
+    else
+    {
+        const std::string memberType(szMemberType);
+        std::shared_ptr<MetaVariable> var = CreateType(memberType);
+
+        if(!var && (memberType == "list" || memberType == "array" || memberType == "map"))
+        {
+            std::map<std::string, std::shared_ptr<MetaVariable>> subElems;
+            if(memberType == "list" || memberType == "array")
+            {
+                subElems["element"];
+            }
+            else if(memberType == "map")
+            {
+                subElems["key"];
+                subElems["value"];
+            }
+
+            for(auto kv : subElems)
+            {
+                const tinyxml2::XMLElement *seMember = GetChild(pMember, kv.first);
+
+                if(seMember)
+                {
+                    subElems[kv.first] = GetVariable(doc, szName, szMemberName, seMember);
+                }
+            }
+
+            if(memberType == "list")
+            {
+                if(nullptr != subElems["element"])
+                {
+                    var = std::shared_ptr<MetaVariable>(new MetaVariableList(subElems["element"]));
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "Failed to parse list member '" << szMemberName
+                        << "' element in object '"
+                        << szName << "'";
+
+                    mError = ss.str();
+                }
+            }
+            else if(memberType == "array")
+            {
+                if(nullptr != subElems["element"])
+                {
+                    var = std::shared_ptr<MetaVariable>(new MetaVariableArray(subElems["element"]));
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "Failed to parse array member '" << szMemberName
+                        << "' element in object '"
+                        << szName << "'";
+
+                    mError = ss.str();
+                }
+            }
+            else if(memberType == "map")
+            {
+                if(nullptr != subElems["key"] && nullptr != subElems["value"])
+                {
+                    auto key = subElems["key"];
+                    auto value = subElems["value"];
+
+                    auto keyMetaType = key->GetMetaType();
+                    auto valueMetaType = value->GetMetaType();
+
+                    if(keyMetaType == MetaVariable::MetaVariableType_t::TYPE_ARRAY ||
+                        keyMetaType == MetaVariable::MetaVariableType_t::TYPE_LIST ||
+                        keyMetaType == MetaVariable::MetaVariableType_t::TYPE_MAP ||
+                        keyMetaType == MetaVariable::MetaVariableType_t::TYPE_REF)
+                    {
+                        std::stringstream ss;
+                        ss << "Invalid map key type of '" << key->GetType()
+                            << "' specified for member '" << szMemberName
+                            << "' on object '"
+                            << szName << "'";
+
+                        mError = ss.str();
+                    }
+                    else if(valueMetaType == MetaVariable::MetaVariableType_t::TYPE_ARRAY ||
+                        valueMetaType == MetaVariable::MetaVariableType_t::TYPE_LIST ||
+                        valueMetaType == MetaVariable::MetaVariableType_t::TYPE_MAP)
+                    {
+                        std::stringstream ss;
+                        ss << "Invalid map key type of '" << value->GetType()
+                            << "' specified for member '" << szMemberName
+                            << "' on object '"
+                            << szName << "'";
+
+                        mError = ss.str();
+                    }
+                    else
+                    {
+                        var = std::shared_ptr<MetaVariable>(
+                            new MetaVariableMap(subElems["key"], subElems["value"]));
+                    }
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "Failed to parse map member '" << szMemberName
+                        << "' key and value on object '"
+                        << szName << "'";
+
+                    mError = ss.str();
+                }
+            }
+        }
+
+        if(var && var->Load(doc, *pMember))
+        {
+            retval = var;
         }
         else if(var)
         {
@@ -315,7 +445,6 @@ bool MetaObject::LoadMember(const tinyxml2::XMLDocument& doc,
                 << szName << "': " << var->GetError();
 
             mError = ss.str();
-            error = true;
         }
         else
         {
@@ -324,206 +453,10 @@ bool MetaObject::LoadMember(const tinyxml2::XMLDocument& doc,
                 << "' for object '" << szName << "'.";
 
             mError = ss.str();
-            error = true;
         }
     }
-    else if(nullptr == szMemberName)
-    {
-        std::stringstream ss;
-        ss << "Member variable for object '" << szName
-            << "' does not have a name attribute.";
 
-        mError = ss.str();
-        error = true;
-    }
-    else
-    {
-        std::stringstream ss;
-        ss << "Member variable '" << szMemberName
-            << "' for object '" << szName
-            << "' does not have a type attribute.";
-
-        mError = ss.str();
-        error = true;
-    }
-
-    return error;
-}
-
-bool MetaObject::LoadArray(const tinyxml2::XMLDocument& doc,
-    const char *szName, const tinyxml2::XMLElement *pMember, bool& result)
-{
-    bool error = false;
-
-    const char *szMemberType = pMember->Attribute("type");
-    const char *szMemberName = pMember->Attribute("name");
-
-    if(nullptr != szMemberType && nullptr != szMemberName)
-    {
-        std::shared_ptr<MetaVariable> elementType = CreateType(
-            szMemberType);
-        std::shared_ptr<MetaVariable> var(new MetaVariableArray(elementType));
-        
-        if(var)
-        {
-            var->SetName(szMemberName);
-        }
-
-        if(elementType)
-        {
-            elementType->SetName("none");
-        }
-
-        if(var && var->Load(doc, *pMember) && elementType &&
-            elementType->Load(doc, *pMember))
-        {
-            if(AddVariable(szMemberName, var))
-            {
-                // At least one variable is added now. The result
-                // is OK unless an error causes a problem.
-                result = true;
-            }
-            else
-            {
-                std::stringstream ss;
-                ss << "Failed to add array variable '"
-                    << szMemberName << "' to object '" << szName
-                    << "'. A variable by the same name may "
-                    << "already exist.";
-
-                mError = ss.str();
-                error = true;
-            }
-        }
-        else if(var)
-        {
-            std::stringstream ss;
-            ss << "Failed to parse array '" << szMemberName
-                << "' of type '" << szMemberType << "' in object '"
-                << szName << "': " << var->GetError();
-
-            mError = ss.str();
-            error = true;
-        }
-        else
-        {
-            std::stringstream ss;
-            ss << "Unknown array type '" << szMemberType
-                << "' for object '" << szName << "'.";
-
-            mError = ss.str();
-            error = true;
-        }
-    }
-    else if(nullptr == szMemberName)
-    {
-        std::stringstream ss;
-        ss << "Array variable for object '" << szName
-            << "' does not have a name attribute.";
-
-        mError = ss.str();
-        error = true;
-    }
-    else
-    {
-        std::stringstream ss;
-        ss << "Array variable '" << szMemberName
-            << "' for object '" << szName
-            << "' does not have a type attribute.";
-
-        mError = ss.str();
-        error = true;
-    }
-
-    return error;
-}
-
-bool MetaObject::LoadList(const tinyxml2::XMLDocument& doc,
-    const char *szName, const tinyxml2::XMLElement *pMember, bool& result)
-{
-    bool error = false;
-
-    const char *szMemberType = pMember->Attribute("type");
-    const char *szMemberName = pMember->Attribute("name");
-
-    if(nullptr != szMemberType && nullptr != szMemberName)
-    {
-        std::shared_ptr<MetaVariable> elementType = CreateType(
-            szMemberType);
-        std::shared_ptr<MetaVariable> var(new MetaVariableList(elementType));
-        
-        if(var)
-        {
-            var->SetName(szMemberName);
-        }
-
-        if(elementType)
-        {
-            elementType->SetName("none");
-        }
-
-        if(var && var->Load(doc, *pMember) && elementType &&
-            elementType->Load(doc, *pMember))
-        {
-            if(AddVariable(szMemberName, var))
-            {
-                // At least one variable is added now. The result
-                // is OK unless an error causes a problem.
-                result = true;
-            }
-            else
-            {
-                std::stringstream ss;
-                ss << "Failed to add list variable '"
-                    << szMemberName << "' to object '" << szName
-                    << "'. A variable by the same name may "
-                    << "already exist.";
-
-                mError = ss.str();
-                error = true;
-            }
-        }
-        else if(var)
-        {
-            std::stringstream ss;
-            ss << "Failed to parse list '" << szMemberName
-                << "' of type '" << szMemberType << "' in object '"
-                << szName << "': " << var->GetError();
-
-            mError = ss.str();
-            error = true;
-        }
-        else
-        {
-            std::stringstream ss;
-            ss << "Unknown list type '" << szMemberType
-                << "' for object '" << szName << "'.";
-
-            mError = ss.str();
-            error = true;
-        }
-    }
-    else if(nullptr == szMemberName)
-    {
-        std::stringstream ss;
-        ss << "List variable for object '" << szName
-            << "' does not have a name attribute.";
-
-        mError = ss.str();
-        error = true;
-    }
-    else
-    {
-        std::stringstream ss;
-        ss << "List variable '" << szMemberName
-            << "' for object '" << szName
-            << "' does not have a type attribute.";
-
-        mError = ss.str();
-        error = true;
-    }
-
-    return error;
+    return retval;
 }
 
 bool MetaObject::Save(tinyxml2::XMLDocument& doc,
@@ -536,7 +469,7 @@ bool MetaObject::Save(tinyxml2::XMLDocument& doc,
 
     for(auto var : mVariables)
     {
-        if(!var->Save(doc, *pObjectElement))
+        if(!var->Save(doc, *pObjectElement, "member"))
         {
             return false;
         }
@@ -599,13 +532,8 @@ std::shared_ptr<MetaVariable> MetaObject::CreateType(
     {
         var = std::shared_ptr<MetaVariable>(new MetaVariableReference());
 
-        if(var && std::dynamic_pointer_cast<MetaVariableReference>(
+        if(!var || !std::dynamic_pointer_cast<MetaVariableReference>(
             var)->SetReferenceType(match[1]))
-        {
-            /// @todo Add this type to the MetaObject cache that must be
-            /// resolved by the time the load completes.
-        }
-        else
         {
             // The type isn't valid, free the object.
             var.reset();
@@ -659,36 +587,80 @@ bool MetaObject::HasCircularReference(
     return status;
 }
 
+
+const tinyxml2::XMLElement *MetaObject::GetChild(const tinyxml2::XMLElement *pMember,
+    const std::string name) const
+{
+    const tinyxml2::XMLElement *cMember = pMember->FirstChildElement();
+    while(nullptr != cMember)
+    {
+        if(name == cMember->Name())
+        {
+            return cMember;
+        }
+
+        cMember = cMember->NextSiblingElement();
+    }
+    return nullptr;
+}
+
 std::set<std::string> MetaObject::GetReferences() const
 {
     std::set<std::string> references;
 
     for(auto var : mVariables)
     {
-        std::shared_ptr<MetaVariableReference> ref =
-            std::dynamic_pointer_cast<MetaVariableReference>(var);
-
-        if(ref)
-        {
-            references.insert(ref->GetReferenceType());
-        }
-        else
-        {
-            std::shared_ptr<MetaVariableArray> array =
-                std::dynamic_pointer_cast<MetaVariableArray>(var);
-
-            if(array)
-            {
-                ref = std::dynamic_pointer_cast<MetaVariableReference>(
-                    array->GetElementType());
-
-                if(ref)
-                {
-                    references.insert(ref->GetReferenceType());
-                }
-            }
-        }
+        GetReferences(var, references);
     }
 
     return references;
+}
+
+void MetaObject::GetReferences(std::shared_ptr<MetaVariable>& var,
+    std::set<std::string>& references) const
+{
+    std::shared_ptr<MetaVariableReference> ref =
+        std::dynamic_pointer_cast<MetaVariableReference>(var);
+
+    if(ref)
+    {
+        references.insert(ref->GetReferenceType());
+    }
+    else
+    {
+        switch(var->GetMetaType())
+        {
+            case MetaVariable::MetaVariableType_t::TYPE_ARRAY:
+                {
+                    std::shared_ptr<MetaVariableArray> array =
+                        std::dynamic_pointer_cast<MetaVariableArray>(var);
+
+                    auto elementType = array->GetElementType();
+                    GetReferences(elementType, references);
+                }
+                break;
+            case MetaVariable::MetaVariableType_t::TYPE_LIST:
+                {
+                    std::shared_ptr<MetaVariableList> list =
+                        std::dynamic_pointer_cast<MetaVariableList>(var);
+
+                    auto elementType = list->GetElementType();
+                    GetReferences(elementType, references);
+                }
+                break;
+            case MetaVariable::MetaVariableType_t::TYPE_MAP:
+                {
+                    std::shared_ptr<MetaVariableMap> map =
+                        std::dynamic_pointer_cast<MetaVariableMap>(var);
+
+                    auto elementType = map->GetKeyElementType();
+                    GetReferences(elementType, references);
+                    elementType = map->GetValueElementType();
+                    GetReferences(elementType, references);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }
