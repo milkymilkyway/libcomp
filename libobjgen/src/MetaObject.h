@@ -60,11 +60,20 @@ public:
     std::string GetBaseObject() const;
     bool SetBaseObject(const std::string& name);
 
+    bool GetPersistent() const;
+
+    std::string GetSourceLocation() const;
+    void SetSourceLocation(const std::string& location);
+
+    std::string GetXMLDefinition() const;
+    void SetXMLDefinition(const std::string& xmlDefinition);
+    void SetXMLDefinition(const tinyxml2::XMLElement& root);
+
     std::string GetError() const;
 
-    bool AddVariable(const std::string& name,
-        const std::shared_ptr<MetaVariable>& var);
+    bool AddVariable(const std::shared_ptr<MetaVariable>& var);
     bool RemoveVariable(const std::string& name);
+    std::shared_ptr<MetaVariable> GetVariable(const std::string& name);
 
     VariableList::const_iterator VariablesBegin() const;
     VariableList::const_iterator VariablesEnd() const;
@@ -106,8 +115,14 @@ private:
     const tinyxml2::XMLElement *GetChild(const tinyxml2::XMLElement *pMember,
         const std::string name) const;
 
+    bool DefaultsSpecified(const tinyxml2::XMLElement *pMember) const;
+
     std::string mName;
     std::string mBaseObject;
+    bool mPersistent;
+    std::string mSourceLocation;
+    std::string mXmlDefinition;
+
     std::string mError;
     VariableList mVariables;
     VariableMap mVariableMapping;

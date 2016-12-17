@@ -76,6 +76,16 @@ bool MetaVariableReference::SetReferenceType(const std::string& referenceType)
     return status;
 }
 
+void MetaVariableReference::AddDefaultedVariable(std::shared_ptr<MetaVariable>& var)
+{
+    mDefaultedVariables.push_back(var);
+}
+
+const std::list<std::shared_ptr<MetaVariable>> MetaVariableReference::GetDefaultedVariables() const
+{
+    return mDefaultedVariables;
+}
+
 bool MetaVariableReference::IsCoreType() const
 {
     return false;
@@ -84,7 +94,7 @@ bool MetaVariableReference::IsCoreType() const
 bool MetaVariableReference::IsValid() const
 {
     // Validating that the object exists happens elsewhere
-    return MetaObject::IsValidIdentifier(mReferenceType);
+    return MetaObject::IsValidIdentifier(mReferenceType) && !IsLookupKey();
 }
 
 bool MetaVariableReference::IsValid(const void *pData, size_t dataSize) const
@@ -170,6 +180,64 @@ std::string MetaVariableReference::GetConstructValue() const
     return ss.str();
 }
 
+std::string MetaVariableReference::GetConstructorCode(const Generator& generator,
+    const MetaObject& object, const std::string& name, size_t tabLevel) const
+{
+    (void)object;
+    (void)name;
+
+    std::stringstream ss;
+    ss << generator.Tab(tabLevel) << "{" << std::endl;
+    ss << GetConstructorCode(generator, "ref", "", tabLevel + 1);
+    ss << generator.Tab(tabLevel) << "}" << std::endl;
+    return ss.str();
+}
+
+std::string MetaVariableReference::GetConstructorCode(const Generator& generator,
+    const std::string& varName, const std::string& parentRef, size_t tabLevel) const
+{
+    std::string code = GetConstructValue();
+
+    std::stringstream ss;
+    ss << generator.Tab(tabLevel) << "auto " << varName << " = " << code << ";" << std::endl;
+    if(mDefaultedVariables.size() > 0)
+    {
+        ss << generator.Tab(tabLevel) << "{" << std::endl;
+        for(auto var : mDefaultedVariables)
+        {
+            std::stringstream ssVar;
+            ssVar << var->GetName() << "Value";
+            std::string localVarName = ssVar.str();
+
+            if(var->GetMetaType() == MetaVariableType_t::TYPE_REF)
+            {
+                ss << generator.Tab(tabLevel + 1) << "{" << std::endl;
+                ss << GetConstructorCode(generator, parentRef + "_ref",
+                    localVarName, tabLevel + 1);
+                ss << generator.Tab(tabLevel + 1) << "}" << std::endl;
+            }
+            else
+            {
+                ss << generator.Tab(tabLevel + 1) << "auto " << localVarName
+                    << " = " << var->GetConstructValue() << ";" << std::endl;
+            }
+
+            ss << generator.Tab(tabLevel + 1) << varName << "->Set"
+                << generator.GetCapitalName(var) << "(" << localVarName <<
+                ");" << std::endl;
+        }
+        ss << generator.Tab(tabLevel) << "}" << std::endl;
+    }
+    ss << generator.Tab(tabLevel);
+    if(parentRef.length() > 0)
+    {
+        ss << parentRef << "->";
+    }
+    ss << "Set" << generator.GetCapitalName(*this) << "(ref);" << std::endl;
+
+    return ss.str();
+}
+
 std::string MetaVariableReference::GetValidCondition(const Generator& generator,
     const std::string& name, bool recursive) const
 {
@@ -197,7 +265,7 @@ std::string MetaVariableReference::GetLoadCode(const Generator& generator,
     replacements["@VAR_NAME@"] = name;
     replacements["@STREAM@"] = stream;
 
-    return generator.ParseTemplate(0, "VariableReferenceLoad",
+    return generator.ParseTemplate(1, "VariableReferenceLoad",
         replacements);
 }
 
@@ -208,7 +276,7 @@ std::string MetaVariableReference::GetSaveCode(const Generator& generator,
     replacements["@VAR_NAME@"] = name;
     replacements["@STREAM@"] = stream;
 
-    return generator.ParseTemplate(0, "VariableReferenceSave",
+    return generator.ParseTemplate(1, "VariableReferenceSave",
         replacements);
 }
 
@@ -219,7 +287,7 @@ std::string MetaVariableReference::GetLoadRawCode(const Generator& generator,
     replacements["@VAR_NAME@"] = name;
     replacements["@STREAM@"] = stream;
 
-    return generator.ParseTemplate(0, "VariableReferenceLoadRaw",
+    return generator.ParseTemplate(1, "VariableReferenceLoadRaw",
         replacements);
 }
 
@@ -230,7 +298,7 @@ std::string MetaVariableReference::GetSaveRawCode(const Generator& generator,
     replacements["@VAR_NAME@"] = name;
     replacements["@STREAM@"] = stream;
 
-    return generator.ParseTemplate(0, "VariableReferenceSaveRaw",
+    return generator.ParseTemplate(1, "VariableReferenceSaveRaw",
         replacements);
 }
 
@@ -257,8 +325,8 @@ std::string MetaVariableReference::GetXmlSaveCode(const Generator& generator,
     (void)name;
 
     std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = generator.Escape(GetName());
-    replacements["@VAR_XML_NAME@"] = GetName();
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_XML_NAME@"] = generator.Escape(GetName());
     replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
     replacements["@DOC@"] = doc;
     replacements["@PARENT@"] = parent;

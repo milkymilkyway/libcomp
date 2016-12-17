@@ -38,10 +38,14 @@ using namespace libcomp;
 
 TEST(Cassandra, Connection)
 {
-    DatabaseCassandra db("comp_hack_test");
+    auto config = std::shared_ptr<objects::DatabaseConfigCassandra>(
+        new objects::DatabaseConfigCassandra);
+    config->SetKeyspace("comp_hack_test");
+
+    DatabaseCassandra db(config);
 
     EXPECT_FALSE(db.IsOpen());
-    EXPECT_TRUE(db.Open("127.0.0.1"));
+    EXPECT_TRUE(db.Open());
     EXPECT_TRUE(db.IsOpen());
     EXPECT_TRUE(db.Close());
     EXPECT_FALSE(db.IsOpen());
@@ -51,10 +55,14 @@ TEST(Cassandra, Connection)
 
 TEST(Cassandra, BadPrepare)
 {
-    DatabaseCassandra db("comp_hack_test");
+    auto config = std::shared_ptr<objects::DatabaseConfigCassandra>(
+        new objects::DatabaseConfigCassandra);
+    config->SetKeyspace("comp_hack_test");
+
+    DatabaseCassandra db(config);
 
     EXPECT_FALSE(db.IsOpen());
-    EXPECT_TRUE(db.Open("127.0.0.1"));
+    EXPECT_TRUE(db.Open());
     EXPECT_TRUE(db.IsOpen());
 
     EXPECT_FALSE(db.Execute("SELECT"));
@@ -87,10 +95,14 @@ TEST(Cassandra, ObjectBindIndex)
     std::unordered_map<std::string, std::vector<char>> values2;
     values2["test_short"] = testValueData3;
 
-    DatabaseCassandra db("comp_hack_test");
+    auto config = std::shared_ptr<objects::DatabaseConfigCassandra>(
+        new objects::DatabaseConfigCassandra);
+    config->SetKeyspace("comp_hack_test");
+
+    DatabaseCassandra db(config);
 
     EXPECT_FALSE(db.IsOpen());
-    EXPECT_TRUE(db.Open("127.0.0.1"));
+    EXPECT_TRUE(db.Open());
     EXPECT_TRUE(db.IsOpen());
 
     EXPECT_TRUE(db.Execute("DROP KEYSPACE IF EXISTS comp_hack_test;"));
@@ -194,10 +206,14 @@ TEST(Cassandra, ObjectBindName)
     std::unordered_map<std::string, std::vector<char>> values2;
     values2["test_short"] = testValueData3;
 
-    DatabaseCassandra db("comp_hack_test");
+    auto config = std::shared_ptr<objects::DatabaseConfigCassandra>(
+        new objects::DatabaseConfigCassandra);
+    config->SetKeyspace("comp_hack_test");
+
+    DatabaseCassandra db(config);
 
     EXPECT_FALSE(db.IsOpen());
-    EXPECT_TRUE(db.Open("127.0.0.1"));
+    EXPECT_TRUE(db.Open());
     EXPECT_TRUE(db.IsOpen());
 
     EXPECT_TRUE(db.Execute("DROP KEYSPACE IF EXISTS comp_hack_test;"));
@@ -301,10 +317,14 @@ TEST(Cassandra, ObjectBatch)
     std::unordered_map<std::string, std::vector<char>> values2;
     values2["test_short"] = testValueData3;
 
-    DatabaseCassandra db("comp_hack_test");
+    auto config = std::shared_ptr<objects::DatabaseConfigCassandra>(
+        new objects::DatabaseConfigCassandra);
+    config->SetKeyspace("comp_hack_test");
+
+    DatabaseCassandra db(config);
 
     EXPECT_FALSE(db.IsOpen());
-    EXPECT_TRUE(db.Open("127.0.0.1"));
+    EXPECT_TRUE(db.Open());
     EXPECT_TRUE(db.IsOpen());
 
     EXPECT_TRUE(db.Execute("DROP KEYSPACE IF EXISTS comp_hack_test;"));

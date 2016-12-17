@@ -34,6 +34,7 @@
 #endif
 
 #include <DatabaseCassandra.h>
+#include <DatabaseSQLite3.h>
 #include "Log.h"
 
 using namespace libcomp;
@@ -44,31 +45,50 @@ BaseServer::BaseServer(std::shared_ptr<objects::ServerConfig> config, const Stri
     mSelf = std::shared_ptr<libcomp::BaseServer>(this);
     ReadConfig(config, configPath);
 
-    /// @todo Setup the database type based on the config.
-    mDatabase = std::shared_ptr<libcomp::Database>(
-        new libcomp::DatabaseCassandra(config->GetCassandraKeyspace().ToUtf8()));
+    std::shared_ptr<objects::DatabaseConfig> dbConfig;
+    switch(config->GetDatabaseType())
+    {
+        case objects::ServerConfig::DatabaseType_t::SQLITE3:
+            {
+                LOG_DEBUG("Using SQLite3 Database.\n");
+
+                auto sqlConfig = config->GetSQLite3Config();
+                mDatabase = std::shared_ptr<libcomp::Database>(
+                    new libcomp::DatabaseSQLite3(sqlConfig));
+                dbConfig = sqlConfig;
+            }
+            break;
+        case objects::ServerConfig::DatabaseType_t::CASSANDRA:
+            {
+                LOG_DEBUG("Using Cassandra Database.\n");
+
+                auto cassandraConfig = config->GetCassandraConfig();
+                mDatabase = std::shared_ptr<libcomp::Database>(
+                    new libcomp::DatabaseCassandra(cassandraConfig));
+                dbConfig = cassandraConfig;
+            }
+            break;
+        default:
+            LOG_CRITICAL("Invalid database type specified.\n");
+            return;
+            break;
+    }
+
+    mDatabase->SetMainDatabase(mDatabase);
 
     // Open the database.
-    if(!mDatabase->Open(config->GetDatabaseIP()) || !mDatabase->IsOpen())
+    if(!mDatabase->Open() || !mDatabase->IsOpen())
     {
         LOG_CRITICAL("Failed to open database.\n");
 
         return;
     }
 
-    // Use the database if it exists, else setup the database.
-    if(mDatabase->Exists())
+    if(!mDatabase->Setup())
     {
-        mDatabase->Use();
-    }
-    else
-    {
-        if(!mDatabase->Setup())
-        {
-            LOG_CRITICAL("Failed to init database.\n");
+        LOG_CRITICAL("Failed to init database.\n");
 
-            return;
-        }
+        return;
     }
 }
 

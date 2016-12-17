@@ -46,6 +46,10 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << "#include \"" << obj.GetName() << ".h\"" << std::endl;
     ss << std::endl;
 
+    ss << "// libcomp Includes" << std::endl;
+    ss << "#include \"Log.h\"" << std::endl;
+    ss << std::endl;
+
     std::set<std::string> references = obj.GetReferences();
 
     if(!references.empty())
@@ -64,8 +68,19 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << std::endl;
 
     // Constructor
-    ss << obj.GetName() << "::" << obj.GetName() << "() : " + (!obj.GetBaseObject().empty() ? ("objects::" + obj.GetBaseObject() + "()") : "libcomp::Object()")
-        << std::endl;
+    ss << obj.GetName() << "::" << obj.GetName() << "() : ";
+    if(!obj.GetBaseObject().empty())
+    {
+        ss << "objects::" + obj.GetBaseObject() + "()" << std::endl;
+    }
+    else if(obj.GetPersistent())
+    {
+        ss << "libcomp::PersistentObject()" << std::endl;
+    }
+    else
+    {
+        ss << "libcomp::Object()" << std::endl;
+    }
     ss << "{" << std::endl;
 
     int constructorCount = 0;
@@ -200,6 +215,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << std::endl;
     ss << Tab() << "bool status = " + GetBaseBooleanReturnValue(obj, "Save(stream)") + "; " << std::endl;
 
+    int saveCount = 0;
+
     for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
     {
         auto var = *it;
@@ -211,12 +228,22 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
 
         if(!code.empty())
         {
+            saveCount++;
+
             ss << std::endl;
             ss << Tab() << "if(status && !(" << code << "))" << std::endl;
             ss << Tab() << "{" << std::endl;
             ss << Tab(2) << "status = false;" << std::endl;
             ss << Tab() << "}" << std::endl;
         }
+    }
+
+    /// @todo FIX If this is being put there the object has not implemented
+    /// these!!!
+    if(0 == saveCount)
+    {
+        ss << std::endl;
+        ss << Tab() << "(void)stream;" << std::endl;
     }
 
     ss << std::endl;
@@ -334,7 +361,12 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     }
 
     ss << std::endl;
-    ss << Tab() << "return status;" << std::endl;
+    ss << Tab() << "return status";
+    if(obj.GetBaseObject().length() > 0)
+    {
+        ss << " && " << obj.GetBaseObject() << "::Load(doc, root)";
+    }
+    ss << ";" << std::endl;
     ss << "}" << std::endl;
     ss << std::endl;
 
@@ -354,6 +386,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     {
         auto var = *it;
 
+        if(var->IsInherited()) continue;
+
         std::string code = var->GetXmlSaveCode(*this, GetMemberName(var),
             "doc", "pElement");
 
@@ -362,6 +396,13 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
             ss << std::endl;
             ss << code;
         }
+    }
+    ss << std::endl;
+
+    if(obj.GetBaseObject().length() > 0)
+    {
+        ss << std::endl;
+        ss <<  Tab() << "status &= " << obj.GetBaseObject() << "::Save(doc, root);" << std::endl;
     }
 
     ss << std::endl;
@@ -402,7 +443,80 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
         }
     }
 
+    if(obj.GetPersistent())
+    {
+        GeneratePersistentObjectFunctions(obj, ss);
+    }
+
     return ss.str();
+}
+
+void GeneratorSource::GeneratePersistentObjectFunctions(const MetaObject& obj, std::stringstream& ss)
+{
+    ss << "std::unordered_map<std::string, libcomp::String> " << obj.GetName()
+        << "::GetMemberStringValues()" << std::endl;
+    ss << "{" << std::endl;
+    ss << Tab() << "std::unordered_map<std::string, libcomp::String> values;" << std::endl;
+    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
+    {
+        auto var = *it;
+
+        if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ARRAY
+            || var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_LIST
+            || var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_MAP)
+            continue;
+
+        ss << Tab() << "values[\"" << var->GetName() << "\"] = "
+            << var->GetStringValueCode(GetMemberName(var)) << ";";
+        ss << std::endl;
+    }
+    ss << Tab() << "return values;" << std::endl;
+    ss << "}" << std::endl;
+    ss << std::endl;
+
+    ss << "std::shared_ptr<libobjgen::MetaObject> " << obj.GetName() << "::GetObjectMetadata()" << std::endl;
+    ss << "{" << std::endl;
+    ss << Tab() << "return " << obj.GetName() << "::GetMetadata();" << std::endl;
+    ss << "}" << std::endl;
+    ss << std::endl;
+
+    ss << "std::shared_ptr<libobjgen::MetaObject> " << obj.GetName() << "::GetMetadata()" << std::endl;
+    ss << "{" << std::endl;
+    ss << Tab() << "auto m = libcomp::PersistentObject::GetRegisteredMetadata(typeid(" << obj.GetName()
+        << "));" << std::endl;
+    ss << Tab() << "if(nullptr == m)" << std::endl;
+    ss << Tab() << "{" << std::endl;
+    ss << Tab() << Tab() << "std::stringstream ss;" << std::endl << Tab() << Tab() << "ss ";
+
+    bool first = true;
+    std::string xml = Escape(obj.GetXMLDefinition());
+    while(xml.find("\\n") != xml.npos)
+    {
+        auto pos = xml.find("\\n");
+        ss << std::endl << Tab() << Tab() << "<< " << (!first ? "\"" : "") << xml.substr(0, pos) << "\"";
+        xml = xml.substr(pos + 2);
+        first = false;
+    }
+
+    //Ignore the added quote from Escape
+    if(xml.length() > 1)
+    {
+        ss << std::endl << Tab() << Tab() << "<< " << (!first ? "\"" : "") << xml;
+    }
+    ss << ";" << std::endl;
+
+    ss << Tab() << Tab() << "m = libcomp::PersistentObject::GetMetadataFromXml(ss.str());" << std::endl;
+    ss << Tab() << "}" << std::endl;
+    ss << std::endl;
+    ss << Tab() << "if(nullptr == m)" << std::endl;
+    ss << Tab() << "{" << std::endl;
+    ss << Tab() << Tab() << "LOG_CRITICAL(\"Metadata for object '" << obj.GetName()
+        << "' could not be generated.\");" << std::endl;
+    ss << Tab() << "}" << std::endl;
+    ss << std::endl;
+    ss << Tab() << "return m;" << std::endl;
+    ss << "}" << std::endl;
+    ss << std::endl;
 }
 
 std::string GeneratorSource::GetBaseBooleanReturnValue(const MetaObject& obj, std::string function, std::string defaultValue)

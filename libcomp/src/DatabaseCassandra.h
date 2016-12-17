@@ -29,6 +29,10 @@
 
 // libcomp Includes
 #include "Database.h"
+#include "DatabaseConfigCassandra.h"
+
+// libobjgen Includes
+#include <MetaVariable.h>
 
 // Cassandra Includes
 #include <cassandra.h>
@@ -41,11 +45,10 @@ class DatabaseCassandra : public Database
 public:
     friend class DatabaseQueryCassandra;
 
-    DatabaseCassandra(const String& keyspace);
+    DatabaseCassandra(const std::shared_ptr<objects::DatabaseConfigCassandra>& config);
     virtual ~DatabaseCassandra();
 
-    virtual bool Open(const String& address, const String& username = String(),
-        const String& password = String());
+    virtual bool Open();
     virtual bool Close();
     virtual bool IsOpen() const;
 
@@ -54,8 +57,28 @@ public:
     virtual bool Setup();
     virtual bool Use();
 
+    virtual std::list<std::shared_ptr<PersistentObject>> LoadObjects(
+        std::type_index type, const std::string& fieldName, const libcomp::String& value);
+
+    virtual std::shared_ptr<PersistentObject> LoadSingleObject(
+        std::type_index type, const std::string& fieldName, const libcomp::String& value);
+
+    virtual bool InsertSingleObject(std::shared_ptr<PersistentObject>& obj);
+    virtual bool UpdateSingleObject(std::shared_ptr<PersistentObject>& obj);
+    virtual bool DeleteSingleObject(std::shared_ptr<PersistentObject>& obj);
+
+    bool VerifyAndSetupSchema();
+    bool UsingDefaultKeyspace();
+
 protected:
     bool WaitForFuture(CassFuture *pFuture);
+    std::string GetVariableType(const std::shared_ptr<libobjgen::MetaVariable> var);
+
+    std::shared_ptr<PersistentObject> LoadSingleObjectFromRow(
+        std::type_index type, const std::unordered_map<std::string, std::vector<char>>& row);
+
+    std::vector<char> ConvertToRawByteStream(const std::shared_ptr<libobjgen::MetaVariable>& var,
+        const std::vector<char>& columnData);
 
     CassSession* GetSession() const;
 
@@ -63,7 +86,7 @@ private:
     CassCluster *mCluster;
     CassSession *mSession;
 
-    std::string mKeyspace;
+    std::shared_ptr<objects::DatabaseConfigCassandra> mConfig;
 };
 
 } // namespace libcomp

@@ -50,6 +50,7 @@ SET(${PROJECT_NAME}_SRCS
     src/DatabaseCassandra.cpp
     src/DatabaseQuery.cpp
     src/DatabaseQueryCassandra.cpp
+    src/DatabaseQuerySQLite3.cpp
     src/DatabaseSQLite3.cpp
     src/Decrypt.cpp
     src/DynamicObject.cpp
@@ -74,6 +75,7 @@ SET(${PROJECT_NAME}_SRCS
     #src/PacketScript.cpp
     src/PlatformWindows.cpp
     src/PEFile.cpp
+    src/PersistentObject.cpp
     src/ReadOnlyPacket.cpp
     src/RingBuffer.cpp
     src/ScriptEngine.cpp
@@ -106,6 +108,7 @@ SET(${PROJECT_NAME}_HDRS
     src/DatabaseCassandra.h
     src/DatabaseQuery.h
     src/DatabaseQueryCassandra.h
+    src/DatabaseQuerySQLite3.h
     src/DatabaseSQLite3.h
     src/Decrypt.h
     src/DynamicObject.h
@@ -138,6 +141,7 @@ SET(${PROJECT_NAME}_HDRS
     src/PacketStream.h
     src/PEFile.h
     src/PEFormat.h
+    src/PersistentObject.h
     #src/Platform.h
     #src/PlatformLinux.h
     #src/PlatformWindows.h
@@ -162,8 +166,14 @@ SET(${PROJECT_NAME}_HDRS
 )
 
 SET(${PROJECT_NAME}_SCHEMA
-    schema/test.xml
+    schema/account.xml
+    schema/channeldescription.xml
+    schema/databaseconfig.xml
+    schema/databaseconfig_cassandra.xml
+    schema/databaseconfig_sqlite3.xml
     schema/serverconfig.xml
+    schema/test.xml
+    schema/worlddescription.xml
 )
 
 OBJGEN_XML(${PROJECT_NAME}_STRUCTS
@@ -177,8 +187,16 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     schema
 
     # Output files
+    Account.h
+    Account.cpp
     ChannelDescription.h
     ChannelDescription.cpp
+    DatabaseConfig.h
+    DatabaseConfig.cpp
+    DatabaseConfigCassandra.h
+    DatabaseConfigCassandra.cpp
+    DatabaseConfigSQLite3.h
+    DatabaseConfigSQLite3.cpp
     ServerConfig.h
     ServerConfig.cpp
     TestObject.h

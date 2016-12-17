@@ -29,14 +29,16 @@
  // libcomp Includes
 #include "DatabaseQueryCassandra.h"
 #include "Log.h"
+#include "PersistentObject.h"
 
 // SQLite3 Includes
 #include <sqlite3.h>
 
 using namespace libcomp;
 
-DatabaseCassandra::DatabaseCassandra(const String& keyspace)
-    : mCluster(nullptr), mSession(nullptr), mKeyspace(keyspace.ToUtf8())
+DatabaseCassandra::DatabaseCassandra(const std::shared_ptr<
+    objects::DatabaseConfigCassandra>& config) : mCluster(nullptr), mSession(nullptr),
+    mConfig(config)
 {
 }
 
@@ -45,11 +47,15 @@ DatabaseCassandra::~DatabaseCassandra()
     Close();
 }
 
-bool DatabaseCassandra::Open(const String& address, const String& username,
-    const String& password)
+bool DatabaseCassandra::Open()
 {
-    // Make sure any previous connection is closed.
-    bool result = Close();
+    auto address = mConfig->GetIP();
+    auto username = mConfig->GetUsername();
+    auto password = mConfig->GetPassword();
+
+    // Make sure any previous connection is closed an that we have the base
+    // necessary configuration to connect.
+    bool result = Close() && address.Length() > 0;
 
     // Now make a new connection.
     if(result)
@@ -108,7 +114,9 @@ DatabaseQuery DatabaseCassandra::Prepare(const String& query)
 
 bool DatabaseCassandra::Exists()
 {
-    DatabaseQuery q = Prepare(libcomp::String("SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = '%1';").Arg(mKeyspace));
+    DatabaseQuery q = Prepare(libcomp::String(
+        "SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = '%1';")
+        .Arg(mConfig->GetKeyspace()));
     if(!q.Execute())
     {
         LOG_CRITICAL("Failed to query for keyspace.\n");
@@ -131,35 +139,56 @@ bool DatabaseCassandra::Setup()
         return false;
     }
 
-    // Delete the old keyspace if it exists.
-    if(!Execute(libcomp::String("DROP KEYSPACE IF EXISTS %1;").Arg(mKeyspace)))
+    auto keyspace = mConfig->GetKeyspace();
+    if(!Exists())
     {
-        LOG_ERROR("Failed to delete old keyspace.\n");
+        // Delete the old keyspace if it exists.
+        if(!Execute(libcomp::String("DROP KEYSPACE IF EXISTS %1;").Arg(keyspace)))
+        {
+            LOG_ERROR("Failed to delete old keyspace.\n");
+
+            return false;
+        }
+
+        // Now re-create the keyspace.
+        if(!Execute(libcomp::String("CREATE KEYSPACE %1 WITH REPLICATION = {"
+            " 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 1 };").Arg(keyspace)))
+        {
+            LOG_ERROR("Failed to create keyspace.\n");
+
+            return false;
+        }
+
+        // Use the keyspace.
+        if(!Use())
+        {
+            LOG_ERROR("Failed to use the keyspace.\n");
+
+            return false;
+        }
+
+        if(UsingDefaultKeyspace() &&
+            !Execute("CREATE TABLE objects ( uid uuid PRIMARY KEY, "
+            "member_vars map<ascii, blob> );"))
+        {
+            LOG_ERROR("Failed to create the objects table.\n");
+
+            return false;
+        }
+    }
+    else if(!Use())
+    {
+        LOG_ERROR("Failed to use the existing keyspace.\n");
 
         return false;
     }
 
-    // Now re-create the keyspace.
-    if(!Execute(libcomp::String("CREATE KEYSPACE %1 WITH REPLICATION = {"
-        " 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 1 };").Arg(mKeyspace)))
+    LOG_DEBUG(libcomp::String("Database connection established to '%1' keyspace.\n")
+        .Arg(keyspace));
+
+    if(!VerifyAndSetupSchema())
     {
-        LOG_ERROR("Failed to create keyspace.\n");
-
-        return false;
-    }
-
-    // Use the keyspace.
-    if(!Use())
-    {
-        LOG_ERROR("Failed to use the keyspace.\n");
-
-        return false;
-    }
-
-    if(!Execute("CREATE TABLE objects ( uid uuid PRIMARY KEY, "
-        "member_vars map<ascii, blob> );"))
-    {
-        LOG_ERROR("Failed to create the objects table.\n");
+        LOG_ERROR("Schema verification and setup failed.\n");
 
         return false;
     }
@@ -170,7 +199,8 @@ bool DatabaseCassandra::Setup()
 bool DatabaseCassandra::Use()
 {
     // Use the keyspace.
-    if(!Execute(libcomp::String("USE %1;").Arg(mKeyspace)))
+    auto keyspace = mConfig->GetKeyspace();
+    if(!Execute(libcomp::String("USE %1;").Arg(keyspace)))
     {
         LOG_ERROR("Failed to use the keyspace.\n");
 
@@ -178,6 +208,467 @@ bool DatabaseCassandra::Use()
     }
 
     return true;
+}
+
+std::list<std::shared_ptr<PersistentObject>> DatabaseCassandra::LoadObjects(
+    std::type_index type, const std::string& fieldName, const libcomp::String& value)
+{
+    std::list<std::shared_ptr<PersistentObject>> objects;
+    
+    std::string fieldNameLower = libcomp::String(fieldName).ToLower().ToUtf8();
+    bool loadByUUID = fieldNameLower == "uid";
+
+    std::shared_ptr<libobjgen::MetaVariable> var;
+    auto metaObject = PersistentObject::GetRegisteredMetadata(type);
+    if(!loadByUUID)
+    {
+        for(auto iter = metaObject->VariablesBegin();
+            iter != metaObject->VariablesEnd(); iter++)
+        {
+            if((*iter)->GetName() == fieldName)
+            {
+                var = (*iter);
+                break;
+            }
+        }
+
+        if(nullptr == var)
+        {
+            return objects;
+        }
+    }
+
+    std::string f = fieldNameLower;
+    std::string v = value.ToUtf8();
+    if(nullptr != var)
+    {
+        f = libcomp::String(var->GetName()).ToLower().ToUtf8();
+        if(var->GetMetaType() == libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING
+            || var->GetMetaType() == libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF)
+        {
+            v = libcomp::String("'%1'").Arg(v).ToUtf8();
+        }
+    }
+
+    //Build the query, if not loading by UUID filtering needs to b enabled
+    std::stringstream ss;
+    ss << "SELECT * FROM " << libcomp::String(metaObject->GetName()).ToLower().ToUtf8()
+        << " " << libcomp::String("WHERE %1 = %2%3;")
+                        .Arg(f).Arg(v).Arg(loadByUUID ? "" : " ALLOW FILTERING").ToUtf8();
+
+    DatabaseQuery q = Prepare(ss.str());
+    if(q.Execute())
+    {
+        std::list<std::unordered_map<std::string, std::vector<char>>> rows;
+        q.Next();
+        q.GetRows(rows);
+
+        int failures = 0;
+        if(rows.size() > 0)
+        {
+            for(auto row : rows)
+            {
+                auto obj = LoadSingleObjectFromRow(type, row);
+                if(nullptr != obj)
+                {
+                    objects.push_back(obj);
+                }
+                else
+                {
+                    failures++;
+                }
+            }
+        }
+
+        if(failures > 0)
+        {
+            LOG_ERROR(libcomp::String("%1 '%2' row%3 failed to load.\n")
+                .Arg(failures).Arg(metaObject->GetName()).Arg(failures != 1 ? "s" : ""));
+        }
+    }
+
+    return objects;
+}
+
+std::shared_ptr<PersistentObject> DatabaseCassandra::LoadSingleObject(std::type_index type,
+    const std::string& fieldName, const libcomp::String& value)
+{
+    auto objects = LoadObjects(type, fieldName, value);
+
+    return objects.size() > 0 ? objects.front() : nullptr;
+}
+
+std::shared_ptr<PersistentObject> DatabaseCassandra::LoadSingleObjectFromRow(
+    std::type_index type, const std::unordered_map<std::string, std::vector<char>>& row)
+{
+    auto metaObject = PersistentObject::GetRegisteredMetadata(type);
+
+    std::stringstream objstream(std::stringstream::out |
+        std::stringstream::binary);
+
+    libobjgen::UUID uuid;
+    auto rowIter = row.find("uid");
+    if(rowIter != row.end())
+    {
+        std::vector<char> value = rowIter->second;
+        uuid = libobjgen::UUID(value);
+    }
+
+    if(uuid.IsNull())
+    {
+        return nullptr;
+    }
+
+    // Traverse the variables in the order the stream expects
+    for(auto varIter = metaObject->VariablesBegin();
+        varIter != metaObject->VariablesEnd(); varIter++)
+    {
+        auto var = *varIter;
+        std::string fieldNameLower = libcomp::String(var->GetName())
+            .ToLower().ToUtf8();
+
+        rowIter = row.find(fieldNameLower);
+
+        std::vector<char> data;
+        if(rowIter != row.end())
+        {
+            std::vector<char> value = rowIter->second;
+            data = ConvertToRawByteStream(var, value);
+
+            if(data.size() == 0)
+            {
+                return nullptr;
+            }
+
+            objstream.write(&data[0], (std::streamsize)data.size());
+        }
+        else
+        {
+            // Field exists in current metadata but not in the loaded record
+            /// @todo: add GetDefaultBinaryValue to MetaVariable and use that
+            data = ConvertToRawByteStream(var, std::vector<char>());
+        }
+    }
+
+    auto obj = PersistentObject::New(type);
+    std::stringstream iobjstream(objstream.str());
+    if(!obj->Load(iobjstream))
+    {
+        return nullptr;
+    }
+
+    obj->Register(obj, uuid);
+    return obj;
+}
+
+bool DatabaseCassandra::InsertSingleObject(std::shared_ptr<PersistentObject>& obj)
+{
+    auto metaObject = obj->GetObjectMetadata();
+
+    std::stringstream objstream;
+    if(!obj->Save(objstream))
+    {
+        return false;
+    }
+
+    if(obj->GetUUID().IsNull() && !obj->Register(obj))
+    {
+        return false;
+    }
+
+    std::string uuidStr = obj->GetUUID().ToString();
+
+    std::stringstream ss;
+    ss << "INSERT INTO " << libcomp::String(metaObject->GetName()).ToLower().ToUtf8()
+        << " (uid";
+
+    std::stringstream ssVals;
+
+    auto valueMap = obj->GetMemberStringValues();
+    for(auto varIter = metaObject->VariablesBegin();
+        varIter != metaObject->VariablesEnd(); varIter++)
+    {
+        auto var = *varIter;
+
+        auto valueIter = valueMap.find(var->GetName());
+        if(valueIter != valueMap.end())
+        {
+            ss << ", " << libcomp::String(var->GetName()).ToLower().ToUtf8();
+            ssVals << ", ";
+
+            switch(var->GetMetaType())
+            {
+                case libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING:
+                case libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF:
+                    /// @todo: escape
+                    ssVals << "'" << valueIter->second << "'";
+                    break;
+                default:
+                    ssVals << valueIter->second;
+                    break;
+            }
+        }
+    }
+
+    ss << libcomp::String(") VALUES (%1%2);").Arg(uuidStr).Arg(ssVals.str());
+
+    return !Execute(ss.str());
+}
+
+bool DatabaseCassandra::UpdateSingleObject(std::shared_ptr<PersistentObject>& obj)
+{
+    auto metaObject = obj->GetObjectMetadata();
+
+    std::stringstream objstream;
+    if(!obj->Save(objstream))
+    {
+        return false;
+    }
+
+    if(obj->GetUUID().IsNull())
+    {
+        return false;
+    }
+
+    std::string uuidStr = obj->GetUUID().ToString();
+
+    std::stringstream ss;
+    ss << "UPDATE " << libcomp::String(metaObject->GetName()).ToLower().ToUtf8()
+        << " SET ";
+
+    bool first = true;
+    auto valueMap = obj->GetMemberStringValues();
+    for(auto varIter = metaObject->VariablesBegin();
+        varIter != metaObject->VariablesEnd(); varIter++)
+    {
+        auto var = *varIter;
+
+        auto valueIter = valueMap.find(var->GetName());
+        if(valueIter != valueMap.end())
+        {
+            if(!first)
+            {
+                ss << ", ";
+            }
+
+            ss << libcomp::String(var->GetName()).ToLower().ToUtf8() << " = ";
+            switch(var->GetMetaType())
+            {
+                case libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING:
+                case libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF:
+                    /// @todo: escape
+                    ss << "'" << valueIter->second << "'";
+                    break;
+                default:
+                    ss << valueIter->second;
+                    break;
+            }
+
+            first = false;
+        }
+    }
+
+    ss << libcomp::String(" WHERE uid = %1;").Arg(uuidStr);
+
+    return !Execute(ss.str());
+}
+
+bool DatabaseCassandra::DeleteSingleObject(std::shared_ptr<PersistentObject>& obj)
+{
+    auto uuid = obj->GetUUID();
+    if(uuid.IsNull())
+    {
+        return false;
+    }
+
+    std::string uuidStr = obj->GetUUID().ToString();
+
+    auto metaObject = obj->GetObjectMetadata();
+
+    if(Execute(libcomp::String("DELETE FROM %1 WHERE uid = %2;")
+        .Arg(libcomp::String(metaObject->GetName()).ToLower().ToUtf8())
+        .Arg(uuidStr)))
+    {
+        obj->Unregister();
+        return true;
+    }
+
+    return false;
+}
+
+bool DatabaseCassandra::VerifyAndSetupSchema()
+{
+    auto keyspace = mConfig->GetKeyspace();
+    std::vector<std::shared_ptr<libobjgen::MetaObject>> metaObjectTables;
+    for(auto registrar : PersistentObject::GetRegistry())
+    {
+        std::string source = registrar.second->GetSourceLocation();
+        if(source == keyspace || (source.length() == 0 && UsingDefaultKeyspace()))
+        {
+            metaObjectTables.push_back(registrar.second);
+        }
+    }
+
+    std::unordered_map<std::string,
+        std::unordered_map<std::string, std::string>> fieldMap;
+    if(metaObjectTables.size() == 0)
+    {
+        return true;
+    }
+    else
+    {
+        LOG_DEBUG("Verifying database table structure.\n");
+
+        std::stringstream ss;
+        ss << "SELECT table_name, column_name, type"
+            << " FROM system_schema.columns"
+            " WHERE keyspace_name = '"
+            << keyspace << "';";
+
+        DatabaseQuery q = Prepare(ss.str());
+        std::list<std::unordered_map<std::string, std::vector<char>>> results;
+        if(!q.Execute() || !q.Next() || !q.GetRows(results))
+        {
+            LOG_CRITICAL("Failed to query for column schema.\n");
+
+            return false;
+        }
+
+        for(auto row : results)
+        {
+            std::string tableName(&row["table_name"][0], row["table_name"].size());
+            std::string colName(&row["column_name"][0], row["column_name"].size());
+            std::string dataType(&row["type"][0], row["type"].size());
+
+            std::unordered_map<std::string, std::string>& m = fieldMap[tableName];
+            m[colName] = dataType;
+        }
+    }
+
+    for(auto metaObjectTable : metaObjectTables)
+    {
+        auto metaObject = *metaObjectTable.get();
+        auto objName = libcomp::String(metaObject.GetName())
+                            .ToLower().ToUtf8();
+
+        std::vector<std::shared_ptr<libobjgen::MetaVariable>> vars;
+        for(auto iter = metaObject.VariablesBegin();
+            iter != metaObject.VariablesEnd(); iter++)
+        {
+            std::string type = GetVariableType(*iter);
+            if(type.empty())
+            {
+                LOG_ERROR(libcomp::String(
+                    "Unsupported field type encountered: %1\n")
+                    .Arg((*iter)->GetCodeType()));
+                return false;
+            }
+            vars.push_back(*iter);
+        }
+
+        bool creating = false;
+        bool archiving = false;
+        auto tableIter = fieldMap.find(objName);
+        if(tableIter == fieldMap.end())
+        {
+            creating = true;
+        }
+        else
+        {
+            std::unordered_map<std::string,
+                std::string> columns = tableIter->second;
+            if(columns.size() - 1 != vars.size()
+                || columns.find("uid") == columns.end())
+            {
+                archiving = true;
+            }
+            else
+            {
+                columns.erase("uid");
+                for(auto var : vars)
+                {
+                    auto name = libcomp::String(
+                        var->GetName()).ToLower().ToUtf8();
+                    auto type = GetVariableType(var);
+
+                    if(columns.find(name) == columns.end()
+                        || columns[name] != type)
+                    {
+                        archiving = true;
+                    }
+                }
+            }
+        }
+
+        if(archiving)
+        {
+            LOG_DEBUG(libcomp::String("Archiving table '%1'...\n")
+                .Arg(metaObject.GetName()));
+                
+            bool success = false;
+
+            /// @todo: do this properly
+            std::stringstream ss;
+            ss << "DROP TABLE " << objName;
+            success = Execute(ss.str());
+
+            if(success)
+            {
+                LOG_DEBUG("Archiving complete\n");
+            }
+            else
+            {
+                LOG_ERROR("Archiving failed\n");
+                return false;
+            }
+
+            creating = true;
+        }
+            
+        if(creating)
+        {
+            LOG_DEBUG(libcomp::String("Creating table '%1'...\n")
+                .Arg(metaObject.GetName()));
+
+            bool success = false;
+
+            std::stringstream ss;
+            ss << "CREATE TABLE " << objName
+                << " (uid uuid PRIMARY KEY" << std::endl;
+            for(size_t i = 0; i < vars.size(); i++)
+            {
+                auto var = vars[i];
+                std::string type = GetVariableType(var);
+
+                ss << "," << std::endl << var->GetName() << " " << type;
+            }
+            ss << ");";
+
+            success = Execute(ss.str());
+
+            if(success)
+            {
+                LOG_DEBUG("Creation complete\n");
+            }
+            else
+            {
+                LOG_ERROR("Creation failed\n");
+                return false;
+            }
+        }
+        else
+        {
+            LOG_DEBUG(libcomp::String("'%1': Verified\n")
+                .Arg(metaObject.GetName()));
+        }
+    }
+
+    return true;
+}
+
+bool DatabaseCassandra::UsingDefaultKeyspace()
+{
+    return mConfig->GetKeyspace() == mConfig->GetDefaultKeyspace();
 }
 
 bool DatabaseCassandra::WaitForFuture(CassFuture *pFuture)
@@ -206,6 +697,67 @@ bool DatabaseCassandra::WaitForFuture(CassFuture *pFuture)
     cass_future_free(pFuture);
 
     return result;
+}
+
+std::string DatabaseCassandra::GetVariableType(const std::shared_ptr
+    <libobjgen::MetaVariable> var)
+{
+    switch(var->GetMetaType())
+    {
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING:
+            return "text";
+            break;
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_S8:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_S16:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_S32:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_U8:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_U16:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_ENUM:
+            return "int";
+            break;
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_S64:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_U32:
+            return "bigint";
+            break;
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_U64:
+            /// @todo: Should this be a bigint too with conversion?
+            return "bigint";
+            break;
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF:
+            return "uuid";
+            break;
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_ARRAY:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_LIST:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_MAP:
+        default:
+            break;
+    }
+
+    return "";
+}
+
+std::vector<char> DatabaseCassandra::ConvertToRawByteStream(
+    const std::shared_ptr<libobjgen::MetaVariable>& var, const std::vector<char>& columnData)
+{
+    switch(var->GetMetaType())
+    {
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING:
+        case libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF:
+            {
+                size_t strLength = columnData.size();
+
+                char* arr = reinterpret_cast<char*>(&strLength);
+
+                std::vector<char> data(arr, arr + sizeof(uint32_t));
+                data.insert(data.end(), columnData.begin(), columnData.end());
+
+                return data;
+            }
+            break;
+        default:
+            return columnData;
+            break;
+    }
 }
 
 CassSession* DatabaseCassandra::GetSession() const

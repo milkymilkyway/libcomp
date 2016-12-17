@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objgen>
-    <object name="ServerConfig">
+    <object name="ServerConfig" persistent="false">
         <member type="string" name="DiffieHellmanKeyPair"
             regex="^[a-fA-F0-9]{256}|$"/>
         <member type="u16" name="Port"/>
-        <member type="string" name="DatabaseIP" default="127.0.0.1"/>
-        <member type="string" name="CassandraKeyspace" default="comp_hack"/>
+        <member type="enum" name="DatabaseType" default="CASSANDRA">
+            <value>CASSANDRA</value>
+            <value>SQLITE3</value>
+        </member>
+        <member type="DatabaseConfigSQLite3*" name="SQLite3Config"/>
+        <member type="DatabaseConfigCassandra*" name="CassandraConfig"/>
     </object>
 </objgen>

@@ -64,6 +64,7 @@ public:
         TYPE_U64,
         TYPE_FLOAT,
         TYPE_DOUBLE,
+        TYPE_ENUM,
         TYPE_STRING,
         TYPE_ARRAY,
         TYPE_LIST,
@@ -93,6 +94,9 @@ public:
 
     virtual bool IsInherited() const;
     virtual void SetInherited(const bool inherited);
+
+    virtual bool IsLookupKey() const;
+    virtual void SetLookupKey(const bool lookupKey);
 
     virtual bool IsValid(const std::vector<char>& data) const;
     virtual bool IsValid(const void *pData, size_t dataSize) const = 0;
@@ -133,6 +137,7 @@ public:
     virtual std::string GetDefaultValueCode() const;
     virtual std::string GetGetterCode(const Generator& generator,
         const std::string& name, size_t tabLevel = 1) const;
+    virtual std::string GetStringValueCode(const std::string& name) const;
     virtual std::string GetInternalGetterCode(const Generator& generator,
         const std::string& name) const;
     virtual std::string GetSetterCode(const Generator& generator,
@@ -167,6 +172,7 @@ private:
     bool mCaps;
     std::string mName;
     bool mInherited;
+    bool mLookupKey;
 };
 
 } // namespace libobjgen

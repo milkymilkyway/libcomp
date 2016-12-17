@@ -30,6 +30,7 @@
 // libcomp Includes
 #include "CString.h"
 #include "DatabaseQuery.h"
+#include "PersistentObject.h"
 
 namespace libcomp
 {
@@ -37,8 +38,9 @@ namespace libcomp
 class Database
 {
 public:
-    virtual bool Open(const String& address, const String& username = String(),
-        const String& password = String()) = 0;
+    ~Database();
+
+    virtual bool Open() = 0;
     virtual bool Close() = 0;
     virtual bool IsOpen() const = 0;
 
@@ -48,10 +50,25 @@ public:
     virtual bool Setup() = 0;
     virtual bool Use() = 0;
 
+    virtual std::list<std::shared_ptr<PersistentObject>> LoadObjects(
+        std::type_index type, const std::string& fieldName, const libcomp::String& value) = 0;
+
+    virtual std::shared_ptr<PersistentObject> LoadSingleObject(
+        std::type_index type, const std::string& fieldName, const libcomp::String& value) = 0;
+
+    virtual bool InsertSingleObject(std::shared_ptr<PersistentObject>& obj) = 0;
+    virtual bool UpdateSingleObject(std::shared_ptr<PersistentObject>& obj) = 0;
+    virtual bool DeleteSingleObject(std::shared_ptr<PersistentObject>& obj) = 0;
+
     String GetLastError() const;
+
+    static const std::shared_ptr<Database> GetMainDatabase();
+    static void SetMainDatabase(std::shared_ptr<Database> database);
 
 protected:
     String mError;
+
+    static std::shared_ptr<Database> sMain;
 };
 
 } // namespace libcomp

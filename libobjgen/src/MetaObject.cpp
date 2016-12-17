@@ -29,6 +29,7 @@
 // MetaVariable Types
 #include "MetaVariable.h"
 #include "MetaVariableArray.h"
+#include "MetaVariableEnum.h"
 #include "MetaVariableInt.h"
 #include "MetaVariableList.h"
 #include "MetaVariableMap.h"
@@ -44,6 +45,7 @@ using namespace libobjgen;
 
 MetaObject::MetaObject()
 {
+    mError = "Not initialized";
 }
 
 MetaObject::~MetaObject()
@@ -58,6 +60,21 @@ std::string MetaObject::GetName() const
 std::string MetaObject::GetBaseObject() const
 {
     return mBaseObject;
+}
+
+bool MetaObject::GetPersistent() const
+{
+    return mPersistent;
+}
+
+std::string MetaObject::GetSourceLocation() const
+{
+    return mSourceLocation;
+}
+
+std::string MetaObject::GetXMLDefinition() const
+{
+    return mXmlDefinition;
 }
 
 std::string MetaObject::GetError() const
@@ -85,16 +102,37 @@ bool MetaObject::SetBaseObject(const std::string& baseObject)
     return result;
 }
 
-bool MetaObject::AddVariable(const std::string& name,
-    const std::shared_ptr<MetaVariable>& var)
+void MetaObject::SetSourceLocation(const std::string& location)
+{
+    mSourceLocation = location;
+}
+
+void MetaObject::SetXMLDefinition(const std::string& xmlDefinition)
+{
+    mXmlDefinition = xmlDefinition;
+}
+
+void MetaObject::SetXMLDefinition(const tinyxml2::XMLElement& root)
+{
+    tinyxml2::XMLPrinter printer;
+    root.Accept(&printer);
+
+    std::stringstream ss;
+    ss << printer.CStr();
+    SetXMLDefinition(ss.str());
+}
+
+bool MetaObject::AddVariable(const std::shared_ptr<MetaVariable>& var)
 {
     bool result = false;
+
+    std::string name = var->GetName();
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
     if(IsValidIdentifier(name) && mVariableMapping.end() == mVariableMapping.find(name))
     {
         mVariables.push_back(var);
         mVariableMapping[name] = var;
-        var->SetName(name);
 
         result = true;
     }
@@ -106,7 +144,10 @@ bool MetaObject::RemoveVariable(const std::string& name)
 {
     bool result = false;
 
-    auto entry = mVariableMapping.find(name);
+    std::string lowerName = name;
+    std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+
+    auto entry = mVariableMapping.find(lowerName);
 
     if(mVariableMapping.end() != entry)
     {
@@ -123,6 +164,21 @@ bool MetaObject::RemoveVariable(const std::string& name)
     }
 
     return result;
+}
+
+std::shared_ptr<MetaVariable> MetaObject::GetVariable(const std::string& name)
+{
+    std::string lowerName = name;
+    std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+
+    auto entry = mVariableMapping.find(lowerName);
+
+    if(mVariableMapping.end() != entry)
+    {
+        return entry->second;
+    }
+
+    return nullptr;
 }
 
 MetaObject::VariableList::const_iterator MetaObject::VariablesBegin() const
@@ -196,17 +252,40 @@ bool MetaObject::Load(const tinyxml2::XMLDocument& doc,
     bool result = false;
     bool error = false;
 
+    mError.clear();
+    SetXMLDefinition(root);
+
     const char *szTagName = root.Name();
 
     if(nullptr != szTagName && "object" == std::string(szTagName))
     {
         const char *szName = root.Attribute("name");
         const char *szBaseObject = root.Attribute("baseobject");
+        const char *szPersistent = root.Attribute("persistent");
 
         if(nullptr != szName && SetName(szName))
         {
-            if (szBaseObject != nullptr)
+            if(nullptr != szPersistent && nullptr == szBaseObject)
             {
+                std::string attr(szPersistent);
+                mPersistent = "1" == attr || "true" == attr || "on" == attr || "yes" == attr;
+            }
+            else
+            {
+                mPersistent = nullptr == szBaseObject;
+            }
+
+            if(mPersistent)
+            {
+                const char *szLocation = root.Attribute("location");
+                if(nullptr != szLocation)
+                {
+                    SetSourceLocation(szLocation);
+                }
+            }
+            else if(nullptr != szBaseObject)
+            {
+                //Objects cannot be both derived and persistent
                 SetBaseObject(szBaseObject);
 
                 //Base objects override the need for member variables
@@ -275,7 +354,16 @@ bool MetaObject::LoadMember(const tinyxml2::XMLDocument& doc,
         {
             var->SetName(szMemberName);
 
-            if(AddVariable(szMemberName, var))
+            if(var->IsLookupKey() && !GetPersistent())
+            {
+                std::stringstream ss;
+                ss << "Non-persistent object member variable '"
+                    << szMemberName << "' on object '" << szName
+                    << "' marked as a lookup key.";
+
+                mError = ss.str();
+            }
+            else if(AddVariable(var))
             {
                 // At least one variable is added now. The result
                 // is OK unless an error causes a problem.
@@ -432,6 +520,54 @@ std::shared_ptr<MetaVariable> MetaObject::GetVariable(const tinyxml2::XMLDocumen
                 }
             }
         }
+        else if(var && var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_REF)
+        {
+            auto ref = std::dynamic_pointer_cast<MetaVariableReference>(var);
+
+            const tinyxml2::XMLElement *cMember = pMember->FirstChildElement();
+            while (nullptr != cMember)
+            {
+                std::string cMemberName = cMember->Name();
+                if("member" == cMemberName)
+                {
+                    std::string cName = cMember->Attribute("name");
+                    if(!DefaultsSpecified(cMember))
+                    {
+                        std::stringstream ss;
+                        ss << "Non-defaulted member in reference '" << szMemberName
+                            << "' in object '" << szName << "'.";
+
+                        mError = ss.str();
+                    }
+                    else if(cName.length() == 0)
+                    {
+                        std::stringstream ss;
+                        ss << "Non-defaulted member in reference '" << szMemberName
+                            << "' in object '" << szName << "' does not have a name specified.";
+
+                        mError = ss.str();
+                    }
+                    else
+                    {
+                        auto subVariable = GetVariable(doc, szName, szMemberName, cMember);
+                        subVariable->SetName(cName);
+                        if(subVariable && subVariable->Load(doc, *cMember))
+                        {
+                            ref->AddDefaultedVariable(subVariable);
+                        }
+                        else
+                        {
+                            std::stringstream ss;
+                            ss << "Failed to parse defaulted member in reference '" << szMemberName
+                                << "' in object '" << szName << "': " << var->GetError();
+
+                            mError = ss.str();
+                        }
+                    }
+                }
+                cMember = cMember->NextSiblingElement();
+            }
+        }
 
         if(var && var->Load(doc, *pMember))
         {
@@ -520,6 +656,9 @@ std::shared_ptr<MetaVariable> MetaObject::CreateType(
         objectCreatorFunctions["double"] = []() { return std::shared_ptr<
             MetaVariable>(new MetaVariableInt<double>()); };
 
+        objectCreatorFunctions["enum"] = []() { return std::shared_ptr<
+            MetaVariable>(new MetaVariableEnum()); };
+
         objectCreatorFunctions["string"] = []() { return std::shared_ptr<
             MetaVariable>(new MetaVariableString()); };
     }
@@ -587,7 +726,6 @@ bool MetaObject::HasCircularReference(
     return status;
 }
 
-
 const tinyxml2::XMLElement *MetaObject::GetChild(const tinyxml2::XMLElement *pMember,
     const std::string name) const
 {
@@ -602,6 +740,55 @@ const tinyxml2::XMLElement *MetaObject::GetChild(const tinyxml2::XMLElement *pMe
         cMember = cMember->NextSiblingElement();
     }
     return nullptr;
+}
+
+bool MetaObject::DefaultsSpecified(const tinyxml2::XMLElement *pMember) const
+{
+    const char *szMemberType = pMember->Attribute("type");
+    if(nullptr == szMemberType)
+    {
+        return false;
+    }
+
+    const std::string memberType(szMemberType);
+    auto subVar = CreateType(memberType);
+    if(subVar && subVar->GetMetaType() != MetaVariable::MetaVariableType_t::TYPE_REF)
+    {
+        return nullptr != pMember->Attribute("default");
+    }
+
+    std::set<std::string> subMembers;
+    if(subVar)
+    {
+        //Ref
+        subMembers.insert("member");
+    }
+    else if(memberType == "array" || memberType == "list")
+    {
+        subMembers.insert("entry");
+    }
+    else if(memberType == "map")
+    {
+        subMembers.insert("key");
+        subMembers.insert("value");
+    }
+    else
+    {
+        return false;
+    }
+    
+    const tinyxml2::XMLElement *cMember = pMember->FirstChildElement();
+    while(nullptr != cMember)
+    {
+        if(subMembers.find(cMember->Name()) != subMembers.end() && !DefaultsSpecified(cMember))
+        {
+            return false;
+        }
+
+        cMember = cMember->NextSiblingElement();
+    }
+
+    return true;
 }
 
 std::set<std::string> MetaObject::GetReferences() const

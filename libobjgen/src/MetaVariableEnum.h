@@ -1,10 +1,10 @@
 /**
- * @file libobjgen/src/MetaVariableString.h
+ * @file libobjgen/src/MetaVariableEnum.h
  * @ingroup libobjgen
  *
- * @author COMP Omega <compomega@tutanota.com>
+ * @author HACKfrost
  *
- * @brief Meta data for an string based object member variable.
+ * @brief Meta data for an enum based object member variable.
  *
  * This file is part of the COMP_hack Object Generator Library (libobjgen).
  *
@@ -24,8 +24,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBOBJGEN_SRC_METAVARIABLESTRING_H
-#define LIBOBJGEN_SRC_METAVARIABLESTRING_H
+#ifndef LIBOBJGEN_SRC_METAVARIABLEENUM_H
+#define LIBOBJGEN_SRC_METAVARIABLEENUM_H
 
 // libobjgen Includes
 #include "MetaVariable.h"
@@ -33,41 +33,17 @@
 namespace libobjgen
 {
 
-class MetaVariableString : public MetaVariable
+class MetaVariableEnum : public MetaVariable
 {
 public:
-    /**
-     * Valid string encodings.
-     */
-    enum class Encoding_t : int8_t
-    {
-        ENCODING_UTF8 = 0,
-        ENCODING_CP932,
-        ENCODING_CP1252,
-    };
+    MetaVariableEnum();
+    virtual ~MetaVariableEnum();
 
-    MetaVariableString();
-    virtual ~MetaVariableString();
+    uint32_t GetDefaultValue() const;
+    void SetDefaultValue(const uint32_t value);
 
-    size_t GetLengthSize() const;
-    void SetLengthSize(size_t lengthSize);
+    const std::vector<std::string> GetValues() const;
 
-    size_t GetRounding() const;
-    void SetRounding(size_t rounding);
-
-    bool GetAllowEmpty() const;
-    void SetAllowEmpty(bool allowEmpty);
-
-    Encoding_t GetEncoding() const;
-    void SetEncoding(Encoding_t encoding);
-
-    std::string GetRegularExpression() const;
-    bool SetRegularExpression(const std::string& regex);
-
-    std::string GetDefaultValue() const;
-    void SetDefaultValue(const std::string& value);
-
-    void SetSize(size_t size);
     virtual size_t GetSize() const;
 
     virtual MetaVariableType_t GetMetaType() const;
@@ -109,21 +85,18 @@ public:
         const std::string elemName = "member") const;
     virtual std::string GetStringValueCode(const std::string& name) const;
 
-    static std::string EncodingToString(Encoding_t encoding);
-    static std::string EncodingToComp(Encoding_t encoding);
+    virtual std::string GetUtilityDeclarations(const Generator& generator,
+        const std::string& name, size_t tabLevel = 1) const;
+    virtual std::string GetUtilityFunctions(const Generator& generator,
+        const MetaObject& object, const std::string& name) const;
 
-    std::string LengthSizeType() const;
+    bool ValueExists(const std::string& val);
 
 private:
-    size_t mSize;
-    size_t mRounding;
-    size_t mLengthSize;
-    bool mAllowEmpty;
-    Encoding_t mEncoding;
-    std::string mDefaultValue;
-    std::string mRegularExpression;
+    std::vector<std::string> mValues;
+    uint32_t mDefaultValue;
 };
 
 } // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLESTRING_H
+#endif // LIBOBJGEN_SRC_METAVARIABLEENUM_H
