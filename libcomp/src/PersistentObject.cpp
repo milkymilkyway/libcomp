@@ -64,19 +64,19 @@ PersistentObject::~PersistentObject()
         }
         else
         {
-            LOG_ERROR(libcomp::String("Uncached UUID detected during cleanup: %1").Arg(strUUID));
+            LOG_ERROR(String("Uncached UUID detected during cleanup: %1\n").Arg(
+                strUUID));
         }
     }
 }
 
-bool PersistentObject::Register(std::shared_ptr<PersistentObject>& self)
+bool PersistentObject::Register(const std::shared_ptr<PersistentObject>& self)
 {
     if(!self->IsDeleted())
     {
         bool registered = false;
 
         libobjgen::UUID& uuid = self->mUUID;
-        std::string uuidString = self->mUUID.ToString();
 
         if(uuid.IsNull())
         {
@@ -84,10 +84,12 @@ bool PersistentObject::Register(std::shared_ptr<PersistentObject>& self)
 
             registered = true;
         }
-        else if(sCached.find(uuidString) == sCached.end())
+        else if(sCached.find(uuid.ToString()) == sCached.end())
         {
             registered = true;
         }
+
+        std::string uuidString = uuid.ToString();
 
         if(registered)
         {
