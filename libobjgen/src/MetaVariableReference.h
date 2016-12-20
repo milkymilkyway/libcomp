@@ -51,6 +51,9 @@ public:
     std::string GetReferenceType() const;
     bool SetReferenceType(const std::string& referenceType);
 
+    bool GetPersistentParent() const;
+    bool SetPersistentParent(bool persistentParent);
+
     void AddDefaultedVariable(std::shared_ptr<MetaVariable>& var);
     const std::list<std::shared_ptr<MetaVariable>> GetDefaultedVariables() const;
 
@@ -101,6 +104,7 @@ public:
 
 private:
     std::string mReferenceType;
+    bool mPersistentParent;
 
     std::list<std::shared_ptr<MetaVariable>> mDefaultedVariables;
 };
