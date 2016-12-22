@@ -30,6 +30,7 @@
 #include "Database.h"
 #include "DatabaseBind.h"
 #include "Log.h"
+#include "MetaObjectXmlParser.h"
 #include "MetaVariable.h"
 
 // All libcomp PersistentObject Includes
@@ -195,21 +196,23 @@ const std::shared_ptr<libobjgen::MetaObject> PersistentObject::GetRegisteredMeta
     return iter != sTypeMap.end() ? iter->second : nullptr;
 }
 
-std::shared_ptr<libobjgen::MetaObject> PersistentObject::GetMetadataFromXml(const std::string& xml)
+std::shared_ptr<libobjgen::MetaObject> PersistentObject::GetMetadataFromBytes(const char* bytes,
+    size_t length)
 {
-    auto obj = std::shared_ptr<libobjgen::MetaObject>(new libobjgen::MetaObject());
-
-    tinyxml2::XMLDocument doc;
-    auto err = doc.Parse(xml.c_str(), xml.length());
-    if(err == tinyxml2::XML_NO_ERROR)
+    if(length == 0)
     {
-        if(!obj->Load(doc, *doc.FirstChildElement(), false))
-        {
-            //Should never happen to generated objects
-            obj = nullptr;
-        }
+        return nullptr;
     }
-    
+
+    std::string definition(bytes, length);
+    std::stringstream ss(definition);
+
+    auto obj = std::shared_ptr<libobjgen::MetaObject>(new libobjgen::MetaObject());
+    if(!obj->Load(ss))
+    {
+        obj = nullptr;
+    }
+
     return obj;
 }
 
@@ -277,8 +280,11 @@ bool PersistentObject::Delete(std::shared_ptr<PersistentObject>& obj)
     return false;
 }
 
-void PersistentObject::Initialize()
+bool PersistentObject::sInitializationFailed = false;
+bool PersistentObject::Initialize()
 {
     RegisterType(typeid(objects::Account), objects::Account::GetMetadata(),
         []() {  return (PersistentObject*)new objects::Account(); });
+
+    return !sInitializationFailed;
 }
