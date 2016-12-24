@@ -30,6 +30,7 @@
 #include "Endian.h"
 #include "Log.h"
 #include "PacketException.h"
+#include "ScriptEngine.h"
 
 #include <zlib.h>
 
@@ -613,4 +614,27 @@ Packet& Packet::operator=(Packet&& other)
     other.Clear();
 
     return *this;
+}
+
+namespace libcomp
+{
+    template<>
+    ScriptEngine& ScriptEngine::Using<Packet>()
+    {
+        // Include the base class
+        Using<ReadOnlyPacket>();
+
+        // Base class must be bound first.
+        Sqrat::DerivedClass<Packet, ReadOnlyPacket> binding(mVM, "Packet");
+        binding
+            .Func("WriteBlank", &Packet::WriteBlank)
+            .Func("WriteU16Little", &Packet::WriteU16Little)
+            .Func<void (Packet::*)(const std::vector<char>&)>(
+                "WriteArray", &Packet::WriteArray)
+            ; // Last call to binding
+
+        Sqrat::RootTable(mVM).Bind("Packet", binding);
+
+        return *this;
+    }
 }
