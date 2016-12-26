@@ -72,6 +72,8 @@ public:
     std::shared_ptr<libcomp::MessageQueue<
         libcomp::Message::Message*>> GetMessageQueue() const;
 
+    long AssignmentCount() const;
+
 protected:
     virtual void Cleanup();
 
