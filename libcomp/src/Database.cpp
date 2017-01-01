@@ -83,9 +83,9 @@ bool Database::TableHasRows(const String& table)
 }
 
 std::shared_ptr<PersistentObject> Database::LoadSingleObject(std::type_index type,
-    DatabaseBind *pValue)
+    const std::list<DatabaseBind*>& pValues)
 {
-    auto objects = LoadObjects(type, pValue);
+    auto objects = LoadObjects(type, pValues);
 
     return objects.size() > 0 ? objects.front() : nullptr;
 }
