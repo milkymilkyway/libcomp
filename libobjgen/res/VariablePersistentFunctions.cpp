@@ -9,7 +9,7 @@ bool @OBJECT_NAME@::LoadDatabaseValues(libcomp::DatabaseQuery& query)
 {
     @GET_DATABASE_VALUES@
 
-    if(!query.GetValue("UID", mUUID))
+    if(!query.GetValue("uid", mUUID))
     {
         return false;
     }

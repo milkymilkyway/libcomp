@@ -73,11 +73,11 @@ std::string MetaVariableEnum::GetSizeTypeString() const
     switch(mSizeType)
     {
         case 8:
-            return "int8_t";
+            return "uint8_t";
         case 16:
-            return "int16_t";
+            return "uint16_t";
         case 32:
-            return "int32_t";
+            return "uint32_t";
         default:
             break;
     }
@@ -457,12 +457,9 @@ std::string MetaVariableEnum::GetXmlSaveCode(const Generator& generator,
 std::string MetaVariableEnum::GetBindValueCode(const Generator& generator,
     const std::string& name, size_t tabLevel) const
 {
-    std::stringstream ss;
-    ss << "static_cast<int32_t>(" << name << ")";
-
     std::map<std::string, std::string> replacements;
     replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
-    replacements["@VAR_NAME@"] = ss.str();
+    replacements["@VAR_NAME@"] = name;
     replacements["@TYPE@"] = "Int";
 
     return generator.ParseTemplate(tabLevel, "VariableGetTypeBind",
@@ -475,7 +472,7 @@ std::string MetaVariableEnum::GetDatabaseLoadCode(const Generator& generator,
     (void)name;
 
     std::map<std::string, std::string> replacements;
-    replacements["@DATABASE_TYPE@"] = "int32_t";
+    replacements["@DATABASE_TYPE@"] = GetSizeTypeString();
     replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
     replacements["@SET_FUNCTION@"] = std::string("Set") +
         generator.GetCapitalName(*this);

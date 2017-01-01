@@ -35,7 +35,6 @@
 
 // All libcomp PersistentObject Includes
 #include "Account.h"
-#include "RegisteredServer.h"
 
 using namespace libcomp;
 
@@ -147,12 +146,9 @@ std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(std::type_i
 
     if(nullptr == obj)
     {
-        std::list<DatabaseBind*> bindings;
-
         auto bind = new DatabaseBindUUID("uid", uuid);
-        bindings.push_back(bind);
 
-        obj = LoadObject(type, db, bindings);
+        obj = LoadObject(type, db, bind);
 
         delete bind;
 
@@ -168,28 +164,16 @@ std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(std::type_i
 
 std::shared_ptr<PersistentObject> PersistentObject::LoadObject(
     std::type_index type, const std::shared_ptr<Database>& db,
-    const std::list<DatabaseBind*>& pValues)
+    DatabaseBind *pValue)
 {
     std::shared_ptr<PersistentObject> obj;
 
     if(nullptr != db)
     {
-        obj = db->LoadSingleObject(type, pValues);
+        obj = db->LoadSingleObject(type, pValue);
     }
 
     return obj;
-}
-
-std::list<std::shared_ptr<PersistentObject>> PersistentObject::LoadObjects(
-    std::type_index type, const std::shared_ptr<Database>& db,
-    const std::list<DatabaseBind*>& pValues)
-{
-    if(nullptr != db)
-    {
-        return db->LoadObjects(type, pValues);
-    }
-
-    return std::list<std::shared_ptr<PersistentObject>>();
 }
 
 void PersistentObject::RegisterType(std::type_index type,
@@ -275,8 +259,6 @@ bool PersistentObject::Initialize()
 {
     RegisterType(typeid(objects::Account), objects::Account::GetMetadata(),
         []() {  return (PersistentObject*)new objects::Account(); });
-    RegisterType(typeid(objects::RegisteredServer), objects::RegisteredServer::GetMetadata(),
-        []() {  return (PersistentObject*)new objects::RegisteredServer(); });
 
     return !sInitializationFailed;
 }

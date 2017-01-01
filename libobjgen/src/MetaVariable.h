@@ -88,19 +88,15 @@ public:
     virtual bool IsCoreType() const = 0;
     virtual bool IsScriptAccessible() const = 0;
     virtual bool IsValid() const = 0;
-    virtual bool IsValidLookupKey() const;
 
-    bool IsCaps() const;
-    void SetCaps(bool caps);
+    virtual bool IsCaps() const;
+    virtual void SetCaps(bool caps);
 
-    bool IsInherited() const;
-    void SetInherited(const bool inherited);
+    virtual bool IsInherited() const;
+    virtual void SetInherited(const bool inherited);
 
-    bool IsLookupKey() const;
-    void SetLookupKey(const bool lookupKey);
-
-    bool IsUniqueKey() const;
-    bool SetUniqueKey(const bool uniqueKey);
+    virtual bool IsLookupKey() const;
+    virtual void SetLookupKey(const bool lookupKey);
 
     virtual bool Load(std::istream& stream);
     virtual bool Save(std::ostream& stream) const;
@@ -190,7 +186,6 @@ private:
     std::string mName;
     bool mInherited;
     bool mLookupKey;
-    bool mUniqueKey;
 };
 
 } // namespace libobjgen

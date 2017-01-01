@@ -220,28 +220,6 @@ public:
     static std::shared_ptr<PersistentObject> New(std::type_index type);
 
     /*
-     * Convert a list of PersistentObject derived object pointers into a
-     * list of PersistentObject pointers.
-     * @param objList List of PersistentObject derived object pointers
-     * @return List of PersistentObject pointers
-     */
-    template<class T> static std::list<std::shared_ptr<PersistentObject>>
-        ToList(std::list<std::shared_ptr<T>> objList)
-    {
-        std::list<std::shared_ptr<PersistentObject>> converted;
-        if(std::is_base_of<PersistentObject, T>::value)
-        {
-            for(auto obj : objList)
-            {
-                converted.push_back(std::dynamic_pointer_cast<
-                    PersistentObject>(obj));
-            }
-        }
-
-        return converted;
-    }
-
-    /*
      * Save a new record to the database.
      * @param db Database to load from
      * @return true on success, false on failure
@@ -278,22 +256,11 @@ protected:
      * Load an object from the database from a field database binding.
      * @param type C++ type representing the object type to load
      * @param db Database to load from
-     * @param pValues List of pointers to fields bound to database columns
+     * @param pValue Pointer to a field bound to a database column
      * @return Pointer to the object or nullptr if it doesn't exist
      */
     static std::shared_ptr<PersistentObject> LoadObject(std::type_index type,
-        const std::shared_ptr<Database>& db, const std::list<DatabaseBind*>& pValues);
-
-    /*
-     * Load multiple objects from the database from a field database binding.
-     * @param type C++ type representing the object type to load
-     * @param db Database to load from
-     * @param pValues List of pointers to fields bound to database columns
-     * @return List of pointers objects
-     */
-    static std::list<std::shared_ptr<PersistentObject>> LoadObjects(
-        std::type_index type, const std::shared_ptr<Database>& db,
-        const std::list<DatabaseBind*>& pValues);
+        const std::shared_ptr<Database>& db, DatabaseBind *pValue);
 
     /// Static value to be set to true if any PersistentObject type fails
     /// to register itself at runtime

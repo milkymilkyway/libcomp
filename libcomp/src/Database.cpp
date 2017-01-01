@@ -83,49 +83,24 @@ bool Database::TableHasRows(const String& table)
 }
 
 std::shared_ptr<PersistentObject> Database::LoadSingleObject(std::type_index type,
-    const std::list<DatabaseBind*>& pValues)
+    DatabaseBind *pValue)
 {
-    auto objects = LoadObjects(type, pValues);
+    auto objects = LoadObjects(type, pValue);
 
     return objects.size() > 0 ? objects.front() : nullptr;
-}
-
-bool Database::DeleteSingleObject(std::shared_ptr<PersistentObject>& obj)
-{
-    std::list<std::shared_ptr<PersistentObject>> objs;
-    objs.push_back(obj);
-    return DeleteObjects(objs);
 }
 
 std::shared_ptr<PersistentObject> Database::LoadSingleObjectFromRow(
     std::type_index type, DatabaseQuery& query)
 {
-    bool isNew = false;
-
-    std::shared_ptr<PersistentObject> obj;
-
-    libobjgen::UUID uid;
-    if(query.GetValue("UID", uid))
-    {
-        //If the object is already cached, refresh it
-        obj = PersistentObject::GetObjectByUUID(uid);
-    }
-
-    if(nullptr == obj)
-    {
-        obj = PersistentObject::New(type);
-        isNew = true;
-    }
+    auto obj = PersistentObject::New(type);
 
     if(!obj->LoadDatabaseValues(query))
     {
         return nullptr;
     }
 
-    if(isNew)
-    {
-        PersistentObject::Register(obj);
-    }
+    PersistentObject::Register(obj);
 
     return obj;
 }

@@ -27,7 +27,6 @@
 #include "MetaObject.h"
 
 // MetaVariable Types
-#include "CombinationKey.h"
 #include "MetaVariable.h"
 #include "MetaVariableArray.h"
 #include "MetaVariableEnum.h"
@@ -159,7 +158,7 @@ bool MetaObject::RemoveVariable(const std::string& name)
     return result;
 }
 
-std::shared_ptr<MetaVariable> MetaObject::GetVariable(const std::string& name) const
+std::shared_ptr<MetaVariable> MetaObject::GetVariable(const std::string& name)
 {
     std::string lowerName = name;
     std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
@@ -182,28 +181,6 @@ MetaObject::VariableList::const_iterator MetaObject::VariablesBegin() const
 MetaObject::VariableList::const_iterator MetaObject::VariablesEnd() const
 {
     return mVariables.end();
-}
-
-std::shared_ptr<CombinationKey> MetaObject::GetComboKey(const std::string& name) const
-{
-    auto iter = mComboKeys.find(name);
-    return iter != mComboKeys.end() ? iter->second : nullptr;
-}
-
-const MetaObject::ComboKeys MetaObject::GetComboKeys() const
-{
-    return mComboKeys;
-}
-
-bool MetaObject::SetComboKey(std::shared_ptr<CombinationKey>& comboKey)
-{
-    auto name = comboKey->GetName();
-    if(mComboKeys.find(name) == mComboKeys.end())
-    {
-        mComboKeys[name] = comboKey;
-    }
-
-    return false;
 }
 
 uint16_t MetaObject::GetDynamicSizeCount() const
@@ -271,14 +248,6 @@ bool MetaObject::IsValid() const
         }
     }
 
-    for(auto pair : mComboKeys)
-    {
-        if(!pair.second->IsValid())
-        {
-            return false;
-        }
-    }
-
     return !mName.empty() && IsValidIdentifier(mName) &&
         (mVariables.size() > 0 || !mBaseObject.empty()) &&
         (mPersistent || mSourceLocation.empty()) &&
@@ -305,16 +274,6 @@ bool MetaObject::Load(std::istream& stream)
             AddVariable(var);
         }
     }
-    
-    std::unordered_map<std::string, std::shared_ptr<CombinationKey>> keys;
-    if(CombinationKey::LoadCombinationKeyList(stream, keys))
-    {
-        mComboKeys.clear();
-        for(auto pair : keys)
-        {
-            SetComboKey(pair.second);
-        }
-    }
 
     return stream.good();
 }
@@ -335,8 +294,7 @@ bool MetaObject::Save(std::ostream& stream) const
     Generator::SaveString(stream, mSourceLocation);
 
     return stream.good() &&
-        MetaVariable::SaveVariableList(stream, mVariables) &&
-        CombinationKey::SaveCombinationKeyList(stream, mComboKeys);
+        MetaVariable::SaveVariableList(stream, mVariables);
 }
 
 bool MetaObject::Save(tinyxml2::XMLDocument& doc,

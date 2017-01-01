@@ -81,11 +81,11 @@ public:
     virtual bool Use();
 
     virtual std::list<std::shared_ptr<PersistentObject>> LoadObjects(
-        std::type_index type, const std::list<DatabaseBind*>& pValues);
+        std::type_index type, DatabaseBind *pValue);
 
     virtual bool InsertSingleObject(std::shared_ptr<PersistentObject>& obj);
     virtual bool UpdateSingleObject(std::shared_ptr<PersistentObject>& obj);
-    virtual bool DeleteObjects(std::list<std::shared_ptr<PersistentObject>>& objs);
+    virtual bool DeleteSingleObject(std::shared_ptr<PersistentObject>& obj);
 
     /**
      * Verify/create any missing tables based off of @ref PersistentObject
