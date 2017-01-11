@@ -85,7 +85,7 @@ void ChannelConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
 
                 // If they are equal, this packet might be confused with an
                 // uncompressed one. In such a case, do not compress.
-                if(compressedSize != originalSize && 0 < compressedSize)
+                if(compressedSize < originalSize && 0 < compressedSize)
                 {
                     // Packet is OK.
                     packetOK = true;
@@ -106,15 +106,17 @@ void ChannelConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
                 packetOK = true;
             }
 
-            // Write the uncompressed and compressed sizes/
+            // Write the uncompressed and compressed sizes.
             if(packetOK)
             {
                 // Move to where the uncompressed and compressed sizes are.
-                finalPacket.Seek(4 * sizeof(uint32_t));
+                finalPacket.Seek(2 * sizeof(uint32_t));
 
                 // Write the sizes.
+                finalPacket.WriteArray("gzip", 4);
                 finalPacket.WriteS32Little(originalSize);
                 finalPacket.WriteS32Little(compressedSize);
+                finalPacket.WriteArray("lv6", 4);
             }
         }
 
