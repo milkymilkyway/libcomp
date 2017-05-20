@@ -123,8 +123,8 @@ IF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(OPENSSL_URL
-        URL https://github.com/comphack/openssl/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=118a4e12da86f4cb9eeca735a74669a17dec12bd
+        URL https://github.com/comphack/openssl/archive/comp_hack-20170520.zip
+        URL_HASH SHA1=604d510caef8fb1abe762e11507a003800b0d83f
     )
 ENDIF()
 
@@ -134,7 +134,7 @@ ExternalProject_Add(
     ${OPENSSL_URL}
 
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/openssl
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DUSE_STATIC_RUNTIME=${USE_STATIC_RUNTIME} -DCMAKE_DEBUG_POSTFIX=d
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DUSE_STATIC_RUNTIME=${USE_STATIC_RUNTIME} -DCMAKE_DEBUG_POSTFIX=d -DBUILD_VALGRIND_FRIENDLY=${BUILD_VALGRIND_FRIENDLY}
 
     # Dump output to a log instead of the screen.
     LOG_DOWNLOAD ON

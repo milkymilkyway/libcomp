@@ -72,6 +72,15 @@ ENDIF()
 
 INCLUDE(${CMAKE_MODULE_PATH}/DetermineOS.cmake)
 
+# If the build should be optimized.
+OPTION(BUILD_OPTIMIZED "Build an optimized release of the server." ON)
+
+IF(BUILD_OPTIMIZED)
+    SET(BUILD_VALGRIND_FRIENDLY OFF)
+ELSE()
+    SET(BUILD_VALGRIND_FRIENDLY ON)
+ENDIF()
+
 # Include all build code for external projects.
 INCLUDE(${CMAKE_MODULE_PATH}/external.cmake)
 
@@ -100,9 +109,6 @@ SET(SQLITE3_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/sqlite3")
 
 # Enable testing.
 INCLUDE(CTest)
-
-# If the build should be optimized.
-OPTION(BUILD_OPTIMIZED "Build an optimized release of the server." ON)
 
 # Determine if the system is big or little endian.
 INCLUDE(TestBigEndian)
