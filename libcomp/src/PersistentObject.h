@@ -36,7 +36,6 @@
 #include <UUID.h>
 
 // Standard C++ 11 Includes
-#include <mutex>
 #include <typeindex>
 
 namespace libcomp
@@ -88,10 +87,14 @@ public:
     virtual std::shared_ptr<libobjgen::MetaObject> GetObjectMetadata() = 0;
 
     /**
-     * Get database bindings for every data member.
+     * Get database bindings for all or changed data members.
+     * Calling this will clear the set of fields marked as changed.
+     * @param retrieveAll Optional parameter to retrieve all data members
+     *  instead of the default change only behavior
      * @return List of pointers to data member database binds
      */
-    virtual std::list<libcomp::DatabaseBind*> GetMemberBindValues() = 0;
+    virtual std::list<libcomp::DatabaseBind*> GetMemberBindValues(
+        bool retrieveAll = false) = 0;
 
     /**
      * Load the object from a successfully executed query.
@@ -343,6 +346,9 @@ protected:
 
     /// UUID associated to the object
     libobjgen::UUID mUUID;
+
+    /// Set of fields that have been updated since the last save operation
+    std::set<std::string> mDirtyFields;
 
 private:
     /// Map of intantiated objects listed by their UUID

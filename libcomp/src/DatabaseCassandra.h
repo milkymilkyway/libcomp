@@ -98,6 +98,8 @@ public:
      */
     bool UsingDefaultKeyspace();
 
+    virtual bool ProcessChangeSet(const std::shared_ptr<DatabaseChangeSet>& changes);
+
 protected:
     /**
      * Wait for the completion of an async future execution.

@@ -97,6 +97,102 @@ bool Database::DeleteSingleObject(std::shared_ptr<PersistentObject>& obj)
     return DeleteObjects(objs);
 }
 
+void Database::QueueInsert(std::shared_ptr<PersistentObject> obj,
+    const libobjgen::UUID& uuid)
+{
+    auto s = DatabaseChangeSet::Create(uuid);
+    s->Insert(obj);
+    QueueChangeSet(s);
+}
+
+void Database::QueueUpdate(std::shared_ptr<PersistentObject> obj,
+    const libobjgen::UUID& uuid)
+{
+    auto s = DatabaseChangeSet::Create(uuid);
+    s->Update(obj);
+    QueueChangeSet(s);
+}
+
+void Database::QueueDelete(std::shared_ptr<PersistentObject> obj,
+    const libobjgen::UUID& uuid)
+{
+    auto s = DatabaseChangeSet::Create(uuid);
+    s->Delete(obj);
+    QueueChangeSet(s);
+}
+
+void Database::QueueChangeSet(const std::shared_ptr<
+    DatabaseChangeSet>& changes)
+{
+    auto uuid = changes->GetTransactionUUID();
+    std::string key = uuid.ToString();
+
+    std::lock_guard<std::mutex> lock(mTransactionLock);
+    auto queueEntry = mTransactionQueue[key];
+    if(queueEntry == nullptr)
+    {
+        queueEntry = DatabaseChangeSet::Create(uuid);
+    }
+
+    for(auto obj : changes->GetInserts())
+    {
+        queueEntry->Insert(obj);
+    }
+
+    for(auto obj : changes->GetUpdates())
+    {
+        queueEntry->Update(obj);
+    }
+
+    for(auto obj : changes->GetDeletes())
+    {
+        queueEntry->Delete(obj);
+    }
+
+    mTransactionQueue[key] = queueEntry;
+}
+
+std::list<libobjgen::UUID> Database::ProcessTransactionQueue()
+{
+    std::list<libobjgen::UUID> failures;
+
+    std::unordered_map<std::string,
+        std::shared_ptr<DatabaseChangeSet>> queue;
+    {
+        std::lock_guard<std::mutex> lock(mTransactionLock);
+
+        if(mTransactionQueue.size() == 0)
+        {
+            return failures;
+        }
+
+        queue = mTransactionQueue;
+        mTransactionQueue.clear();
+    }
+
+    // Process the general queue transaction first
+    auto nullKey = NULLUUID.ToString();
+    if(queue.find(nullKey) != queue.end())
+    {
+        if(!ProcessChangeSet(queue[nullKey]))
+        {
+            failures.push_back(nullKey);
+        }
+        queue.erase(nullKey);
+    }
+
+    // Process the remaining transactions
+    for(auto kv : queue)
+    {
+        if(!ProcessChangeSet(kv.second))
+        {
+            failures.push_back(kv.second->GetTransactionUUID());
+        }
+    }
+
+    return failures;
+}
+
 std::shared_ptr<PersistentObject> Database::LoadSingleObjectFromRow(
     size_t typeHash, DatabaseQuery& query)
 {
