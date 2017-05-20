@@ -109,6 +109,8 @@ public:
      */
     bool UsingDefaultDatabaseFile();
 
+    virtual bool ProcessChangeSet(const std::shared_ptr<DatabaseChangeSet>& changes);
+
 private:
     /**
      * Get the path to the database file to use.

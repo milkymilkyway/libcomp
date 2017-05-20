@@ -1,12 +1,18 @@
-std::list<libcomp::DatabaseBind*> @OBJECT_NAME@::GetMemberBindValues()
+std::list<libcomp::DatabaseBind*> @OBJECT_NAME@::GetMemberBindValues(bool retrieveAll)
 {
     std::list<libcomp::DatabaseBind*> values;
+    std::lock_guard<std::mutex> lock(mFieldLock);
+
     @BINDS@
+
+    mDirtyFields.clear();
     return values;
 }
 
 bool @OBJECT_NAME@::LoadDatabaseValues(libcomp::DatabaseQuery& query)
 {
+    std::lock_guard<std::mutex> lock(mFieldLock);
+
     @GET_DATABASE_VALUES@
 
     if(!query.GetValue("UID", mUUID))

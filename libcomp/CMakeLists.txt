@@ -113,6 +113,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Database.h
     src/DatabaseBind.h
     src/DatabaseCassandra.h
+    src/DatabaseChangeSet.h
     src/DatabaseQuery.h
     src/DatabaseQueryCassandra.h
     src/DatabaseQuerySQLite3.h
@@ -145,6 +146,7 @@ SET(${PROJECT_NAME}_HDRS
     src/MessagePong.h
     src/MessageQueue.h
     src/MessageShutdown.h
+    src/MessageTick.h
     src/MessageTimeout.h
     src/MessageWorldNotification.h
     src/Object.h

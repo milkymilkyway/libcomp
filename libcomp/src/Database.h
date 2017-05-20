@@ -31,6 +31,7 @@
 #include "CString.h"
 #include "DatabaseConfig.h"
 #include "DatabaseQuery.h"
+#include "DatabaseChangeSet.h"
 #include "PersistentObject.h"
 
 namespace libcomp
@@ -174,6 +175,54 @@ public:
     virtual bool DeleteObjects(std::list<std::shared_ptr<PersistentObject>>& objs) = 0;
 
     /**
+     * Queue an object to insert during the next call to
+     * ProcessTransactionQueue.
+     * @param obj Pointer to the object to insert
+     * @param uuid UUID used to group changes together
+     */
+    void QueueInsert(std::shared_ptr<PersistentObject> obj,
+        const libobjgen::UUID& uuid = NULLUUID);
+
+    /**
+     * Queue an object to update during the next call to
+     * ProcessTransactionQueue.
+     * @param obj Pointer to the object to update
+     * @param uuid UUID used to group changes together
+     */
+    void QueueUpdate(std::shared_ptr<PersistentObject> obj,
+        const libobjgen::UUID& uuid = NULLUUID);
+
+    /**
+     * Queue an object to delete during the next call to
+     * ProcessTransactionQueue.
+     * @param obj Pointer to the object to delete
+     * @param uuid UUID used to group changes together
+     */
+    void QueueDelete(std::shared_ptr<PersistentObject> obj,
+        const libobjgen::UUID& uuid = NULLUUID);
+
+    /**
+     * Queue a set of changes to execute during the next call to
+     * ProcessTransactionQueue.
+     * @param changes DatabaseChangeSet to queue for processing
+     */
+    void QueueChangeSet(const std::shared_ptr<DatabaseChangeSet>& changes);
+
+    /**
+     * Pop and process all transactions stored in the transaction queue.
+     * @return List of all transaction group UUIDs that failed to process
+     */
+    std::list<libobjgen::UUID> ProcessTransactionQueue();
+
+    /**
+     * Process one or many database changes as a single query.
+     * @param changes Grouping of changes to apply to the database
+     * @return true on success, false on failure
+     */
+    virtual bool ProcessChangeSet(const std::shared_ptr<
+        DatabaseChangeSet>& changes) = 0;
+
+    /**
      * Retrieve the last error raised by a database operation.
      * @return The last error that occurred
      */
@@ -202,6 +251,14 @@ protected:
 
     /// Pointer to the config file used to configure the database connection
     std::shared_ptr<objects::DatabaseConfig> mConfig;
+
+private:
+    /// Map of transaction pointers by UUID
+    std::unordered_map<std::string,
+        std::shared_ptr<DatabaseChangeSet>> mTransactionQueue;
+
+    /// Mutex to lock accessing the transaction queue
+    std::mutex mTransactionLock;
 };
 
 } // namespace libcomp
