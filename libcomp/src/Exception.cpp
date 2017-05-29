@@ -124,7 +124,7 @@ Exception::Exception(const String& msg, const String& f, int l) :
             }
             else
             {
-                ss << "???(" << pInfo->Name << "+0x"
+                ss << R"???(" << pInfo->Name << "+0x"
                     << std::hex << displacement << ")";
             }
 
