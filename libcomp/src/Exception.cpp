@@ -101,22 +101,22 @@ Exception::Exception(const String& msg, const String& f, int l) :
         {
             char name[MAX_SYMBOL_LEN];
 
-            char *pModuleName = strrchr(name, '\\');
-
-            if(NULL == pModuleName)
-            {
-                pModuleName = name;
-            }
-            else
-            {
-                pModuleName++;
-            }
-
             std::stringstream ss;
 
             if(0 < GetModuleFileNameA((HMODULE)pInfo->ModBase, name,
                 MAX_SYMBOL_LEN))
             {
+                char *pModuleName = strrchr(name, '\\');
+
+                if(NULL == pModuleName)
+                {
+                    pModuleName = name;
+                }
+                else
+                {
+                    pModuleName++;
+                }
+
                 ss << pModuleName << "(" << pInfo->Name << "+0x"
                     << std::hex << displacement << ")";
             }
