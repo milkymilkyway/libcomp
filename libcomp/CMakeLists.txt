@@ -474,7 +474,8 @@ TARGET_LINK_LIBRARIES(comp mariadbclient ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES}
 ADD_DEPENDENCIES(comp asio sqrat gsl)
 
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(comp advapi32 iphlpapi psapi shell32 userenv ws2_32)
+    TARGET_LINK_LIBRARIES(comp advapi32 iphlpapi psapi shell32 userenv
+        ws2_32 dbghelp)
 ENDIF(WIN32)
 
 # List of unit tests to add to CTest.
