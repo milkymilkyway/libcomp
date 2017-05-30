@@ -77,6 +77,8 @@ Exception::Exception(const String& msg, const String& f, int l) :
     USHORT frameCount = CaptureStackBackTrace(0, USHRT_MAX,
         backtraceAddresses, NULL);
 
+    SymSetOptions(SYMOPT_LOAD_LINES);
+
     BOOL symInit = SymInitialize(GetCurrentProcess(), NULL, TRUE);
 
     if(TRUE != symInit)
@@ -127,6 +129,16 @@ Exception::Exception(const String& msg, const String& f, int l) :
             }
 
             ss << " [0x" << std::hex << (DWORD64)backtraceAddresses[i] << "]";
+
+            DWORD lineDisplacement;
+            IMAGEHLP_LINE64 line;
+
+            if(TRUE == SymGetLineFromAddr64(GetCurrentProcess(),
+                (ULONG64)backtraceAddresses[i], &lineDisplacement, &line))
+            {
+                ss << " " << line.FileName << ":"
+                    << std::dec << line.LineNumber;
+            }
 
             mBacktrace.push_back(ss.str());
         }
