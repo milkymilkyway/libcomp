@@ -39,6 +39,7 @@ SET(SYSTEM_LIBRARIES ${SYSTEM_LIBRARIES} ${EXECINFO_LIBRARY})
 ENDIF(BSD)
 
 SET(${PROJECT_NAME}_SRCS
+    src/ArgumentParser.cpp
     src/BaseServer.cpp
     src/ChannelConnection.cpp
     src/Compress.cpp
@@ -84,6 +85,7 @@ SET(${PROJECT_NAME}_SRCS
     src/ReadOnlyPacket.cpp
     src/RingBuffer.cpp
     src/ScriptEngine.cpp
+    src/ServerCommandLineParser.cpp
     src/ServerDataManager.cpp
     src/Shutdown.cpp
     #src/Structgen.cpp
@@ -92,6 +94,17 @@ SET(${PROJECT_NAME}_SRCS
     #src/ThreadManager.cpp
     src/Worker.cpp
 )
+
+IF(NOT WIN32)
+    SET(${PROJECT_NAME}_SRCS
+        ${${PROJECT_NAME}_SRCS}
+        # for comp_manager and testing.
+        src/Child.cpp
+        src/DayCare.cpp
+        src/SpawnThread.cpp
+        src/WatchThread.cpp
+    )
+ENDIF(NOT WIN32)
 
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ConfigCustom.cpp)
     SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} src/ConfigCustom.cpp)
@@ -102,6 +115,7 @@ ENDIF()
 # This is a list of all header files. Adding the header files here ensures they
 # are listed in the source files for IDE projects.
 SET(${PROJECT_NAME}_HDRS
+    src/ArgumentParser.h
     src/BaseServer.h
     src/ChannelConnection.h
     src/Compress.h
@@ -165,6 +179,7 @@ SET(${PROJECT_NAME}_HDRS
     src/ReadOnlyPacket.h
     src/RingBuffer.h
     src/ScriptEngine.h
+    src/ServerCommandLineParser.h
     src/ServerDataManager.h
     src/Shutdown.h
     src/TcpConnection.h
@@ -180,6 +195,17 @@ SET(${PROJECT_NAME}_HDRS
     src/PushIgnore.h
     src/PopIgnore.h
 )
+
+IF(NOT WIN32)
+    SET(${PROJECT_NAME}_HDRS
+        ${${PROJECT_NAME}_HDRS}
+        # for comp_manager and testing.
+        src/Child.h
+        src/DayCare.h
+        src/SpawnThread.h
+        src/WatchThread.h
+    )
+ENDIF(NOT WIN32)
 
 SET(${PROJECT_NAME}_SCHEMA
     schema/account.xml
@@ -210,6 +236,7 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/partymember.xml
     schema/registeredchannel.xml
     schema/registeredworld.xml
+    schema/server_command_line.xml
     schema/server_npc.xml
     schema/server_object.xml
     schema/server_shop.xml
@@ -342,6 +369,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     RegisteredChannel.cpp
     RegisteredWorld.h
     RegisteredWorld.cpp
+    ServerCommandLine.h
+    ServerCommandLine.cpp
     ServerConfig.h
     ServerConfig.cpp
     ServerNPC.h
