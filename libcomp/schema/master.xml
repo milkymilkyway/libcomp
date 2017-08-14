@@ -56,6 +56,8 @@
 
     <!-- BinaryData Files -->
     <include path="binarydata/citemdata.xml"/>
+    <include path="binarydata/cmessagedata.xml"/>
+    <include path="binarydata/cquest.xml"/>
     <include path="binarydata/czonerelationdata.xml"/>
     <include path="binarydata/devildata.xml"/>
     <include path="binarydata/devillvupratedata.xml"/>
