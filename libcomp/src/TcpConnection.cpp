@@ -315,68 +315,94 @@ void TcpConnection::FlushOutgoing(bool closeConnection)
     {
         PreparePackets(packets);
 
-        mSendingPacket = true;
+        mOutgoing.Rewind();
 
-        mSocket.async_send(asio::buffer(
-            mOutgoing.ConstData(), mOutgoing.Size()), 0, [closeConnection,
-                this](asio::error_code errorCode, std::size_t length)
-            {
-                bool sendAnother = false;
-                bool packetOk = false;
+        FlushOutgoingInside(closeConnection);
+    }
+}
 
-                ReadOnlyPacket readOnlyPacket;
+void TcpConnection::FlushOutgoingInside(bool closeConnection)
+{
+    mSocket.async_send(asio::buffer(mOutgoing.ConstData() +
+        mOutgoing.Tell(), mOutgoing.Left()), 0, [closeConnection,
+        this](asio::error_code errorCode, std::size_t length)
+    {
+        bool sendSame = false;
+        bool sendAnother = false;
+        bool packetOk = false;
 
-                // Ignore errors and everything else, just close the connection.
-                if(closeConnection)
-                {
+        ReadOnlyPacket readOnlyPacket;
+
+        // Ignore errors and everything else, just close the connection.
+        if(closeConnection && mOutgoing.Left() == length)
+        {
 #ifdef COMP_HACK_DEBUG
-                    LOG_DEBUG("Closing connection after sending packet.\n");
+            LOG_DEBUG("Closing connection after sending packet.\n");
 #endif // COMP_HACK_DEBUG
 
-                    SocketError();
-                    return;
-                }
+            std::lock_guard<std::mutex> outgoingGuard(
+                mOutgoingMutex);
 
-                if(errorCode)
+            mSendingPacket = false;
+
+            SocketError();
+            return;
+        }
+
+        if(errorCode)
+        {
+            std::lock_guard<std::mutex> outgoingGuard(
+                mOutgoingMutex);
+
+            mSendingPacket = false;
+
+            SocketError();
+        }
+        else
+        {
+            std::lock_guard<std::mutex> outgoingGuard(mOutgoingMutex);
+
+            uint32_t outgoingSize = mOutgoing.Size();
+
+            if(0 == outgoingSize || length > mOutgoing.Left())
+            {
+                SocketError();
+            }
+            else
+            {
+                mOutgoing.Skip((uint32_t)length);
+
+                if(0 != mOutgoing.Left())
                 {
-                    std::lock_guard<std::mutex> outgoingGuard(
-                        mOutgoingMutex);
-
-                    mSendingPacket = false;
-
-                    SocketError();
+                    sendSame = true;
                 }
                 else
                 {
-                    std::lock_guard<std::mutex> outgoingGuard(mOutgoingMutex);
+                    mOutgoing.Rewind();
 
-                    uint32_t outgoingSize = mOutgoing.Size();
-
-                    if(0 == outgoingSize || length != outgoingSize)
-                    {
-                        SocketError();
-                    }
-                    else
-                    {
-                        readOnlyPacket = mOutgoing;
-                        sendAnother = !mOutgoingPackets.empty();
-                        packetOk = true;
-                    }
-
-                    mSendingPacket = false;
+                    readOnlyPacket = mOutgoing;
+                    sendAnother = !mOutgoingPackets.empty();
+                    packetOk = true;
                 }
+            }
 
-                if(packetOk)
-                {
-                    PacketSent(readOnlyPacket);
+            mSendingPacket = sendSame;
+        }
 
-                    if(sendAnother)
-                    {
-                        FlushOutgoing();
-                    }
-                }
-            });
-    }
+        if(sendSame)
+        {
+            FlushOutgoingInside(closeConnection);
+        }
+        else if(packetOk)
+        {
+            PacketSent(readOnlyPacket);
+
+            if(sendAnother)
+            {
+                FlushOutgoing();
+            }
+        }
+    });
 }
 
 void TcpConnection::SocketError(const String& errorMessage)
@@ -545,6 +571,8 @@ std::list<ReadOnlyPacket> TcpConnection::GetCombinedPackets()
     {
         packets.push_back(mOutgoingPackets.front());
         mOutgoingPackets.pop_front();
+
+        mSendingPacket = true;
     }
 
     return packets;
