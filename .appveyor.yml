@@ -10,8 +10,8 @@ platform:
 
 configuration:
 #  - Debug
-#  - Release
-  - RelWithDebInfo
+  - Release
+#  - RelWithDebInfo
 
 init:
   - if platform==x64 (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015_64) else (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015)
@@ -26,19 +26,20 @@ before_build:
   - cd build
 
 build_script:
-  - cmake -DCMAKE_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
-  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%msplatform%"
-  - mkdir comp_hack-pixie-%appveyor_build_number%
-  - move bin\%configuration%\*.exe comp_hack-pixie-%appveyor_build_number%\
-  - move bin\%configuration%\*.pdb comp_hack-pixie-%appveyor_build_number%\
-  - set PATH=%PATH%;%CMAKE_PREFIX_PATH%\bin
-  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_updater.exe
-  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_capgrep.exe
-  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_logger.exe
-  - 7z a comp_hack-pixie-%appveyor_build_number%.zip comp_hack-pixie-%appveyor_build_number%
+  - cmake -DCMAKE_INSTALL_PREFIX="%appveyor_build_folder%\build\install" -DCMAKE_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
+#  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%msplatform%"
+  - cmake --build . --target package
+#  - mkdir comp_hack-pixie-%appveyor_build_number%
+#  - move bin\%configuration%\*.exe comp_hack-pixie-%appveyor_build_number%\
+#  - move bin\%configuration%\*.pdb comp_hack-pixie-%appveyor_build_number%\
+#  - set PATH=%PATH%;%CMAKE_PREFIX_PATH%\bin
+#  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_updater.exe
+#  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_capgrep.exe
+#  - windeployqt comp_hack-pixie-%appveyor_build_number%\comp_logger.exe
+#  - 7z a comp_hack-pixie-%appveyor_build_number%.zip comp_hack-pixie-%appveyor_build_number%
 
 artifacts:
-  - path: build\comp_hack-pixie-$(appveyor_build_number).zip
+  - path: build\comp_hack-*.msi
     name: comp_hack-pixie-$(appveyor_build_number)
 
 deploy:
@@ -47,12 +48,13 @@ deploy:
   provider: GitHub
   auth_token:
     secure: /xJRd5oxBbWa7IDdzPFbollIUAc7uqashBu8crIATrv4iUJX//DvzrGSFCaDdFsj
-  artifact: build\comp_hack-pixie-$(appveyor_build_number).zip
+  artifact: build\comp_hack-*.msi
   draft: false
   prerelease: true
   on:
     branch: develop
     platform: x86
-    configuration: RelWithDebInfo
+#    configuration: RelWithDebInfo
+    configuration: Release
 
 skip_tags: true
