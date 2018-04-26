@@ -13,52 +13,34 @@ configuration:
 #  - Release
   - RelWithDebInfo
 
+install:
+  - cinst doxygen.portable
+
 init:
-  - if platform==x64 (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015_64) else (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015)
-  - if platform==x64 (set generator=Visual Studio 14 2015 Win64) else (set generator=Visual Studio 14 2015)
-  - if platform==x64 (set msplatform=x64) else (set msplatform=Win32)
-  - echo "Platform      = %platform%"
-  - echo "MS Platform   = %msplatform%"
-  - echo "Configuration = %configuration%"
+  - if %platform%==x64 (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015_64) else (set CMAKE_PREFIX_PATH=C:\Qt\5.7\msvc2015)
+  - if %platform%==x64 (set generator=Visual Studio 14 2015 Win64) else (set generator=Visual Studio 14 2015)
+  - if %platform%==x64 (set msplatform=x64) else (set msplatform=Win32)
 
 before_build:
   - md build
   - cd build
 
 build_script:
-  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-13/external-0.1.1-win64.zip -FileName external.zip
+  - echo "Platform      = %platform%"
+  - echo "MS Platform   = %msplatform%"
+  - echo "Configuration = %configuration%"
+  - echo "Generator     = %generator%"
+  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-16/external-0.1.1-win64.zip -FileName external.zip
   - 7z x external.zip
   - del external.zip
   - mv external* ..\binaries
-  - cmake -DWINDOWS_SERVICE=ON -DCMAKE_INSTALL_PREFIX="%appveyor_build_folder%\build\install" -DCMAKE_CUSTOM_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
-#  - msbuild comp_hack.sln /property:Configuration="%configuration%" /property:Platform="%msplatform%"
+  - cmake -DGENERATE_DOCUMENTATION=ON -DWINDOWS_SERVICE=ON -DCMAKE_INSTALL_PREFIX="%appveyor_build_folder%\build\install" -DCMAKE_CUSTOM_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
   - cmake --build . --config %configuration% --target package
-#  - mkdir comp_hack-kodama-%appveyor_build_number%
-#  - move bin\%configuration%\*.exe comp_hack-kodama-%appveyor_build_number%\
-#  - move bin\%configuration%\*.pdb comp_hack-kodama-%appveyor_build_number%\
-#  - set PATH=%PATH%;%CMAKE_PREFIX_PATH%\bin
-#  - windeployqt comp_hack-kodama-%appveyor_build_number%\comp_updater.exe
-#  - windeployqt comp_hack-kodama-%appveyor_build_number%\comp_capgrep.exe
-#  - windeployqt comp_hack-kodama-%appveyor_build_number%\comp_logger.exe
-#  - 7z a comp_hack-kodama-%appveyor_build_number%.zip comp_hack-kodama-%appveyor_build_number%
+  - cmake --build . --config %configuration% --target doc
+  - 7z a comp_hack-api.zip api
 
 artifacts:
   - path: build\comp_hack-*.msi
     name: comp_hack_installer
-
-#deploy:
-#  release: comp_hack-kodama-$(appveyor_build_number)
-#  description: 'Development Build'
-#  provider: GitHub
-#  auth_token:
-#    secure: /xJRd5oxBbWa7IDdzPFbollIUAc7uqashBu8crIATrv4iUJX//DvzrGSFCaDdFsj
-#  artifact: comp_hack_installer
-#  draft: false
-#  prerelease: true
-#  on:
-#    branch: develop
-#    platform: x64
-#    configuration: RelWithDebInfo
-#    configuration: Release
-
-skip_tags: true
+  - path: build\comp_hack-*.zip
+    name: comp_hack_archive

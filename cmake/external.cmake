@@ -80,8 +80,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(ZLIB_URL
-        URL https://github.com/comphack/zlib/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=d9d21531283e83adb8ca7a18b92fa590fe813689
+        URL https://github.com/comphack/zlib/archive/comp_hack-20180425.zip
+        URL_HASH SHA1=41ef62fec86b9a4408d99c2e7ee1968a5e246e3b
     )
 ENDIF()
 
@@ -141,8 +141,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(OPENSSL_URL
-        URL https://github.com/comphack/openssl/archive/comp_hack-20171022.zip
-        URL_HASH SHA1=dc7e9144926c3da7fdd0c9da89c69e998c60d0eb
+        URL https://github.com/comphack/openssl/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=0ac698894a8d9566a8d7982e32869252dc11d18b
     )
 ENDIF()
 
@@ -237,8 +237,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(MARIADB_URL
-        URL https://github.com/comphack/mariadb/archive/comp_hack-20170530.zip
-        URL_HASH SHA1=5412777b4b3b73bb24ecdff0ae80e39759ba26e0
+        URL https://github.com/comphack/mariadb/archive/comp_hack-20180425.zip
+        URL_HASH SHA1=e3cccd1ce7338ecf21864c507579d24f5c9a234a
     )
 ENDIF()
 
@@ -298,8 +298,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(TTVFS_URL
-        URL https://github.com/comphack/ttvfs/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=929de4c4ec33e21b8d97c4582ec62761e1e5d8f7
+        URL https://github.com/comphack/ttvfs/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=c3feca3b35109e9ad4ae61821f62df76a412b87f
     )
 ENDIF()
 
@@ -399,8 +399,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(PHYSFS_URL
-        URL https://github.com/comphack/physfs/archive/comp_hack-20170117.zip
-        URL_HASH SHA1=df642b6c9cdb1e9ca2103f3747025c55fbdb7c02
+        URL https://github.com/comphack/physfs/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=46de8609129749fccd8bbed02b68d6966ebb5e9b
     )
 ENDIF()
 
@@ -498,8 +498,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(CIVET_URL
-        URL https://github.com/comphack/civetweb/archive/comp_hack-20170530.zip
-        URL_HASH SHA1=787e61e255384f74b771f3967f05552df54f21d4
+        URL https://github.com/comphack/civetweb/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=59cd1b9caab9b13bc1be9c7eea30f052edeb5e79
     )
 ENDIF()
 
@@ -580,8 +580,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(SQUIRREL_URL
-        URL https://github.com/comphack/squirrel3/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=f70e9ec5eb6781d95689f69e999ce6142f3e2594
+        URL https://github.com/comphack/squirrel3/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=e93edb4d4d6efdc45afa6f51e36d1971934e676d
     )
 ENDIF()
 
@@ -703,8 +703,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(TINYXML2_URL
-        URL https://github.com/comphack/tinyxml2/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=421b3b41bd1928180e4b91f4afc3b84b752ec237
+        URL https://github.com/comphack/tinyxml2/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=c0825970d84f2418ff8704624b020e65d02bc5f3
     )
 ENDIF()
 
@@ -762,8 +762,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(GOOGLETEST_URL
-        URL https://github.com/comphack/googletest/archive/comp_hack-20161214.zip
-        URL_HASH SHA1=e2493c39bb60c380e394ca6a391630376cfdaeac
+        URL https://github.com/comphack/googletest/archive/comp_hack-20180425.zip
+        URL_HASH SHA1=40b8e97ef07d300539bd2a5d6b1c1cfcd92deb7b
     )
 ENDIF()
 
@@ -863,8 +863,8 @@ ELSEIF(GIT_DEPENDENCIES)
     )
 ELSE()
     SET(JSONBOX_URL
-        URL https://github.com/comphack/JsonBox/archive/comp_hack-20170610.zip
-        URL_HASH SHA1=fe461a7e7129c6b256da79fdc1783981f2a9c0b8
+        URL https://github.com/comphack/JsonBox/archive/comp_hack-20180424.zip
+        URL_HASH SHA1=60fce942f5910a6da8db27d4dcb894ea28adea57
     )
 ENDIF()
 
