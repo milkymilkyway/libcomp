@@ -30,6 +30,7 @@
 #include <Packet.h>
 #include <PacketStream.h>
 #include <ReadOnlyPacket.h>
+#include <ScriptEngine.h>
 
 using namespace libcomp;
 
@@ -314,7 +315,8 @@ std::string Object::GetXml() const
 
 bool Object::SkipPadding(std::istream& stream, uint8_t count)
 {
-    stream.ignore(count);
+    //stream.ignore(count);
+    stream.seekg(count, std::istream::cur);
 
     return stream.good();
 }
@@ -329,4 +331,24 @@ bool Object::WritePadding(std::ostream& stream, uint8_t count) const
     }
 
     return stream.good();
+}
+
+namespace libcomp
+{
+    template<>
+    ScriptEngine& ScriptEngine::Using<Object>()
+    {
+        if(!BindingExists("Object"))
+        {
+            Sqrat::Class<Object, Sqrat::NoConstructor<Object>> binding(
+                mVM, "Object");
+            Bind<Object>("Object", binding);
+
+            binding
+                .Func("IsValid", &Object::IsValid)
+                ; // Last call to binding
+        }
+
+        return *this;
+    }
 }

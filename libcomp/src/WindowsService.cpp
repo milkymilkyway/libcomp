@@ -38,25 +38,24 @@ namespace libcomp
 
 char *SERVICE_NAME = "COMP_hack Server";
 
-WindowsService gService;
+WindowsService *gService = nullptr;
 
 } // namespace libcomp
 
-int ApplicationMain(int argc, const char *argv[]);
-int ServiceMain(int argc, const char *argv[]);
 VOID WINAPI ServiceCtrlHandler(DWORD);
 
-static int ServiceMain(int argc, const char *argv[])
+int ServiceMain(int argc, const char *argv[])
 {
-    return gService.Run(argc, argv);
+    return gService->Run(argc, argv);
 }
 
 static VOID WINAPI ServiceCtrlHandler(DWORD CtrlCode)
 {
-    gService.HandleCtrlCode(CtrlCode);
+    gService->HandleCtrlCode(CtrlCode);
 }
 
-WindowsService::WindowsService() : mStatus({0}), mStatusHandle(NULL)
+WindowsService::WindowsService(const std::function<int(int,
+    const char**)>& func) : mStatus({0}), mStatusHandle(NULL), mMain(func)
 {
 }
 
@@ -100,7 +99,7 @@ int WindowsService::Run(int argc, const char *argv[])
         (void)SetCurrentDirectoryA(cwd);
     }
 
-    exitCode = ApplicationMain(argc, argv);
+    exitCode = mMain(argc, argv);
 
     // Tell the service controller we are stopped.
     mStatus.dwControlsAccepted = 0;
@@ -146,7 +145,7 @@ void WindowsService::HandleCtrlCode(DWORD CtrlCode)
             mStatus.dwWin32ExitCode = 0;
             mStatus.dwCheckPoint = 4;
 
-            if(!SetServiceStatus (mStatusHandle, &mStatus) == FALSE)
+            if(!SetServiceStatus(mStatusHandle, &mStatus) == FALSE)
             {
                 OutputDebugStringA("SetServiceStatus returned error");
             }
@@ -158,28 +157,6 @@ void WindowsService::HandleCtrlCode(DWORD CtrlCode)
         default:
             break;
     }
-}
-
-int main(int argc, const char *argv[])
-{
-    SERVICE_TABLE_ENTRY ServiceTable[] =
-    {
-        {
-            SERVICE_NAME,
-            (LPSERVICE_MAIN_FUNCTION)ServiceMain
-        },
-        {
-            NULL,
-            NULL
-        }
-    };
-
-    if(!StartServiceCtrlDispatcher(ServiceTable))
-    {
-        return GetLastError();
-    }
-
-    return 0;
 }
 
 #endif // defined(_WIN32) && defined(WIN32_SERV)

@@ -1,10 +1,10 @@
 /**
- * @file libcomp/src/SqratTypesInclude.h
+ * @file libcomp/src/WindowsServiceLib.cpp
  * @ingroup libcomp
  *
  * @author COMP Omega <compomega@tutanota.com>
  *
- * @brief Extra Squirrel binding types.
+ * @brief Global for the service to be used by libcomp.
  *
  * This file is part of the COMP_hack Library (libcomp).
  *
@@ -24,13 +24,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBCOMP_SRC_SQRATTYPESINCLUDE_H
-#define LIBCOMP_SRC_SQRATTYPESINCLUDE_H
+#include "WindowsService.h"
 
-// Standard C++11 Includes
-#include <list>
+#if defined(_WIN32) && defined(WIN32_SERV)
 
-// libcomp Includes
-#include "CString.h"
+using namespace libcomp;
 
-#endif // LIBCOMP_SRC_SQRATTYPESINCLUDE_H
+namespace libcomp
+{
+
+extern char *SERVICE_NAME;
+
+} // namespace libcomp
+
+int ServiceMain(int argc, const char *argv[]);
+int ApplicationMain(int argc, const char *argv[]);;
+
+int main(int argc, const char *argv[])
+{
+    gService = new WindowsService(&ApplicationMain);
+
+    SERVICE_TABLE_ENTRY ServiceTable[] =
+    {
+        {
+            SERVICE_NAME,
+            (LPSERVICE_MAIN_FUNCTION)ServiceMain
+        },
+        {
+            NULL,
+            NULL
+        }
+    };
+
+    if(!StartServiceCtrlDispatcher(ServiceTable))
+    {
+        return GetLastError();
+    }
+
+    return 0;
+}
+
+#endif // defined(_WIN32) && defined(WIN32_SERV)
