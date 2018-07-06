@@ -282,12 +282,6 @@ ENDIF(${LIBCOMP_ENDIAN})
 
 # Default Linux (gcc/clang) builds to debug and MinGW builds to release.
 IF(NOT MSVC)
-    IF(BUILD_OPTIMIZED)
-        SET(CMAKE_BUILD_TYPE Release)
-    ELSE()
-        SET(CMAKE_BUILD_TYPE Debug)
-    ENDIF()
-
     # Ensure C++14 support is on.
     ADD_CXX_FLAGS(AUTO -std=c++14)
 
@@ -298,10 +292,9 @@ IF(NOT MSVC)
     # Determine basic gcc/clang/mingw flags for release mode.
     IF(BUILD_OPTIMIZED)
         ADD_COMPILER_FLAGS(AUTO -O3 -msse3)
-    ELSE(BUILD_OPTIMIZED)
-        ADD_COMPILER_FLAGS(AUTO -O3 -msse3)
     ENDIF(BUILD_OPTIMIZED)
 
+    # Strip release builds.
     ADD_LINKER_FLAGS_RELEASE(AUTO -s)
 ENDIF(NOT MSVC)
 
