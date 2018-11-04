@@ -31,9 +31,6 @@
 #include "Log.h"
 #include "ScriptEngine.h"
 
-// Standard C++11 Includes
-#include <math.h>
-
 // object Includes
 #include <Action.h>
 #include <ActionDelay.h>
@@ -68,6 +65,9 @@
 #include <SpawnGroup.h>
 #include <SpawnLocationGroup.h>
 #include <Tokusei.h>
+
+// Standard C Includes
+#include <cmath>
 
 using namespace libcomp;
 
