@@ -174,16 +174,17 @@ public:
      * @param db Database to load from
      * @param uuid UUID of the object to load
      * @param reload Forces a reload from the DB if true
+     * @param reportError If set to false the error will not be logged.
      * @return Pointer to the object or nullptr if it doesn't exist
      */
     template<class T> static std::shared_ptr<T> LoadObjectByUUID(
         const std::shared_ptr<Database>& db, const libobjgen::UUID& uuid,
-        bool reload = false)
+        bool reload = false, bool reportError = true)
     {
         if(std::is_base_of<PersistentObject, T>::value)
         {
             return std::dynamic_pointer_cast<T>(LoadObjectByUUID(
-                typeid(T).hash_code(), db, uuid, reload));
+                typeid(T).hash_code(), db, uuid, reload, reportError));
         }
 
         return nullptr;
@@ -196,11 +197,13 @@ public:
      * @param db Database to load from
      * @param uuid UUID of the object to load
      * @param reload Forces a reload from the DB if true
+     * @param reportError If set to false the error will not be logged.
      * @return Pointer to the object or nullptr if it doesn't exist
      */
     static std::shared_ptr<PersistentObject> LoadObjectByUUID(
         size_t typeHash, const std::shared_ptr<Database>& db,
-        const libobjgen::UUID& uuid, bool reload = false);
+        const libobjgen::UUID& uuid, bool reload = false,
+        bool reportError = false);
 
     /**
      * Get all PersistentObject derived class MetaObject definitions.
@@ -324,6 +327,18 @@ public:
      * @return true on success, false on failure
      */
     bool Delete(const std::shared_ptr<Database>& db);
+
+    /**
+     * Save the object's data members to an XML file including the UUID.
+     * @param doc XML document to save the definition to
+     * @param root Root XML node to save the definition to
+     * @param append true if the root node should be appended to,
+     *  false if an object node should be added to the root then
+     *  appended to
+     * @return true if saving was successful, false if it was not
+     */
+    bool SaveWithUUID(tinyxml2::XMLDocument& doc,
+        tinyxml2::XMLElement& root, bool append = false) const;
 
 protected:
     /**

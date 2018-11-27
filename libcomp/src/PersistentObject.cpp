@@ -194,8 +194,9 @@ std::shared_ptr<PersistentObject> PersistentObject::GetObjectByUUID(const libobj
     return nullptr;
 }
 
-std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(size_t typeHash,
-    const std::shared_ptr<Database>& db,  const libobjgen::UUID& uuid, bool reload)
+std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(
+    size_t typeHash, const std::shared_ptr<Database>& db,
+    const libobjgen::UUID& uuid, bool reload, bool reportError)
 {
     auto obj = !reload ? GetObjectByUUID(uuid) : nullptr;
 
@@ -207,7 +208,7 @@ std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(size_t type
 
         delete bind;
 
-        if(nullptr == obj)
+        if(reportError && nullptr == obj)
         {
             LOG_ERROR(String("Unknown UUID '%1' for '%2' failed to load\n")
                 .Arg(uuid.ToString()).Arg(sTypeMap[typeHash]->GetName()));
@@ -348,6 +349,24 @@ bool PersistentObject::Delete(const std::shared_ptr<Database>& db)
     }
 
     return false;
+}
+
+bool PersistentObject::SaveWithUUID(tinyxml2::XMLDocument& doc,
+    tinyxml2::XMLElement& root, bool append) const
+{
+    bool result = Save(doc, root, append);
+
+    if(result)
+    {
+        tinyxml2::XMLElement *pMember = doc.NewElement("member");
+        pMember->SetAttribute("name", "UUID");
+        pMember->InsertEndChild(doc.NewText(GetUUID().ToString().c_str()));
+
+        tinyxml2::XMLElement *pElement = root.LastChild()->ToElement();
+        pElement->InsertFirstChild(pMember);
+    }
+
+    return result;
 }
 
 namespace libcomp
