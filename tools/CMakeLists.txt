@@ -15,13 +15,4 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2.3)
-
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    SET(LIBCOMP_STANDALONE True)
-    INCLUDE(standalone.cmake)
-ELSEIF(NOT UPDATER_ONLY)
-    INCLUDE_SUBDIRECTORY(libobjgen)
-    INCLUDE_SUBDIRECTORY(tools)
-    INCLUDE_SUBDIRECTORY(libcomp)
-ENDIF()
+ADD_SUBDIRECTORY(objgen)
