@@ -53,6 +53,7 @@ before_install:
   - if [ "$CXX" == "clang++" ]; then tar xf $CACHE_DIR/external-0.1.1-clang.tar.bz2; fi
   - if [ "$CXX" != "clang++" ]; then tar xf $CACHE_DIR/external-0.1.1-gcc5.tar.bz2; fi
   - mv external-* binaries
+  - chmod +x binaries/ttvfs/bin/ttvfs_gen
   - if [ "$CXX" == "clang++" ]; then cd /opt; fi
   - if [ "$CXX" == "clang++" ]; then sudo tar xf $CACHE_DIR/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
   - if [ "$CXX" == "clang++" ]; then export PATH="/opt/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin:${PATH}"; fi
