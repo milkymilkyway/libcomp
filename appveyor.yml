@@ -38,7 +38,7 @@ build_script:
   - cd ..
   - del doxygen.zip
   - set PATH=%APPVEYOR_BUILD_FOLDER%\build\doxygen;%PATH%
-  - cmake -DCMAKE_INSTALL_PREFIX="%appveyor_build_folder%\build\install" -DWINDOWS_SERVICE=ON -DCMAKE_CUSTOM_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
+  - cmake -DCMAKE_INSTALL_PREFIX="%appveyor_build_folder%\build\install" -DGENERATE_DOCUMENTATION=ON -DWINDOWS_SERVICE=ON -DCMAKE_CUSTOM_CONFIGURATION_TYPES="%configuration%" -G"%generator%" ..
   - cmake --build . --config %configuration% --target package
 
 artifacts:
