@@ -27,11 +27,11 @@ build_script:
   - echo "Configuration = %configuration%"
   - echo "Generator     = %generator%"
   - git submodule update --init --recursive
-  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-21/external-0.1.1-win64.zip -FileName external.zip
+  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-25/external-0.1.1-win64.zip -FileName external.zip
   - 7z x external.zip
   - del external.zip
   - mv external* ..\binaries
-  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-21/doxygen-1.8.14.windows.x64.bin.zip -FileName doxygen.zip
+  - appveyor DownloadFile https://github.com/comphack/external/releases/download/external-25/doxygen-1.8.14.windows.x64.bin.zip -FileName doxygen.zip
   - mkdir doxygen
   - cd doxygen
   - 7z x ..\doxygen.zip
