@@ -39,16 +39,18 @@ SET(SYSTEM_LIBRARIES ${SYSTEM_LIBRARIES} ${EXECINFO_LIBRARY})
 ENDIF(BSD)
 
 # Custom command to put the Git version in the @version command.
-ADD_CUSTOM_TARGET(git-version COMMAND ${CMAKE_COMMAND}
-    -D "SRC=${CMAKE_CURRENT_SOURCE_DIR}/src/Git.h.in"
-    -D "DST=${CMAKE_CURRENT_BINARY_DIR}/Git.h"
-    -P "${CMAKE_SOURCE_DIR}/cmake/git-version.cmake"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Git.h.in"
-        "${CMAKE_SOURCE_DIR}/cmake/git-version.cmake"
-    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Git.h"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Generating Git.h"
-)
+IF(NOT LIBCOMP_STANDALONE)
+    ADD_CUSTOM_TARGET(git-version COMMAND ${CMAKE_COMMAND}
+        -D "SRC=${CMAKE_CURRENT_SOURCE_DIR}/src/Git.h.in"
+        -D "DST=${CMAKE_CURRENT_BINARY_DIR}/Git.h"
+        -P "${CMAKE_SOURCE_DIR}/cmake/git-version.cmake"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Git.h.in"
+            "${CMAKE_SOURCE_DIR}/cmake/git-version.cmake"
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/Git.h"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Generating Git.h"
+    )
+ENDIF(NOT LIBCOMP_STANDALONE)
 
 # Write the version information into the Constants.h file.
 CONFIGURE_FILE(src/Constants.h.in "${CMAKE_CURRENT_BINARY_DIR}/Constants.h"
@@ -140,7 +142,6 @@ ENDIF()
 # are listed in the source files for IDE projects.
 SET(${PROJECT_NAME}_HDRS
     "${CMAKE_CURRENT_BINARY_DIR}/Constants.h"
-    "${CMAKE_CURRENT_BINARY_DIR}/Git.h"
 
     src/ArgumentParser.h
     src/BaseServer.h
@@ -227,6 +228,13 @@ SET(${PROJECT_NAME}_HDRS
     src/PushIgnore.h
     src/PopIgnore.h
 )
+
+IF(NOT LIBCOMP_STANDALONE)
+    SET(${PROJECT_NAME}_HDRS
+        ${${PROJECT_NAME}_HDRS}
+        "${CMAKE_CURRENT_BINARY_DIR}/Git.h"
+    )
+ENDIF(NOT LIBCOMP_STANDALONE)
 
 IF(NOT WIN32)
     SET(${PROJECT_NAME}_HDRS
