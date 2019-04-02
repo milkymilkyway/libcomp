@@ -121,7 +121,7 @@
             <value num="5">FRONT_2</value>
             <value num="6">FRONT_3</value>
             <value num="7">SOURCE</value>
-            <value num="9">UNKNOWN_9</value>
+            <value num="9">SOURCE_RADIUS2</value>
         </member>
         <member type="enum" name="validType" underlying="uint8_t" pad="2">
             <value num="0">ENEMY</value>
