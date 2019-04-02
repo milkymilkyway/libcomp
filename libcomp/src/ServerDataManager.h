@@ -68,7 +68,7 @@ namespace libcomp
 class DefinitionManager;
 
 /**
- * Container for AI script information.
+ * Container for script information.
  */
 struct ServerScript
 {
@@ -76,6 +76,7 @@ struct ServerScript
     String Path;
     String Source;
     String Type;
+    bool Instantiated = false;
 };
 
 /**
