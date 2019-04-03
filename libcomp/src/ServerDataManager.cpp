@@ -736,6 +736,7 @@ namespace libcomp
             Sqrat::Class<ServerScript> binding(mVM, "ServerScript");
             binding.Var("Name", &ServerScript::Name);
             binding.Var("Type", &ServerScript::Type);
+            binding.Var("Instantiated", &ServerScript::Instantiated);
             Bind<ServerScript>("ServerScript", binding);
         }
 
