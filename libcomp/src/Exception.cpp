@@ -43,6 +43,7 @@
 #include <cstdlib>
 #include <exception>
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 
 #include <signal.h>
@@ -73,6 +74,11 @@ Exception::Exception(const String& msg, const String& f, int l) :
     mLine(l), mFile(f), mMessage(msg)
 {
 #ifdef _WIN32
+    static std::mutex lock;
+
+    // Lock the mutex before generating the backtrace.
+    std::lock_guard<std::mutex> guard(lock);
+
     // Array to store each backtrace address.
     void *backtraceAddresses[USHRT_MAX];
 
