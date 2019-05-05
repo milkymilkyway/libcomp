@@ -29,6 +29,8 @@
 #if defined(_WIN32) && defined(WIN32_SERV)
 
 // libcomp Includes
+#include "CString.h"
+#include "MemoryManager.h"
 #include "Shutdown.h"
 
 using namespace libcomp;
@@ -152,6 +154,28 @@ void WindowsService::HandleCtrlCode(DWORD CtrlCode)
 
             // This will signal the server to start shutting down.
             ShutdownSignalHandler(0);
+            break;
+        }
+        case 200:
+        {
+            uint64_t allocationCount;
+            size_t heapSize;
+
+            libcomp::GetMemoryStats(allocationCount, heapSize);
+            OutputDebugStringA(libcomp::String("There are %1 allocations "
+                "consuming %2 bytes (%3 MiB) of memory.").Arg(
+                allocationCount).Arg(heapSize).Arg(
+                heapSize / (1024 * 1024)).C());
+            break;
+        }
+        case 201:
+        {
+            OutputDebugStringA("Dumping memory statistics to "
+                "'" MEMORY_SNAPSHOT_FILE "' file.");
+            libcomp::TriggerMemorySnapshot();
+            OutputDebugStringA("Memory statistics have been dumped to "
+                "'" MEMORY_SNAPSHOT_FILE "'. Please send it to the "
+                "developers.\n");
             break;
         }
         default:

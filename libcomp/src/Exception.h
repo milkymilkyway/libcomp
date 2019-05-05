@@ -29,6 +29,19 @@
 
 #include "CString.h"
 
+/// If the module name should be stripped from the backtrace.
+#define EXCEPTION_STRIP_MODULE (0)
+
+#if __FreeBSD__
+typedef size_t  backtrace_size_t;
+#elif __linux__
+typedef int     backtrace_size_t;
+#endif
+
+#ifdef _WIN32
+#define MAX_SYMBOL_LEN (1024)
+#endif // _WIN32
+
 namespace libcomp
 {
 

@@ -39,6 +39,7 @@
 #include <DatabaseSQLite3.h>
 #include <Decrypt.h>
 #include <Log.h>
+#include <MemoryManager.h>
 #include <MessageInit.h>
 #include <ScriptEngine.h>
 #include <ServerCommandLineParser.h>
@@ -413,6 +414,11 @@ bool BaseServer::ReadConfig(std::shared_ptr<objects::ServerConfig> config, tinyx
         {
             log->SetLogPath(config->GetLogFile(), !config->GetLogFileAppend());
             log->SetLogFileTimestampsEnabled(config->GetLogFileTimestamp());
+        }
+
+        if(config->GetMemoryDiagnostic())
+        {
+            libcomp::InitMemoryManager();
         }
     }
 
