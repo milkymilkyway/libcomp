@@ -144,14 +144,17 @@ void MemoryAllocation::CreateBacktrace()
     void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
     // Populate the array of backtrace addresses and get how many were added.
-    backtrace_size_t backtraceSize = ::backtrace(backtraceAddresses, MAX_BACKTRACE_DEPTH);
+    backtrace_size_t backtraceSize = ::backtrace(backtraceAddresses,
+        MAX_BACKTRACE_DEPTH);
 
     // If we have a valid array of backtraces, parse them.
     if(backtraceSize > 0)
     {
-        allocBacktrace = (void**)malloc(sizeof(void*) * backtraceSize);
-        memcpy(allocBacktrace, backtraceAddresses, sizeof(void*) * backtraceSize);
-        allocBacktraceCount = backtraceSize;
+        allocBacktrace = (void**)malloc((size_t)(
+            sizeof(void*) * (uint16_t)backtraceSize));
+        memcpy(allocBacktrace, backtraceAddresses, (size_t)(sizeof(void*) *
+            (uint16_t)backtraceSize));
+        allocBacktraceCount = (uint16_t)backtraceSize;
     }
 #endif // _WIN32
 }
@@ -270,7 +273,7 @@ void MemoryAllocation::LogBacktrace(FILE *out)
     {
         // Retrieve the symbols for each backtrace in the array.
         char **backtraceSymbols = backtrace_symbols(
-            allocBacktrace, allocBacktraceCount);
+            allocBacktrace, (backtrace_size_t)allocBacktraceCount);
 
         // If the symbols were created, parse then.
         if(backtraceSymbols)
@@ -278,7 +281,7 @@ void MemoryAllocation::LogBacktrace(FILE *out)
             // For each symbol in the array, convert it to a String and add it
             // to the backtrace string list. Set i = 1 to skip over this
             // constructor function.
-            for(backtrace_size_t i = 1; i < allocBacktraceCount; i++)
+            for(uint16_t i = 1; i < allocBacktraceCount; i++)
             {
                 std::string symbol = backtraceSymbols[i];
                 std::string demangled;
@@ -327,7 +330,7 @@ void MemoryAllocation::LogBacktrace(FILE *out)
                 demangled = std::regex_replace(symbol.cbegin(), symbol.cend(),
                     re, callback);
 
-                auto backtraceString = demangled.str();
+                auto backtraceString = demangled;
                 uint64_t backtraceAddress = (uint64_t)allocBacktrace[i];
                 uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
 
@@ -477,11 +480,11 @@ void MemoryManager::CollectAllocation(std::unordered_map<uint32_t,
         return;
     }
 
-    uint32_t crc = crc32(0L, Z_NULL, 0);
+    uint32_t crc = (uint32_t)crc32(0L, Z_NULL, 0);
     MemoryAllocation *pAllocation = (MemoryAllocation*)node->value;
-    pAllocation->allocBacktraceChecksum = crc32(crc,
-        (Bytef*)pAllocation->allocBacktrace, sizeof(void*) *
-        pAllocation->allocBacktraceCount);
+    pAllocation->allocBacktraceChecksum = (uint32_t)crc32((uLong)crc,
+        (Bytef*)pAllocation->allocBacktrace, (uInt)(sizeof(void*) *
+        (size_t)pAllocation->allocBacktraceCount));
     collection[pAllocation->allocBacktraceChecksum].push_back(pAllocation);
 
     CollectAllocation(collection, node->left);
@@ -512,7 +515,7 @@ void* operator new[](size_t size)
     return pData;
 }
 
-void operator delete(void *pData)
+void operator delete(void *pData) noexcept
 {
     if(0 != pData)
     {
@@ -525,7 +528,7 @@ void operator delete(void *pData)
     }
 }
 
-void operator delete(void *pData, size_t)
+void operator delete(void *pData, size_t) noexcept
 {
     if(0 != pData)
     {

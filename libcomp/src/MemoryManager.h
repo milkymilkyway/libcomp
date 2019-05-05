@@ -55,7 +55,7 @@ struct MemoryAllocation
     void **allocBacktrace;
 
     /// Number of backtrace frames recorded.
-    uint32_t allocBacktraceCount;
+    uint16_t allocBacktraceCount;
 
     /// Checksum of the backtrace frames.
     uint32_t allocBacktraceChecksum;
