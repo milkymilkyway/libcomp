@@ -74,6 +74,7 @@ SET(${PROJECT_NAME}_SRCS
     src/Log.cpp
     src/ManagerPacket.cpp
     #src/MemoryFile.cpp
+    src/MemoryManager.cpp
     src/MessageConnectionClosed.cpp
     src/MessageEncrypted.cpp
     src/MessageInit.cpp
@@ -91,7 +92,7 @@ SET(${PROJECT_NAME}_SRCS
     src/PersistentObject.cpp
     src/Randomizer.cpp
     src/ReadOnlyPacket.cpp
-    src/RingBuffer.cpp
+    #src/RingBuffer.cpp
     src/ScriptEngine.cpp
     src/ServerCommandLineParser.cpp
     src/ServerConstants.cpp
@@ -105,6 +106,9 @@ SET(${PROJECT_NAME}_SRCS
     src/TimerManager.cpp
     src/WindowsService.cpp
     src/Worker.cpp
+
+    # Red-black tree for memory manager.
+    src/rbtree.c
 )
 
 IF(NOT WIN32)
@@ -165,6 +169,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Manager.h
     src/ManagerPacket.h
     #src/MemoryFile.h
+    src/MemoryManager.h
     src/Message.h
     src/MessageConnectionClosed.h
     src/MessageEncrypted.h
@@ -213,6 +218,9 @@ SET(${PROJECT_NAME}_HDRS
     # Macros to temporarily disable warnings (wrapped around 3rd party libs).
     src/PushIgnore.h
     src/PopIgnore.h
+
+    # Red-black tree for memory manager.
+    src/rbtree.h
 )
 
 IF(NOT WIN32)

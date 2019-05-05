@@ -28,6 +28,7 @@
 
 #include "Constants.h"
 #include "Log.h"
+#include "MemoryManager.h"
 #include "PlatformWindows.h"
 
 #ifdef _WIN32
@@ -50,19 +51,6 @@
 
 using namespace libcomp;
 
-/// If the module name should be stripped from the backtrace.
-#define EXCEPTION_STRIP_MODULE (0)
-
-#if __FreeBSD__
-typedef size_t  backtrace_size_t;
-#elif __linux__
-typedef int     backtrace_size_t;
-#endif
-
-#ifdef _WIN32
-#define MAX_SYMBOL_LEN (1024)
-#endif // _WIN32
-
 /**
  * Length of the absolute path to the source directory to strip from backtrace
  * paths. Calculate the length of the path to the project so we may remove that
@@ -73,6 +61,12 @@ static size_t baseLen = strlen(__FILE__) - strlen("libcomp/src/Exception.cpp");
 Exception::Exception(const String& msg, const String& f, int l) :
     mLine(l), mFile(f), mMessage(msg)
 {
+    // If the memory manager is enabled do not generate a backtrace.
+    if(libcomp::IsMemoryManagerEnabled())
+    {
+        return;
+    }
+
 #ifdef _WIN32
     static std::mutex lock;
 
@@ -80,10 +74,10 @@ Exception::Exception(const String& msg, const String& f, int l) :
     std::lock_guard<std::mutex> guard(lock);
 
     // Array to store each backtrace address.
-    void *backtraceAddresses[USHRT_MAX];
+    void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
-    USHORT frameCount = CaptureStackBackTrace(0, USHRT_MAX,
-        backtraceAddresses, NULL);
+    USHORT frameCount = CaptureStackBackTrace(0,
+        MAX_BACKTRACE_DEPTH, backtraceAddresses, NULL);
 
     SymSetOptions(SYMOPT_LOAD_LINES);
 

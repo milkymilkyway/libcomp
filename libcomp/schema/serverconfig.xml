@@ -27,6 +27,7 @@
         <member type="s32" name="LogRotationDays" default="1"/>
         <member type="string" name="CapturePath"/>
         <member type="string" name="ServerConstantsPath"/>
+        <member type="bool" name="MemoryDiagnostic" default="false"/>
     </object>
     <object name="WorldSharedConfig" persistent="false">
         <member type="s32" name="TimeOffset" default="540"/>
