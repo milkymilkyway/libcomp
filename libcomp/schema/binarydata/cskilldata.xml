@@ -2,8 +2,8 @@
 <objgen>
     <object name="MiCSkillBase" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="name" encoding="cp932"/>
-        <member type="string" name="desc" encoding="cp932"/>
+        <member type="string" name="name" encoding="cp932" round="4"/>
+        <member type="string" name="desc" encoding="cp932" round="4"/>
         <member type="u16" name="base1"/>
         <member type="u8" name="base2"/>
         <member type="u8" name="base3"/>
@@ -20,7 +20,7 @@
         <member type="u32" name="cast9"/>
         <member type="u32" name="cast10"/>
         <member type="array" size="20" name="cast11">
-            <element type="string"/>
+            <element type="string" encoding="cp932" round="4"/>
         </member>
     </object>
     <object name="MiCSkillShoot" persistent="false">
@@ -30,9 +30,9 @@
         <member type="u8" name="shoot4"/>
         <member type="u8" name="shoot5"/>
         <member type="f32" name="shoot6"/>
-        <member type="string" name="shoot7"/>
+        <member type="string" name="shoot7" encoding="cp932" round="4"/>
         <member type="array" size="20" name="shoot8">
-            <element type="string"/>
+            <element type="string" encoding="cp932" round="4"/>
         </member>
     </object>
     <object name="MiCSkillBullet" persistent="false">
@@ -43,12 +43,12 @@
         <member type="f32" name="bullet5"/>
         <member type="f32" name="bullet6"/>
         <member type="u32" name="bullet7"/>
-        <member type="string" name="bullet8"/>
+        <member type="string" name="bullet8" encoding="cp932" round="4"/>
         <member type="array" size="3" name="bullet9">
             <element type="u8"/>
         </member>
         <member type="u8" name="bullet10"/>
-        <member type="string" name="bullet11"/>
+        <member type="string" name="bullet11" encoding="cp932" round="4"/>
     </object>
     <object name="MiCSkillTarget" persistent="false">
         <member type="u32" name="target1"/>
@@ -57,7 +57,7 @@
         <member type="u8" name="target4"/>
         <member type="u16" name="target5"/>
         <member type="array" size="20" name="target6">
-            <element type="string"/>
+            <element type="string" encoding="cp932" round="4"/>
         </member>
     </object>
     <object name="MiCSkillHit" persistent="false">
@@ -85,7 +85,7 @@
             <element type="MiCSkillEquipCategory*"/>
         </member>
         <member type="array" size="400" name="unk1">
-            <element type="string"/>
+            <element type="string" encoding="cp932" round="4"/>
         </member>
     </object>
 </objgen>

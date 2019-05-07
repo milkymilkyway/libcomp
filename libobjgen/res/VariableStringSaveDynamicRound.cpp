@@ -8,7 +8,8 @@
     if(@STREAM@.good())
     {
         @LENGTH_TYPE@ len = static_cast<@LENGTH_TYPE@>(value.size());
-        @LENGTH_TYPE@ rounded = ((len + @ROUND@ - 1) / @ROUND@) * @ROUND@;
+        @LENGTH_TYPE@ rounded = (0 == len) ? @ROUND@ :
+            ((len + @ROUND@ - 1) / @ROUND@) * @ROUND@;
         @STREAM@.write(reinterpret_cast<const char*>(&rounded),
             sizeof(rounded));
         @LENGTH_TYPE@ left = rounded - len;
@@ -24,7 +25,7 @@
                 @STREAM@.write(zero, left);
             }
         }
-        else
+        else if(@STREAM@.good())
         {
             @STREAM@.write(zero, @ROUND@);
         }
