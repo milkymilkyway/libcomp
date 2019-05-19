@@ -1182,4 +1182,9 @@ IF(LIBCOMP_STANDALONE)
         DESTINATION include PATTERN *.h)
     INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/api/"
         DESTINATION api)
+
+    # Include the PDB file if on Windows
+    IF(WIN32)
+        INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/comp.pdb DESTINATION lib)
+    ENDIF(WIN32)
 ENDIF(LIBCOMP_STANDALONE)

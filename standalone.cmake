@@ -300,6 +300,7 @@ ENDIF(COVERALLS)
 
 # Place all executables in the same directory.
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/bin")
+SET(CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
 # List of common include paths for every project using libobjgen.
 SET(LIBOBJGEN_INCLUDES
