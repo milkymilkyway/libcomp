@@ -16,6 +16,7 @@
             <value>COWRIE</value>
             <value>BETHEL</value>
             <value>ZIOTITE</value>
+            <value>REUNION_POINTS</value>
         </member>
         <member type="s64" name="value"/>
         <member type="s8" name="modifier"/>

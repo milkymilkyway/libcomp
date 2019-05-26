@@ -91,6 +91,7 @@
     <include path="binarydata/cculturedata.xml"/>
     <include path="binarydata/cdevilbookbonusdata.xml"/>
     <include path="binarydata/cdevilbookbonusmitamadata.xml"/>
+    <include path="binarydata/cdevilboosticondata.xml"/>
     <include path="binarydata/cdevildungeondata.xml"/>
     <include path="binarydata/cdevilequipmentexclusivedata.xml"/>
     <include path="binarydata/cequipmodeldata.xml"/>

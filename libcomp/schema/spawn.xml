@@ -18,6 +18,7 @@
             <element type="u32"/>
         </member>
         <member type="bool" name="InheritDrops" default="true"/>
+        <member type="bool" name="ValidDemonQuestTarget" default="true"/>
         <member type="list" name="Gifts">
             <element type="ItemDrop*"/>
         </member>

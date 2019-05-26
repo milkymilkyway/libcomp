@@ -31,7 +31,7 @@ SET(VERSION_MAJOR 4)
 SET(VERSION_MINOR 1)
 
 # Patch version (a hotfix).
-SET(VERSION_PATCH 2)
+SET(VERSION_PATCH 4)
 
 # Codename for the version.
 SET(VERSION_CODENAME "Tiwaz (Unstable)")

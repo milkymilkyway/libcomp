@@ -1,28 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objgen>
     <object name="MiMultiTalkCmdTbl" persistent="false">
-        <member type="u8" name="Command1"/>
-        <member type="u8" name="Command2"/>
-        <member type="u16" name="Command3"/>
-        <member type="u32" name="Command4"/>
-        <member type="u32" name="Command5"/>
-        <member type="u32" name="Command6"/>
-        <member type="u32" name="Command7"/>
-        <member type="u32" name="Command8"/>
-        <member type="u32" name="Command9"/>
-        <member type="u32" name="Command10"/>
-        <member type="u32" name="Command11"/>
-        <member type="f32" name="Command12"/>
-        <member type="f32" name="Command13"/>
-        <member type="f32" name="Command14"/>
-        <member type="f32" name="Command15"/>
-        <member type="f32" name="Command16"/>
-        <member type="f32" name="Command17"/>
-        <member type="f32" name="Command18"/>
-        <member type="f32" name="Command19"/>
-        <member type="string" length="132" name="Command20"
+        <member type="enum" name="Type" underlying="uint8_t" pad="3">
+            <value num="0">END</value>
+            <value num="1">NPC_MESSAGE</value>
+            <value num="2">STAGE_EFFECT</value>
+            <value num="3">ACTOR_VISIBILITY</value>
+            <value num="4">ACTOR_STATE</value>
+            <value num="5">CAMERA_SWITCH</value>
+            <value num="6">CAMERA_ADJUST</value>
+            <value num="7">UNUSED_7</value>
+            <value num="8">SCREEN_PAINT</value>
+            <value num="9">BGM_CHANGE</value>
+            <value num="10">SOUND_PLAY</value>
+            <value num="11">EFFECT_SHOW</value>
+            <value num="12">INPUT_WAIT</value>
+            <value num="13">WAIT</value>
+            <value num="14">EFFECT_WAIT</value>
+            <value num="15">IMAGE_SHOW</value>
+            <value num="16">IMAGE_HIDE</value>
+        </member>
+        <member type="u32" name="IntCmd1"/>
+        <member type="u32" name="IntCmd2"/>
+        <member type="u32" name="IntCmd3"/>
+        <member type="u32" name="IntCmd4"/>
+        <member type="u32" name="IntCmd5"/>
+        <member type="u32" name="IntCmd6"/>
+        <member type="u32" name="IntCmd7"/>
+        <member type="u32" name="IntCmd8"/>
+        <member type="f32" name="DecCmd1"/>
+        <member type="f32" name="DecCmd2"/>
+        <member type="f32" name="DecCmd3"/>
+        <member type="f32" name="DecCmd4"/>
+        <member type="f32" name="DecCmd5"/>
+        <member type="f32" name="DecCmd6"/>
+        <member type="f32" name="DecCmd7"/>
+        <member type="f32" name="DecCmd8"/>
+        <member type="string" length="132" name="StrCmd1"
             encoding="cp932"/>
-        <member type="string" length="132" name="Command21"
+        <member type="string" length="132" name="StrCmd2"
             encoding="cp932"/>
     </object>
     <object name="MiCMultiTalkData" persistent="false">
@@ -30,5 +46,48 @@
         <member type="list" name="Commands">
             <element type="MiMultiTalkCmdTbl*"/>
         </member>
+    </object>
+    <object name="MiMultiTalkPopCharaTbl" persistent="false">
+        <member type="u32" name="ID"/>
+        <member type="string" length="132" name="Actor"
+            encoding="cp932"/>
+        <member type="f32" name="X"/>
+        <member type="f32" name="Y"/>
+        <member type="f32" name="Z"/>
+        <member type="f32" name="Rotation"/>
+        <member type="u32" name="State"/>
+        <member type="f32" name="Chara7"/>
+        <member type="u8" name="Chara8"/>
+        <member type="bool" name="Show" default="true" pad="2"/>
+    </object>
+    <object name="MiMultiTalkPopCameraTbl" persistent="false">
+        <member type="u32" name="ID"/>
+        <member type="f32" name="SourceX"/>
+        <member type="f32" name="SourceY"/>
+        <member type="f32" name="SourceZ"/>
+        <member type="f32" name="TargetX"/>
+        <member type="f32" name="TargetY"/>
+        <member type="f32" name="TargetZ"/>
+        <member type="u8" name="FoV" default="36" pad="3"/>
+    </object>
+    <object name="MiCMultiTalkPopData" persistent="false">
+        <member type="u32" name="ID"/>
+        <member type="string" length="36" name="Location"
+            encoding="cp932"/>
+        <member type="u8" name="Pop2"/>
+        <member type="u8" name="Pop3"/>
+        <member type="u8" name="Pop4"/>
+        <member type="u8" name="Pop5"/>
+        <member type="list" name="Characters">
+            <element type="MiMultiTalkPopCharaTbl*"/>
+        </member>
+        <member type="list" name="Cameras">
+            <element type="MiMultiTalkPopCameraTbl*"/>
+        </member>
+    </object>
+    <object name="MiCMultiTalkDirectionData" persistent="false">
+        <member type="u32" name="ID"/>
+        <member type="string" length="260" name="PopFile"/>
+        <member type="string" length="260" name="PerformFile"/>
     </object>
 </objgen>
