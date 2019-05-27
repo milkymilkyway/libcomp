@@ -41,6 +41,7 @@ set +x
 
 if [ "$CMAKE_GENERATOR" != "Ninja" ]; then
     if [[ ! -z "$DROPBOX_OAUTH_BEARER" ]]; then
+        dropbox_setup
         dropbox_upload libcomp "libcomp-${PLATFORM}.tar.bz2"
     fi
 fi
