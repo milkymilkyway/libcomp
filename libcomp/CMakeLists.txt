@@ -83,6 +83,7 @@ SET(${PROJECT_NAME}_SRCS
     src/MessageShutdown.cpp
     src/MessageTimeout.cpp
     src/MessageWorldNotification.cpp
+    src/Mutex.cpp
     src/Object.cpp
     src/Packet.cpp
     src/PacketException.cpp
@@ -182,6 +183,7 @@ SET(${PROJECT_NAME}_HDRS
     src/MessageTick.h
     src/MessageTimeout.h
     src/MessageWorldNotification.h
+    src/Mutex.h
     src/Object.h
     src/ObjectReference.h
     src/Packet.h
