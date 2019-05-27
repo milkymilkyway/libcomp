@@ -1,19 +1,85 @@
-sudo: required
-dist: trusty
 language: cpp
 
 cache:
   directories:
     - cache
 
-matrix:
+env:
+  global:
+    # Dropbox for comphack/libcomp (DROPBOX_OAUTH_BEARER)
+    - secure: "gt2LaFrMpMAFDQr6JHUpnDIY0jZI5neGjDskfeBUo8qZEK5VvyrcaSXJ9I/GvuShAzUAQt+gabD8uzXDjRuMT9v/QIh4dL0ToDRpz9n1K/qrTKUE4mCxwjcj80R75Cei8P2//IuJutYuFIgskrUm1OJ4FcGbOUM1rB40XbhAPB0TFYhnSpvFH78kYzVZpu60RTL1ZvA6Cok3BmJsDj7whoH4OlGxJVNkjCZMj89DF9W9dTlLgKgSY3stLBfEF6GdNA6JTVvNsfEf5Efi1OGZYXuHfONSUUd0peyuyadtH6bu5OrEgM5L+cY4Lo6vdnmwdQdj0uF/oIOJ9zntbZIr91qaY6dRuW9h+UzHoJCymPkyRIemm0eeUJIsoapiw8CorzrgdwwQrzPoSSOPZLUFeghD0UXQA9TOm/TN6QIR6iHzojwCU4AkTDQ5P0EZ8/Y9FBM2i66d2aHfKdkgP64pEjR2mjslsdYUwz2gkNtinckPqYSOqn7ym7D0X1NIoYZW6CHG1KornC+KAszoNVNpnmbddWOYcbwD+tOT5ebsQK1bBHKrlxiJ1mVYdi8KR1IODo0R9cMQEXyX9rJXP31GRVL4lcRZ62JTyBOi1bSeFDHGFTaxewesjrqigVsEMFDnFIDvlq+iYXF5hJCcNwrORoP5M+Bk7UuE1n+VmT+Birw="
+
+jobs:
   include:
-    - compiler: clang
+    - stage: "Warm cache"
+      name: "Warm cache (Linux GCC)"
+      os: linux
+      compiler: gcc
       env:
+        - PLATFORM=gcc5
+      script: ci/linux-warmcache.sh
+
+    - stage: "Warm cache"
+      name: "Warm cache (Linux Clang)"
+      os: linux
+      compiler: clang
+      env:
+        - PLATFORM=clang
+      script: ci/linux-warmcache.sh
+
+    - stage: "Warm cache"
+      name: "Warm cache (Windows 64-bit)"
+      os: windows
+      env:
+        - PLATFORM=win64
+        - QT5_BASE_DIR=C:/Qt/5.12.3/msvc2017_64
+      script: ci/windows-warmcache.sh
+
+    - stage: "Build"
+      name: "Linux (Clang+Make)"
+      os: linux
+      dist: trusty
+      sudo: required
+      compiler: clang
+      env:
+        - PLATFORM=clang
         - COMPILER_CC=clang
         - COMPILER_CXX=clang++
-        - BUILD_NAME=clang
-    - compiler: gcc
+        - CMAKE_GENERATOR='Unix Makefiles'
+      before_install: ci/linux-before_install.sh
+      script: ci/linux-libcomp.sh
+      deploy:
+        provider: releases
+        api_key:
+          secure: E2hlWRPURFjAKn8d0avdgUiBp1ZE9CoaamqBInqVih87J9JHT6LWhjnyW0y+yIHLdgFpIWYqOgaZ9LzBPzEaZY0AE4jxKBsFV2Zf0R2TKEBdshsrCdANtGZ8PEvqPi8xpwLJbr82dPMcq7hZbgsVUeM/bc4iDdRCg2S2YTzuM9yVAqlnY8cLy5IWHqJR3lGfsXT9ewUXVy8aZmoP2AC8BreXSQou0Z/nqB1s3m7oPTN5c5i3TtYN535mxr9Rcs3tS+vpN2u2c8iyXRjRJjVFf/ZWf4OV3zJyuB+1WBDtsvoFrzRC8u104tp/LZWIX06arUym4OGgBT63Z0nW9QaKiYumAIoU0LhZDshgFUxn1ddrYYvUGoMciN//NwAdvWKHkjvEzkGZgvviYt2GqHP+8SXFXpl1AwSkBN8c30jYFYpJUMQnDfuoquOB3uSn4o6JpjI5hlCm0q4RkY2RBdBFr6uRkddvey4vAVl/Bj93TtkM1zA4/hqoBADoJmzThawiI8npP5CbGAfXN39Q5002DrvwoVFZXJjH0xzw861MCrZV/SeCFMvGgZfHMEGiihXc+80Tx5bmaG0IdE5jbAN77Tr+xNZZHPMv0NrETo7DLCBZQ0fcvR1ZxRXAd0NFgsNISKzUzYgATFjYLz3IFkEUblNIolAYMhrIFOX1a10vGbE=
+        skip_cleanup: true
+        file_glob: true
+        file: libcomp-clang.tar.bz2
+        on:
+          repo: comphack/libcomp
+          branch: develop
+          tags: true
+
+    - stage: "Build"
+      name: "Linux (Clang+Ninja)"
+      os: linux
+      dist: trusty
+      sudo: required
+      compiler: clang
+      env:
+        - PLATFORM=clang
+        - COMPILER_CC=clang
+        - COMPILER_CXX=clang++
+        - CMAKE_GENERATOR=Ninja
+      before_install: ci/linux-before_install.sh
+      script: ci/linux-libcomp.sh
+
+    - stage: "Build"
+      name: "Linux (GCC5+Make)"
+      os: linux
+      dist: trusty
+      sudo: required
+      compiler: gcc
       addons:
         apt:
           sources:
@@ -21,62 +87,40 @@ matrix:
           packages:
             - g++-5
       env:
+        - PLATFORM=gcc5
         - COMPILER_CC=gcc-5
         - COMPILER_CXX=g++-5
-        - BUILD_NAME=gcc5
+        - CMAKE_GENERATOR='Unix Makefiles'
+      before_install: ci/linux-before_install.sh
+      script: ci/linux-libcomp.sh
+      deploy:
+        provider: releases
+        api_key:
+          secure: E2hlWRPURFjAKn8d0avdgUiBp1ZE9CoaamqBInqVih87J9JHT6LWhjnyW0y+yIHLdgFpIWYqOgaZ9LzBPzEaZY0AE4jxKBsFV2Zf0R2TKEBdshsrCdANtGZ8PEvqPi8xpwLJbr82dPMcq7hZbgsVUeM/bc4iDdRCg2S2YTzuM9yVAqlnY8cLy5IWHqJR3lGfsXT9ewUXVy8aZmoP2AC8BreXSQou0Z/nqB1s3m7oPTN5c5i3TtYN535mxr9Rcs3tS+vpN2u2c8iyXRjRJjVFf/ZWf4OV3zJyuB+1WBDtsvoFrzRC8u104tp/LZWIX06arUym4OGgBT63Z0nW9QaKiYumAIoU0LhZDshgFUxn1ddrYYvUGoMciN//NwAdvWKHkjvEzkGZgvviYt2GqHP+8SXFXpl1AwSkBN8c30jYFYpJUMQnDfuoquOB3uSn4o6JpjI5hlCm0q4RkY2RBdBFr6uRkddvey4vAVl/Bj93TtkM1zA4/hqoBADoJmzThawiI8npP5CbGAfXN39Q5002DrvwoVFZXJjH0xzw861MCrZV/SeCFMvGgZfHMEGiihXc+80Tx5bmaG0IdE5jbAN77Tr+xNZZHPMv0NrETo7DLCBZQ0fcvR1ZxRXAd0NFgsNISKzUzYgATFjYLz3IFkEUblNIolAYMhrIFOX1a10vGbE=
+        skip_cleanup: true
+        file_glob: true
+        file: libcomp-gcc5.tar.bz2
+        on:
+          repo: comphack/libcomp
+          branch: develop
+          tags: true
 
-before_install:
-  - export ROOT_DIR=`pwd`
-  - export CACHE_DIR=`pwd`/cache
-  - export COVERALLS_ENABLE=OFF
-  - export COVERALLS_SERVICE_NAME=travis-ci
-  - cd ${CACHE_DIR}
-  - if [ ! -f ninja-linux.zip ]; then wget https://github.com/ninja-build/ninja/releases/download/v1.7.1/ninja-linux.zip; fi
-  - if [ ! -f cmake-3.6.1-Linux-x86_64.tar.gz ]; then wget -q https://cmake.org/files/v3.6/cmake-3.6.1-Linux-x86_64.tar.gz; fi
-  - if [ ! -f clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz ]; then wget -q http://llvm.org/releases/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  - if [ ! -f external-0.1.1-clang.tar.bz2 ]; then wget -q https://github.com/comphack/external/releases/download/external-25/external-0.1.1-clang.tar.bz2; fi
-  - if [ ! -f external-0.1.1-gcc5.tar.bz2 ]; then wget -q https://github.com/comphack/external/releases/download/external-25/external-0.1.1-gcc5.tar.bz2; fi
-  - ls -lh
-  - cd ${ROOT_DIR}
-  - sudo apt-get update -q
-  - sudo apt-get install doxygen libssl-dev unzip -y
-  - sudo mkdir -p /opt/ninja/bin
-  - cd /opt/ninja/bin
-  - sudo unzip $CACHE_DIR/ninja-linux.zip
-  - sudo chmod 755 ninja
-  - export PATH="/opt/ninja/bin:${PATH}"
-  - cd /opt
-  - sudo tar xf $CACHE_DIR/cmake-3.6.1-Linux-x86_64.tar.gz
-  - export PATH="/opt/cmake-3.6.1-Linux-x86_64/bin:${PATH}"
-  - export LD_LIBRARY_PATH="/opt/cmake-3.6.1-Linux-x86_64/lib"
-  - cd ${ROOT_DIR}
-  - if [ "$CXX" == "clang++" ]; then tar xf $CACHE_DIR/external-0.1.1-clang.tar.bz2; fi
-  - if [ "$CXX" != "clang++" ]; then tar xf $CACHE_DIR/external-0.1.1-gcc5.tar.bz2; fi
-  - mv external-* binaries
-  - chmod +x binaries/ttvfs/bin/ttvfs_gen
-  - if [ "$CXX" == "clang++" ]; then cd /opt; fi
-  - if [ "$CXX" == "clang++" ]; then sudo tar xf $CACHE_DIR/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  - if [ "$CXX" == "clang++" ]; then export PATH="/opt/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin:${PATH}"; fi
-  - if [ "$CXX" == "clang++" ]; then export LD_LIBRARY_PATH="/opt/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib:${LD_LIBRARY_PATH}"; fi
-  - if [ "$CXX" == "clang++" ]; then cd ${ROOT_DIR}; fi
-  - export CC="${COMPILER_CC}"
-  - export CXX="${COMPILER_CXX}"
-  - export CTEST_OUTPUT_ON_FAILURE=1
-
-script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then mkdir -p build && cd build && cmake -DBUILD_OPTIMIZED=OFF .. && cmake --build . ; fi
-#  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cmake --build . --target test ; fi
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then cmake --build . --target package ; fi
-  - mv libcomp-*.tar.bz2 libcomp-${BUILD_NAME}.tar.bz2
-
-deploy:
-  provider: releases
-  api_key:
-    secure: E2hlWRPURFjAKn8d0avdgUiBp1ZE9CoaamqBInqVih87J9JHT6LWhjnyW0y+yIHLdgFpIWYqOgaZ9LzBPzEaZY0AE4jxKBsFV2Zf0R2TKEBdshsrCdANtGZ8PEvqPi8xpwLJbr82dPMcq7hZbgsVUeM/bc4iDdRCg2S2YTzuM9yVAqlnY8cLy5IWHqJR3lGfsXT9ewUXVy8aZmoP2AC8BreXSQou0Z/nqB1s3m7oPTN5c5i3TtYN535mxr9Rcs3tS+vpN2u2c8iyXRjRJjVFf/ZWf4OV3zJyuB+1WBDtsvoFrzRC8u104tp/LZWIX06arUym4OGgBT63Z0nW9QaKiYumAIoU0LhZDshgFUxn1ddrYYvUGoMciN//NwAdvWKHkjvEzkGZgvviYt2GqHP+8SXFXpl1AwSkBN8c30jYFYpJUMQnDfuoquOB3uSn4o6JpjI5hlCm0q4RkY2RBdBFr6uRkddvey4vAVl/Bj93TtkM1zA4/hqoBADoJmzThawiI8npP5CbGAfXN39Q5002DrvwoVFZXJjH0xzw861MCrZV/SeCFMvGgZfHMEGiihXc+80Tx5bmaG0IdE5jbAN77Tr+xNZZHPMv0NrETo7DLCBZQ0fcvR1ZxRXAd0NFgsNISKzUzYgATFjYLz3IFkEUblNIolAYMhrIFOX1a10vGbE=
-  skip_cleanup: true
-  file_glob: true
-  file: libcomp-*.tar.bz2
-  on:
-    repo: comphack/libcomp
-    branch: develop
-    tags: true
+    - stage: "Build"
+      name: "Windows (VS2017 64-bit)"
+      os: windows
+      filter_secrets: false
+      env:
+        - PLATFORM=win64
+        - QT5_BASE_DIR=C:/Qt/5.12.3/msvc2017_64
+      script: ci/windows-libcomp.sh
+      deploy:
+        provider: releases
+        api_key:
+          secure: E2hlWRPURFjAKn8d0avdgUiBp1ZE9CoaamqBInqVih87J9JHT6LWhjnyW0y+yIHLdgFpIWYqOgaZ9LzBPzEaZY0AE4jxKBsFV2Zf0R2TKEBdshsrCdANtGZ8PEvqPi8xpwLJbr82dPMcq7hZbgsVUeM/bc4iDdRCg2S2YTzuM9yVAqlnY8cLy5IWHqJR3lGfsXT9ewUXVy8aZmoP2AC8BreXSQou0Z/nqB1s3m7oPTN5c5i3TtYN535mxr9Rcs3tS+vpN2u2c8iyXRjRJjVFf/ZWf4OV3zJyuB+1WBDtsvoFrzRC8u104tp/LZWIX06arUym4OGgBT63Z0nW9QaKiYumAIoU0LhZDshgFUxn1ddrYYvUGoMciN//NwAdvWKHkjvEzkGZgvviYt2GqHP+8SXFXpl1AwSkBN8c30jYFYpJUMQnDfuoquOB3uSn4o6JpjI5hlCm0q4RkY2RBdBFr6uRkddvey4vAVl/Bj93TtkM1zA4/hqoBADoJmzThawiI8npP5CbGAfXN39Q5002DrvwoVFZXJjH0xzw861MCrZV/SeCFMvGgZfHMEGiihXc+80Tx5bmaG0IdE5jbAN77Tr+xNZZHPMv0NrETo7DLCBZQ0fcvR1ZxRXAd0NFgsNISKzUzYgATFjYLz3IFkEUblNIolAYMhrIFOX1a10vGbE=
+        skip_cleanup: true
+        file_glob: true
+        file: libcomp-win64.zip
+        on:
+          repo: comphack/libcomp
+          branch: develop
+          tags: true
