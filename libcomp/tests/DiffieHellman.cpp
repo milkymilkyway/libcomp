@@ -28,6 +28,7 @@
 #include <gtest/gtest.h>
 #include <PopIgnore.h>
 
+#include <Log.h>
 #include <TcpServer.h>
 #include <TcpConnection.h>
 
@@ -60,20 +61,51 @@ TEST(DiffieHellman, GenerateSaveLoad)
     DH_free(pDiffieHellman);
 }
 
+#if 0
+inline void ExecTime(std::chrono::high_resolution_clock::time_point& t1,
+    const libcomp::String& title = "Time")
+{
+    std::chrono::high_resolution_clock::time_point t2 =
+        std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<
+        std::chrono::microseconds>(t2 - t1).count();
+    LOG_DEBUG(libcomp::String("%1: %2\n").Arg(title).Arg(duration));
+}
+#else
+inline void ExecTime(std::chrono::high_resolution_clock::time_point& t1,
+    const libcomp::String& title = "Time")
+{
+    (void)t1;
+    (void)title;
+}
+#endif
+
 TEST(DiffieHellman, KeyExchange)
 {
+    std::chrono::high_resolution_clock::time_point t1;
+
+    Log::GetSingletonPtr()->AddStandardOutputHook();
+
     DH *pClient = nullptr;
     DH *pServer = nullptr;
 
     // (server=>client) First packet.
     // Sends base, prime, and server public.
-    pServer = TcpServer::GenerateDiffieHellman();
-    ASSERT_NE(pServer, nullptr);
-
-    String prime = TcpConnection::GetDiffieHellmanPrime(pServer);
+    String prime = "9C4169BBE8F535F7A7404D4EB3AE22CF63C0450FC2C7B2A5A03794D4"
+        "CFA9F290FF5774267885E60B848280E3A07468366E62F040DAC3CB67E95E8F3DC4D"
+        "97F94AD1D3D98F0B066F72B65CB391643A95BB96CF048ED5D60FB7AF7A969F38ABD"
+        "2301F6A7EC4DB7DAFC2CFD1F417E0B634033FEE8B102D62A28EC03D95266E2B0B3";
     ASSERT_EQ(prime.Length(), DH_KEY_HEX_SIZE);
 
+    t1 = std::chrono::high_resolution_clock::now();
+    pServer = TcpServer::LoadDiffieHellman(prime);
+    ExecTime(t1, "LoadDiffieHellman");
+    ASSERT_NE(pServer, nullptr);
+
+    t1 = std::chrono::high_resolution_clock::now();
     String serverPublic = TcpConnection::GenerateDiffieHellmanPublic(pServer);
+    ExecTime(t1, "GenerateDiffieHellmanPublic");
     ASSERT_EQ(serverPublic.Length(), DH_KEY_HEX_SIZE);
 
     // (client=>server) Second packet.
@@ -86,19 +118,24 @@ TEST(DiffieHellman, KeyExchange)
     String clientPublic = TcpConnection::GenerateDiffieHellmanPublic(pClient);
     ASSERT_EQ(clientPublic.Length(), DH_KEY_HEX_SIZE);
 
+    t1 = std::chrono::high_resolution_clock::now();
     std::vector<char> clientData =
         TcpConnection::GenerateDiffieHellmanSharedData(pClient, serverPublic);
-    ASSERT_EQ(clientData.size(), DH_SHARED_DATA_SIZE);
+    ASSERT_EQ(clientData.size(), BF_NET_KEY_BYTE_SIZE);
+    ExecTime(t1, "GenerateDiffieHellmanSharedData");
 
     // (server) Third packet.
     // Gets client public.
     // Calculates server copy of shared data.
     std::vector<char> serverData =
         TcpConnection::GenerateDiffieHellmanSharedData(pServer, clientPublic);
-    ASSERT_EQ(serverData.size(), DH_SHARED_DATA_SIZE);
+    ASSERT_EQ(serverData.size(), BF_NET_KEY_BYTE_SIZE);
 
     // Check they have the same data.
     ASSERT_EQ(memcmp(&serverData[0], &clientData[0], serverData.size()), 0);
+
+    // Check the public keys do not match.
+    ASSERT_NE(serverPublic, clientPublic);
 
     DH_free(pClient);
     DH_free(pServer);

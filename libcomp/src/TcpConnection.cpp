@@ -27,6 +27,7 @@
 #include "TcpConnection.h"
 
 #include "Constants.h"
+#include "CryptSupport.h"
 #include "Log.h"
 #include "Object.h"
 
@@ -467,11 +468,18 @@ void TcpConnection::SetEncryptionKey(const void *pData, size_t dataSize)
 
 String TcpConnection::GetDiffieHellmanPrime(const DH *pDiffieHellman)
 {
+    if(!pDiffieHellman)
+    {
+        return {};
+    }
+
     String prime;
 
-    if(nullptr != pDiffieHellman && nullptr != pDiffieHellman->p)
+    const BIGNUM *p = DH_get0_p(pDiffieHellman);
+
+    if(nullptr != p)
     {
-        char *pHexResult = BN_bn2hex(pDiffieHellman->p);
+        char *pHexResult = BN_bn2hex(p);
 
         if(nullptr != pHexResult)
         {
@@ -491,19 +499,30 @@ String TcpConnection::GetDiffieHellmanPrime(const DH *pDiffieHellman)
 
 String TcpConnection::GenerateDiffieHellmanPublic(DH *pDiffieHellman)
 {
+    if(!pDiffieHellman)
+    {
+        return {};
+    }
+
     String publicKey;
 
-    if(nullptr != pDiffieHellman && nullptr != pDiffieHellman->p &&
-        nullptr != pDiffieHellman->g && 1 == DH_generate_key(pDiffieHellman) &&
-        nullptr != pDiffieHellman->pub_key)
+    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
+    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
+
+    if(nullptr != p && nullptr != g && 1 == DH_generate_key(pDiffieHellman))
     {
-        char *pHexResult = BN_bn2hex(pDiffieHellman->pub_key);
+        const BIGNUM *pub_key = DH_get0_pub_key(pDiffieHellman);
 
-        if(nullptr != pHexResult)
+        if(nullptr != pub_key)
         {
-            publicKey = String(pHexResult);
+            char *pHexResult = BN_bn2hex(pub_key);
 
-            OPENSSL_free(pHexResult);
+            if(nullptr != pHexResult)
+            {
+                publicKey = String(pHexResult);
+
+                OPENSSL_free(pHexResult);
+            }
         }
     }
 
@@ -513,12 +532,20 @@ String TcpConnection::GenerateDiffieHellmanPublic(DH *pDiffieHellman)
 std::vector<char> TcpConnection::GenerateDiffieHellmanSharedData(
     DH *pDiffieHellman, const String& otherPublic)
 {
+    if(!pDiffieHellman)
+    {
+        return {};
+    }
+
     std::vector<char> data;
 
     unsigned char sharedData[DH_SHARED_DATA_SIZE];
 
-    if(nullptr != pDiffieHellman && nullptr != pDiffieHellman->p &&
-        nullptr != pDiffieHellman->g &&  nullptr != pDiffieHellman->pub_key &&
+    const BIGNUM *pub_key = DH_get0_pub_key(pDiffieHellman);
+    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
+    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
+
+    if(nullptr != p && nullptr != g &&  nullptr != pub_key &&
         DH_SHARED_DATA_SIZE == DH_size(pDiffieHellman))
     {
         BIGNUM *pOtherPublic = nullptr;

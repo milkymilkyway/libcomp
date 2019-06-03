@@ -141,6 +141,7 @@ SET(${PROJECT_NAME}_HDRS
     src/Compress.h
     src/ConnectionMessage.h
     src/Convert.h
+    src/CryptSupport.h
     src/CString.h
     src/Database.h
     src/DatabaseBind.h

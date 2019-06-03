@@ -27,6 +27,7 @@
 #include "TcpServer.h"
 
 #include "Constants.h"
+#include "CryptSupport.h"
 #include "Log.h"
 #include "TcpConnection.h"
 #include "WindowsService.h"
@@ -237,10 +238,22 @@ DH* TcpServer::GenerateDiffieHellman()
     if(nullptr != pDiffieHellman)
     {
         if(1 != DH_generate_parameters_ex(pDiffieHellman, DH_KEY_BIT_SIZE,
-            DH_BASE_INT, NULL) || nullptr == pDiffieHellman->p ||
-            nullptr == pDiffieHellman->g ||
+            DH_BASE_INT, NULL))
+        {
+            DH_free(pDiffieHellman);
+            pDiffieHellman = nullptr;
+        }
+
+        const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
+
+        if(pDiffieHellman)
+        {
+            DH_get0_pqg(pDiffieHellman, &p, &q, &g);
+        }
+
+        if(pDiffieHellman && (nullptr == p || nullptr == g ||
             1 != DH_check(pDiffieHellman, &codes) ||
-            DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
+            DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman)))
         {
             DH_free(pDiffieHellman);
             pDiffieHellman = nullptr;
@@ -257,14 +270,41 @@ DH* TcpServer::LoadDiffieHellman(const String& prime)
     if(DH_KEY_HEX_SIZE == prime.Length())
     {
         pDiffieHellman = DH_new();
-        pDiffieHellman->priv_key = nullptr;
 
         if(nullptr != pDiffieHellman)
         {
-            if(0 >= BN_hex2bn(&pDiffieHellman->p, prime.C()) ||
-                0 >= BN_hex2bn(&pDiffieHellman->g, DH_BASE_STRING) ||
-                nullptr == pDiffieHellman->p || nullptr == pDiffieHellman->g ||
-                DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
+            DH_set0_key(pDiffieHellman, nullptr, nullptr);
+
+            BIGNUM *p = nullptr, *g = nullptr;
+
+            if(0 >= BN_hex2bn(&p, prime.C()) ||
+                0 >= BN_hex2bn(&g, DH_BASE_STRING) ||
+                nullptr == p || nullptr == g)
+            {
+                LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
+
+                DH_free(pDiffieHellman);
+                pDiffieHellman = nullptr;
+
+                if(nullptr != p)
+                {
+                    OPENSSL_free(p);
+                    p = nullptr;
+                }
+
+                if(nullptr != g)
+                {
+                    OPENSSL_free(g);
+                    g = nullptr;
+                }
+            }
+
+            if(pDiffieHellman)
+            {
+                DH_set0_pqg(pDiffieHellman, p, nullptr, g);
+            }
+
+            if(pDiffieHellman && DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
             {
                 LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
                 LOG_DEBUG(libcomp::String("DH_SHARED_DATA_SIZE=%1/%2\n").Arg(
@@ -303,13 +343,35 @@ DH* TcpServer::LoadDiffieHellman(const void *pData, size_t dataSize)
 
         if(nullptr != pDiffieHellman)
         {
-            pDiffieHellman->p = BN_bin2bn(reinterpret_cast<
+            BIGNUM *g = nullptr;
+            BIGNUM *p = BN_bin2bn(reinterpret_cast<
                 const unsigned char*>(pData),
                 static_cast<int>(dataSize), NULL);
 
-            if(0 >= BN_hex2bn(&pDiffieHellman->g, DH_BASE_STRING) ||
-                nullptr == pDiffieHellman->p || nullptr == pDiffieHellman->g ||
-                DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
+            if(0 >= BN_hex2bn(&g, DH_BASE_STRING) ||
+                nullptr == p || nullptr == g)
+            {
+                DH_free(pDiffieHellman);
+                pDiffieHellman = nullptr;
+
+                if(nullptr != p)
+                {
+                    OPENSSL_free(p);
+                    p = nullptr;
+                }
+
+                if(nullptr != g)
+                {
+                    OPENSSL_free(g);
+                    g = nullptr;
+                }
+            }
+            else
+            {
+                DH_set0_pqg(pDiffieHellman, p, nullptr, g);
+            }
+
+            if(DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
             {
                 DH_free(pDiffieHellman);
                 pDiffieHellman = nullptr;
@@ -326,9 +388,10 @@ std::vector<char> TcpServer::SaveDiffieHellman(const DH *pDiffieHellman)
 
     unsigned char primeData[DH_SHARED_DATA_SIZE];
 
-    if(nullptr != pDiffieHellman && nullptr != pDiffieHellman->p &&
-        DH_SHARED_DATA_SIZE == BN_num_bytes(pDiffieHellman->p) &&
-        DH_SHARED_DATA_SIZE == BN_bn2bin(pDiffieHellman->p, primeData))
+    const BIGNUM *p = pDiffieHellman ? DH_get0_p(pDiffieHellman) : nullptr;
+
+    if(nullptr != p && DH_SHARED_DATA_SIZE == BN_num_bytes(p) &&
+        DH_SHARED_DATA_SIZE == BN_bn2bin(p, primeData))
     {
         data.insert(data.begin(), reinterpret_cast<const char*>(primeData),
             reinterpret_cast<const char*>(primeData) + DH_SHARED_DATA_SIZE);
@@ -339,22 +402,45 @@ std::vector<char> TcpServer::SaveDiffieHellman(const DH *pDiffieHellman)
 
 DH* TcpServer::CopyDiffieHellman(const DH *pDiffieHellman)
 {
+    if(!pDiffieHellman)
+    {
+        return nullptr;
+    }
+
     DH *pCopy = nullptr;
 
-    if(nullptr != pDiffieHellman && nullptr != pDiffieHellman->p &&
-        nullptr != pDiffieHellman->g)
+    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
+    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
+
+    if(nullptr != p && nullptr != g)
     {
         pCopy = DH_new();
 
         if(nullptr != pCopy)
         {
-            pCopy->p = BN_dup(pDiffieHellman->p);
-            pCopy->g = BN_dup(pDiffieHellman->g);
+            BIGNUM *p_copy = BN_dup(p);
+            BIGNUM *g_copy = BN_dup(g);
 
-            if(nullptr == pCopy->p || nullptr == pCopy->g)
+            if(nullptr == p_copy || nullptr == g_copy)
             {
                 DH_free(pCopy);
                 pCopy = nullptr;
+
+                if(nullptr == p_copy)
+                {
+                    OPENSSL_free(p_copy);
+                    p_copy = nullptr;
+                }
+
+                if(nullptr == g_copy)
+                {
+                    OPENSSL_free(g_copy);
+                    g_copy = nullptr;
+                }
+            }
+            else
+            {
+                DH_set0_pqg(pCopy, p_copy, nullptr, g_copy);
             }
         }
     }
