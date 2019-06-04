@@ -26,6 +26,7 @@
 
 #include "Convert.h"
 #include "Endian.h"
+#include "Exception.h"
 #include "Log.h"
 
 // Lookup tables for CP-1252 and CP-932.
@@ -254,8 +255,9 @@ static std::vector<char> ToCP932Encoding(const String& str,
         if(ARRAY_SIZE(LookupTableCP932) <= unicode ||
             (String::CodePoint)0xFFFF < unicode)
         {
-            LOG_ERROR(String("Invalid character %1 in string: %2\n").Arg(
-                i).Arg(str));
+            Exception e(String("Invalid character %1 in string: %2\n").Arg(
+                i).Arg(str), __FILE__, __LINE__);
+            e.Log();
 
             final.push_back('?');
             continue;
