@@ -80,7 +80,7 @@ public:
     bool PrintListing(const libcomp::String& path, bool recursive = false,
         bool fullPath = false);
     bool AddSearchPaths(const std::list<libcomp::String>& paths);
-    bool AddSearchPath(const libcomp::String& path);
+    bool AddSearchPath(const libcomp::String& path, bool append = false);
 };
 
 } // namespace libcomp

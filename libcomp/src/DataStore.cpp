@@ -221,14 +221,14 @@ bool DataStore::PrintListing(const libcomp::String& path, bool recursive,
     return false;
 }
 
-bool DataStore::AddSearchPath(const libcomp::String& path)
+bool DataStore::AddSearchPath(const libcomp::String& path, bool append)
 {
     static const char *szMountPoint = "/";
 
     // Prepend the path to the search path list. The list is searched from
     // first to last when looking for a file so a path earlier in the list
     // will override files contained in a path later in the list.
-    if(0 == PHYSFS_mount(path.C(), szMountPoint, 0))
+    if(0 == PHYSFS_mount(path.C(), szMountPoint, append ? 1 : 0))
     {
         LOG_ERROR(libcomp::String("DataStore: Error:  %1\n").Arg(GetError()));
 

@@ -35,6 +35,7 @@
 #endif // _WIN32
 
 // libcomp Includes
+#include <DataFile.h>
 #include <DatabaseMariaDB.h>
 #include <DatabaseSQLite3.h>
 #include <Decrypt.h>
@@ -105,6 +106,40 @@ bool BaseServer::Initialize()
     if(!mDataStore.AddSearchPaths(mConfig->GetDataStore()))
     {
         return false;
+    }
+
+
+    std::list<libcomp::String> files;
+    std::list<libcomp::String> dirs;
+    std::list<libcomp::String> symLinks;
+
+    auto dataStorePaths = mConfig->GetDataStore();
+
+    // Add all content packages to the search path.
+    if(!dataStorePaths.empty() &&
+        mDataStore.GetListing("/packages", files, dirs, symLinks, true, true))
+    {
+        auto dataStorePath = dataStorePaths.front();
+
+        std::list<std::string> archives;
+
+        for(auto file : files)
+        {
+            if(file.Right(4) == ".zip")
+            {
+                archives.push_front(libcomp::String("%1%2").Arg(
+                    dataStorePath).Arg(file).ToUtf8());
+            }
+        }
+
+        archives.sort(std::greater<std::string>());
+
+        for(auto archive : archives)
+        {
+            LOG_DEBUG(libcomp::String("Adding archive: %1\n").Arg(archive));
+
+            mDataStore.AddSearchPath(archive.c_str(), true);
+        }
     }
 
     switch(mConfig->GetDatabaseType())
