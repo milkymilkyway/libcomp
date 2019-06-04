@@ -273,7 +273,7 @@ TEST(MetaObjectXmlParser, CircularReferenceCheck)
     obj = parser.GetKnownObject("Object2");
     obj->SetPersistent(true);
 
-    ASSERT_TRUE(parser.FinalizeObjectAndReferences("Object1"));
+    ASSERT_FALSE(parser.FinalizeObjectAndReferences("Object1"));
 }
 
 TEST(MetaObjectXmlParser, ScriptEnabledCheck)
