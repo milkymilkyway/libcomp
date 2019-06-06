@@ -97,6 +97,10 @@ TARGET_INCLUDE_DIRECTORIES(objgen PUBLIC
     ${LIBOBJGEN_INCLUDES}
 )
 
+TARGET_INCLUDE_DIRECTORIES(objgen PUBLIC
+    ${OPENSSL_INCLUDE_DIR}
+)
+
 TARGET_INCLUDE_DIRECTORIES(objgen PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/res
 )
@@ -105,7 +109,7 @@ TARGET_LINK_LIBRARIES(objgen ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} tinyxml2
     ttvfs ttvfs_zip)
 
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(objgen advapi32 iphlpapi psapi shell32 userenv ws2_32)
+    TARGET_LINK_LIBRARIES(objgen crypt32 advapi32 iphlpapi psapi shell32 userenv ws2_32)
 ENDIF(WIN32)
 
 # List of unit tests to add to CTest.
