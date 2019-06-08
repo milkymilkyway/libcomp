@@ -48,6 +48,8 @@
 #include <cstdio>
 #include <cstdarg>
 
+#include <sqstdmath.h>
+#include <sqstdstring.h>
 #include <sqstdaux.h>
 
 using namespace libcomp;
@@ -234,6 +236,8 @@ ScriptEngine::ScriptEngine(bool useRawPrint) : mUseRawPrint(useRawPrint)
     }
 
     sq_pushroottable(mVM);
+    sqstd_register_mathlib(mVM);
+    sqstd_register_stringlib(mVM);
     sqstd_register_bloblib(mVM);
 
     Sqrat::RootTable(mVM).VMFunc("include", ScriptInclude);
