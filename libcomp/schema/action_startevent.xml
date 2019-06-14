@@ -9,5 +9,6 @@
             <value>YES</value>
             <value>NO</value>
         </member>
+        <member type="bool" name="autoOnly"/>
     </object>
 </objgen>
