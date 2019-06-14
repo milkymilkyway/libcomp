@@ -63,7 +63,7 @@ void Randomizer::SeedRNG()
     {
         // Generate the default seed
         auto b = libcomp::Decrypt::GenerateRandom(8).Data();
-        seed = (uint64_t)&b[0];
+        seed = *((uint64_t*)&b[0]);
 
         // Seed the high precision random number generators
         sGen.seed((uint32_t)seed);
