@@ -22,6 +22,7 @@
     <object name="ServerZoneTrigger" persistent="false">
         <member type="enum" name="Trigger" underlying="uint8_t">
             <value>ON_SETUP</value>
+            <value>ON_LOGIN</value>
             <value>PRE_ZONE_IN</value>
             <value>ON_ZONE_IN</value>
             <value>ON_ZONE_OUT</value>

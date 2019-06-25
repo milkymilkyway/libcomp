@@ -18,6 +18,7 @@
         <member type="list" name="branchScriptParams">
             <element type="string"/>
         </member>
+        <member type="bool" name="skipInvalid"/>
     </object>
     <object name="Event" baseobject="EventSequence" persistent="false"
         inherited-construction="true" scriptenabled="true">
