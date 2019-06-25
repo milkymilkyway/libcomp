@@ -54,6 +54,7 @@ class DemonPresent;
 class DemonQuestReward;
 class DropSet;
 class Event;
+class ItemDrop;
 class ServerShop;
 class ServerZone;
 class ServerZoneInstance;
@@ -306,6 +307,13 @@ public:
         const std::shared_ptr<objects::ServerZonePartial>& partial,
         bool positionReplace);
 
+    /**
+     * Merges all pending drops from APPEND drop sets into the the actual
+     * drop set and clears the set. This should only be called once per
+     * server load.
+     */
+    void AppendPendingDrops();
+
 private:
     /**
      * Get a server object by ID from the supplied map of the specified
@@ -534,6 +542,11 @@ private:
     /// Map of drop sets by definition ID
     std::unordered_map<uint32_t,
         std::shared_ptr<objects::DropSet>> mDropSetData;
+
+    /// Map of drop set definition IDs to drops loaded from APPEND drop sets.
+    /// These are loaded into the actual dropset by
+    std::unordered_map<uint32_t,
+        std::list<std::shared_ptr<objects::ItemDrop>>> mPendingMergeDrops;
 
     /// Map of drop set defintion IDs by gift box ID
     std::unordered_map<uint32_t, uint32_t> mGiftDropSetLookup;

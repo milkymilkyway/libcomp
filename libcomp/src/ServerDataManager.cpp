@@ -395,7 +395,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading AI logic group server definitions...\n");
             failure = !LoadObjects<objects::AILogicGroup>(
-                pDataStore, "/data/ailogicgroup", definitionManager, false,
+                pDataStore, "/data/ailogicgroup", definitionManager, true,
                 true);
         }
 
@@ -403,7 +403,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading demon present server definitions...\n");
             failure = !LoadObjects<objects::DemonPresent>(
-                pDataStore, "/data/demonpresent", definitionManager, false,
+                pDataStore, "/data/demonpresent", definitionManager, true,
                 true);
         }
 
@@ -411,7 +411,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading demon quest reward server definitions...\n");
             failure = !LoadObjects<objects::DemonQuestReward>(
-                pDataStore, "/data/demonquestreward", definitionManager, false,
+                pDataStore, "/data/demonquestreward", definitionManager, true,
                 true);
         }
 
@@ -419,15 +419,19 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading drop set server definitions...\n");
             failure = !LoadObjects<objects::DropSet>(
-                pDataStore, "/data/dropset", definitionManager, false,
+                pDataStore, "/data/dropset", definitionManager, true,
                 true);
+            if(!failure)
+            {
+                AppendPendingDrops();
+            }
         }
 
         if(!failure)
         {
             LOG_DEBUG("Loading enchant set server definitions...\n");
             failure = !LoadObjects<objects::EnchantSetData>(
-                pDataStore, "/data/enchantset", definitionManager, false,
+                pDataStore, "/data/enchantset", definitionManager, true,
                 true);
         }
 
@@ -435,7 +439,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading enchant special server definitions...\n");
             failure = !LoadObjects<objects::EnchantSpecialData>(
-                pDataStore, "/data/enchantspecial", definitionManager, false,
+                pDataStore, "/data/enchantspecial", definitionManager, true,
                 true);
         }
 
@@ -443,7 +447,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading s-item server definitions...\n");
             failure = !LoadObjects<objects::MiSItemData>(
-                pDataStore, "/data/sitemextended", definitionManager, false,
+                pDataStore, "/data/sitemextended", definitionManager, true,
                 true);
         }
 
@@ -451,7 +455,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading s-status server definitions...\n");
             failure = !LoadObjects<objects::MiSStatusData>(
-                pDataStore, "/data/sstatus", definitionManager, false,
+                pDataStore, "/data/sstatus", definitionManager, true,
                 true);
         }
 
@@ -459,7 +463,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         {
             LOG_DEBUG("Loading tokusei server definitions...\n");
             failure = !LoadObjects<objects::Tokusei>(
-                pDataStore, "/data/tokusei", definitionManager, false,
+                pDataStore, "/data/tokusei", definitionManager, true,
                 true);
         }
     }
@@ -489,7 +493,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
     {
         LOG_DEBUG("Loading zone instance server definitions...\n");
         failure = !LoadObjects<objects::ServerZoneInstance>(
-            pDataStore, "/data/zoneinstance", definitionManager, false,
+            pDataStore, "/data/zoneinstance", definitionManager, true,
             true);
     }
 
@@ -498,7 +502,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         LOG_DEBUG("Loading zone instance variant server definitions...\n");
         failure = !LoadObjects<objects::ServerZoneInstanceVariant>(
             pDataStore, "/data/zoneinstancevariant", definitionManager,
-            false, true);
+            true, true);
     }
 
     if(!failure)
@@ -667,7 +671,36 @@ void ServerDataManager::ApplyZonePartial(
     // Update spawns
     for(auto& sPair : partial->GetSpawns())
     {
-        zone->SetSpawns(sPair.first, sPair.second);
+        auto spawn = sPair.second;
+        if(spawn->GetEnemyType())
+        {
+            // Insert/update spawn
+            zone->SetSpawns(sPair.first, spawn);
+        }
+        else if(zone->SpawnsKeyExists(sPair.first))
+        {
+            // Not redefining, append lists to existing
+            auto existing = zone->GetSpawns(sPair.first);
+            for(auto dropSetID : spawn->GetDropSetIDs())
+            {
+                existing->AppendDropSetIDs(dropSetID);
+            }
+
+            for(auto drop : spawn->GetDrops())
+            {
+                existing->AppendDrops(drop);
+            }
+
+            for(auto giftSetID : spawn->GetGiftSetIDs())
+            {
+                existing->AppendGiftSetIDs(giftSetID);
+            }
+
+            for(auto gift : spawn->GetGifts())
+            {
+                existing->AppendGifts(gift);
+            }
+        }
     }
 
     // Update spawn groups
@@ -693,6 +726,30 @@ void ServerDataManager::ApplyZonePartial(
     {
         zone->AppendTriggers(trigger);
     }
+}
+
+void ServerDataManager::AppendPendingDrops()
+{
+    for(auto& pair : mPendingMergeDrops)
+    {
+        auto it = mDropSetData.find(pair.first);
+        if(it != mDropSetData.end())
+        {
+            LOG_DEBUG(libcomp::String("Appending %1 drop(s) to drop set %2\n")
+                .Arg(pair.second.size()).Arg(pair.first));
+            for(auto drop : pair.second)
+            {
+                it->second->AppendDrops(drop);
+            }
+        }
+        else
+        {
+            LOG_WARNING(libcomp::String("Failed to append drops to unknown"
+                " drop set %1\n").Arg(pair.first));
+        }
+    }
+
+    mPendingMergeDrops.clear();
 }
 
 bool ServerDataManager::LoadScripts(gsl::not_null<DataStore*> pDataStore,
@@ -1354,26 +1411,40 @@ namespace libcomp
         }
 
         uint32_t id = dropSet->GetID();
-        uint32_t giftBoxID = dropSet->GetGiftBoxID();
-        if(mDropSetData.find(id) != mDropSetData.end())
-        {
-            LOG_ERROR(libcomp::String("Duplicate drop set encountered: %1\n").Arg(id));
-            return false;
-        }
 
-        if(giftBoxID)
+        if(dropSet->GetType() == objects::DropSet::Type_t::APPEND)
         {
-            if(mGiftDropSetLookup.find(giftBoxID) != mGiftDropSetLookup.end())
+            // Hold onto the drops until the actual dropset loads
+            for(auto drop : dropSet->GetDrops())
             {
-                LOG_ERROR(libcomp::String("Duplicate drop set gift box ID"
-                    " encountered: %1\n").Arg(giftBoxID));
+                mPendingMergeDrops[id].push_back(drop);
+            }
+        }
+        else
+        {
+            uint32_t giftBoxID = dropSet->GetGiftBoxID();
+            if(mDropSetData.find(id) != mDropSetData.end())
+            {
+                LOG_ERROR(libcomp::String("Duplicate drop set"
+                    " encountered: %1\n").Arg(id));
                 return false;
             }
 
-            mGiftDropSetLookup[giftBoxID] = id;
-        }
+            if(giftBoxID)
+            {
+                if(mGiftDropSetLookup.find(giftBoxID) !=
+                    mGiftDropSetLookup.end())
+                {
+                    LOG_ERROR(libcomp::String("Duplicate drop set gift box ID"
+                        " encountered: %1\n").Arg(giftBoxID));
+                    return false;
+                }
 
-        mDropSetData[id] = dropSet;
+                mGiftDropSetLookup[giftBoxID] = id;
+            }
+
+            mDropSetData[id] = dropSet;
+        }
 
         return true;
     }
