@@ -41,6 +41,9 @@ public:
 
     virtual size_t GetSize() const;
 
+    size_t GetLengthSize() const;
+    void SetLengthSize(size_t lengthSize);
+
     std::shared_ptr<MetaVariable> GetElementType() const;
 
     virtual MetaVariableType_t GetMetaType() const;
@@ -94,7 +97,10 @@ public:
         const MetaObject& object, const std::string& name,
         size_t tabLevel = 1) const;
 
+    std::string LengthSizeType() const;
+
 private:
+    size_t mLengthSize;
     std::shared_ptr<MetaVariable> mElementType;
 };
 

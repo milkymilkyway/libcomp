@@ -164,7 +164,7 @@ public:
      * the message queue set by this function.
      * @param messageQueue Message queue to be used by the connection.
      */
-    void SetMessageQueue(const std::shared_ptr<MessageQueue<
+    void SetMessageQueue(const std::weak_ptr<MessageQueue<
         libcomp::Message::Message*>>& messageQueue);
 
     /**
@@ -333,7 +333,7 @@ protected:
     PacketParser_t mPacketParser;
 
     /// Shared pointer for the message queue for this connection.
-    std::shared_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
+    std::weak_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
 
     /// Server configuration.
     std::shared_ptr<objects::ServerConfig> mServerConfig;

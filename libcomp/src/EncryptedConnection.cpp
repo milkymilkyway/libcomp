@@ -67,13 +67,15 @@ EncryptedConnection::~EncryptedConnection()
 
 bool EncryptedConnection::Close()
 {
-    if(TcpConnection::Close() && nullptr != mMessageQueue)
+    auto messageQueue = mMessageQueue.lock();
+
+    if(TcpConnection::Close() && messageQueue)
     {
         auto self = shared_from_this();
 
         if(nullptr != self)
         {
-            mMessageQueue->Enqueue(new Message::ConnectionClosed(self));
+            messageQueue->Enqueue(new Message::ConnectionClosed(self));
         }
 
         return true;
@@ -214,8 +216,10 @@ void EncryptedConnection::SendMessage(const std::function<
 {
     bool errorFound = false;
 
+    auto messageQueue = mMessageQueue.lock();
+
     // Check for the message queue.
-    if(!errorFound && nullptr == mMessageQueue)
+    if(!errorFound && nullptr == messageQueue)
     {
         SocketError("No message queue for packet.");
 
@@ -235,7 +239,7 @@ void EncryptedConnection::SendMessage(const std::function<
     // Notify the task about the encryption.
     if(!errorFound)
     {
-        mMessageQueue->Enqueue(messageAllocFunction(self));
+        messageQueue->Enqueue(messageAllocFunction(self));
     }
 
     // Start reading until we have the packet sizes.
@@ -682,7 +686,9 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
             }
 
             // Check for the message queue.
-            if(!errorFound && nullptr == mMessageQueue)
+            auto messageQueue = mMessageQueue.lock();
+
+            if(!errorFound && nullptr == messageQueue)
             {
                 SocketError("No message queue for packet.");
 
@@ -708,7 +714,7 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
                     sizeof(uint16_t)));
 
                 // Notify the task about the new packet.
-                mMessageQueue->Enqueue(new libcomp::Message::Packet(self,
+                messageQueue->Enqueue(new libcomp::Message::Packet(self,
                     commandCode, command));
             }
 
@@ -762,7 +768,7 @@ void EncryptedConnection::PacketReceived(libcomp::Packet& packet)
     }
 }
 
-void EncryptedConnection::SetMessageQueue(const std::shared_ptr<
+void EncryptedConnection::SetMessageQueue(const std::weak_ptr<
     MessageQueue<libcomp::Message::Message*>>& messageQueue)
 {
     mMessageQueue = messageQueue;

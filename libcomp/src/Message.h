@@ -39,11 +39,12 @@ namespace Message
 /**
  * Message type used to determine what type of @ref Manager should handle it.
  */
-enum class MessageType
+enum class MessageType : int32_t
 {
     MESSAGE_TYPE_SYSTEM,        //!< Message is a special system message type.
     MESSAGE_TYPE_PACKET,        //!< Message is of type @ref MessagePacket.
     MESSAGE_TYPE_CONNECTION,    //!< Message is of type @ref ConnectionMessage.
+    MESSAGE_TYPE_CLIENT,        //!< Message is of type @ref MessageClient.
 };
 
 /**

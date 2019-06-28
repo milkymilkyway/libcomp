@@ -102,6 +102,17 @@ public:
     bool IsRunning() const;
 
     /**
+     * Get the name for this worker.
+     * @returns Name for this worker.
+     */
+    String GetWorkerName() const;
+
+    /**
+     * Set the next worker to forward messages to.
+     */
+    void SetNetWorker(const std::weak_ptr<Worker>& nextWorker);
+
+    /**
      * Get the message queue assinged to the worker.
      * @return Assigned message queue
      */
@@ -146,16 +157,28 @@ protected:
      */
     virtual void Cleanup();
 
+    /**
+     * Handle an incoming message from the queue.
+     * @param pMessage Message to handle from the queue.
+     */
+    virtual void HandleMessage(libcomp::Message::Message *pMessage);
+
 private:
     /// Signifier that the worker should continue running
     bool mRunning;
+
+    /// Name for this worker.
+    String mWorkerName;
+
+    /// Next worker to forward messages to.
+    std::weak_ptr<Worker> mNextWorker;
 
     /// Message queue to retrieve messages from
     std::shared_ptr<libcomp::MessageQueue<
         libcomp::Message::Message*>> mMessageQueue;
 
     /// Map of pointers to message handlers mapped by message type
-    EnumMap<Message::MessageType,
+    EnumMultiMap<Message::MessageType,
         std::shared_ptr<Manager>> mManagers;
 
     /// Thread used to handle asynchronous execution

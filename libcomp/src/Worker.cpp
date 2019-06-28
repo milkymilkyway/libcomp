@@ -50,21 +50,18 @@ void Worker::AddManager(const std::shared_ptr<Manager>& manager)
 {
     for(auto messageType : manager->GetSupportedTypes())
     {
-        mManagers[messageType] = manager;
+        mManagers.insert(std::make_pair(messageType, manager));
     }
 }
 
 void Worker::Start(const libcomp::String& name, bool blocking)
 {
+    mWorkerName = name;
+
     if(blocking)
     {
         mRunning = true;
-
-        while(mRunning)
-        {
-            Run(mMessageQueue.get());
-        }
-
+        Run(mMessageQueue.get());
         mRunning = false;
     }
     else
@@ -81,12 +78,7 @@ void Worker::Start(const libcomp::String& name, bool blocking)
             libcomp::Exception::RegisterSignalHandler();
 
             mRunning = true;
-
-            while(mRunning)
-            {
-                Run(messageQueue.get());
-            }
-
+            Run(messageQueue.get());
             mRunning = false;
         }, mMessageQueue, name);
     }
@@ -94,57 +86,77 @@ void Worker::Start(const libcomp::String& name, bool blocking)
 
 void Worker::Run(MessageQueue<Message::Message*> *pMessageQueue)
 {
-    std::list<libcomp::Message::Message*> msgs;
-    pMessageQueue->DequeueAll(msgs);
-
-    for(auto pMessage : msgs)
+    while(mRunning)
     {
-        // Check for a shutdown message.
-        libcomp::Message::Shutdown *pShutdown = dynamic_cast<
-            libcomp::Message::Shutdown*>(pMessage);
+        std::list<libcomp::Message::Message*> msgs;
+        pMessageQueue->DequeueAll(msgs);
 
-        // Check for an execute message.
-        libcomp::Message::Execute *pExecute = dynamic_cast<
-            libcomp::Message::Execute*>(pMessage);
-
-        // Do not handle any more messages if a shutdown was sent.
-        if(nullptr != pShutdown || !mRunning)
+        for(auto pMessage : msgs)
         {
-            mRunning = false;
+            HandleMessage(pMessage);
         }
-        else if(nullptr != pExecute)
-        {
-            // Run the code now.
-            pExecute->Run();
-        }
-        else
-        {
-            // Attempt to find a manager to process this message.
-            auto it = mManagers.find(pMessage->GetType());
+    }
+}
 
-            // Process the message if the manager is valid.
-            if(it == mManagers.end())
+void Worker::HandleMessage(libcomp::Message::Message *pMessage)
+{
+    // Check for a shutdown message.
+    libcomp::Message::Shutdown *pShutdown = dynamic_cast<
+        libcomp::Message::Shutdown*>(pMessage);
+
+    // Check for an execute message.
+    libcomp::Message::Execute *pExecute = dynamic_cast<
+        libcomp::Message::Execute*>(pMessage);
+
+    // Do not handle any more messages if a shutdown was sent.
+    if(nullptr != pShutdown || !mRunning)
+    {
+        mRunning = false;
+    }
+    else if(nullptr != pExecute)
+    {
+        // Run the code now.
+        pExecute->Run();
+    }
+    else
+    {
+        bool didProcess = false;
+
+        // Attempt to find a manager to process this message.
+        auto range = mManagers.equal_range(pMessage->GetType());
+
+        // Process the message with the list of managers.
+        for(auto it = range.first; it != range.second; ++it)
+        {
+            auto manager = it->second;
+
+            if(!manager)
             {
-                LOG_ERROR(libcomp::String("Unhandled message type: %1\n").Arg(
-                    static_cast<std::size_t>(pMessage->GetType())));
+                LOG_ERROR("Manager is null!\n");
             }
-            else
+            else if(manager->ProcessMessage(pMessage))
             {
-                auto manager = it->second;
-
-                if(!manager)
-                {
-                    LOG_ERROR("Manager is null!\n");
-                }
-                else if(!manager->ProcessMessage(pMessage))
-                {
-                    LOG_ERROR(libcomp::String("Failed to process message:\n"
-                        "%1\n").Arg(pMessage->Dump()));
-                }
+                didProcess = true;
             }
         }
 
-        // Free the message now.
+        if(!didProcess)
+        {
+            LOG_ERROR(libcomp::String("Failed to process message in worker "
+                "'%1':\n%2\n").Arg(mWorkerName).Arg(pMessage->Dump()));
+        }
+    }
+
+    // Grab the next worker.
+    auto nextWorker = mNextWorker.lock();
+
+    // Either forward the message to the next worker or free it.
+    if(nextWorker)
+    {
+        nextWorker->GetMessageQueue()->Enqueue(pMessage);
+    }
+    else
+    {
         delete pMessage;
     }
 }
@@ -189,6 +201,16 @@ void Worker::Cleanup()
 bool Worker::IsRunning() const
 {
     return mRunning;
+}
+
+String Worker::GetWorkerName() const
+{
+    return mWorkerName;
+}
+
+void Worker::SetNetWorker(const std::weak_ptr<Worker>& nextWorker)
+{
+    mNextWorker = nextWorker;
 }
 
 std::shared_ptr<MessageQueue<Message::Message*>> Worker::GetMessageQueue() const

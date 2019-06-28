@@ -27,9 +27,11 @@
 #ifndef LIBCOMP_SRC_PACKETCODES_H
 #define LIBCOMP_SRC_PACKETCODES_H
 
+// libcomp Includes
+#include "EnumUtils.h"
+
 // Standard C++11 Includes
 #include <stdint.h>
-#include <type_traits>
 
 /**
  * Request packet code from the game client to the lobby server.
@@ -908,14 +910,5 @@ enum class CharacterLoginStateFlag_t : uint8_t
     CHARLOGIN_PARTY_ICON = 0x80,  //!< Indicates that party icon information is contained in a packet.
     CHARLOGIN_PARTY_FLAGS = 0xE2,  //!< Indicates that one or many party related pieces of data are contained in a packet.
 };
-
-/**
- * Casting utility to maintain an enum type when passed as a parameter.
- */
-template<typename T>
-constexpr typename std::underlying_type<T>::type to_underlying(T val)
-{
-    return static_cast<typename std::underlying_type<T>::type>(val);
-}
 
 #endif // LIBCOMP_SRC_PACKETCODES_H

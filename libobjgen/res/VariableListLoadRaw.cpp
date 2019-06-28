@@ -1,6 +1,6 @@
 ([&]() -> bool
 {
-    uint32_t elementCount = 0;
+    @LENGTH_TYPE@ elementCount = 0;
 
     @STREAM@.read(reinterpret_cast<char*>(&elementCount),
         sizeof(elementCount));
@@ -12,7 +12,7 @@
 
     @PERSIST_COPY@
     @VAR_NAME@.clear();
-    for(uint32_t i = 0; i < elementCount; ++i)
+    for(@LENGTH_TYPE@ i = 0; i < elementCount; ++i)
     {
         @VAR_TYPE@ element;
 

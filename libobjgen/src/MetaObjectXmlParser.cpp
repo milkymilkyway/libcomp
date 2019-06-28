@@ -683,9 +683,9 @@ std::shared_ptr<MetaVariable> MetaObjectXmlParser::GetVariable(const tinyxml2::X
                 else if(mKnownObjects[refType]->GetNamespace() != ref->GetNamespace())
                 {
                     std::stringstream ss;
-                    ss << "Reference type '" << refType << "' with invalid namespace "
-                        " encountered on field '" << szMemberName << "' in object '"
-                        << szName << "'.";
+                    ss << "Reference type '" << refType << "' with invalid namespace '"
+                        << ref->GetNamespace() << "' encountered on field '"
+                        << szMemberName << "' in object '" << szName << "'.";
 
                     mError = ss.str();
                 }

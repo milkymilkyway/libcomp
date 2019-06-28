@@ -37,7 +37,7 @@ using namespace libobjgen;
 
 MetaVariableList::MetaVariableList(
     const std::shared_ptr<MetaVariable>& elementType) : MetaVariable(),
-    mElementType(elementType)
+    mLengthSize(4), mElementType(elementType)
 {
 }
 
@@ -48,6 +48,16 @@ MetaVariableList::~MetaVariableList()
 size_t MetaVariableList::GetSize() const
 {
     return 0;
+}
+
+size_t MetaVariableList::GetLengthSize() const
+{
+    return mLengthSize;
+}
+
+void MetaVariableList::SetLengthSize(size_t lengthSize)
+{
+    mLengthSize = lengthSize;
 }
 
 std::shared_ptr<MetaVariable> MetaVariableList::GetElementType() const
@@ -84,14 +94,25 @@ bool MetaVariableList::Load(std::istream& stream)
 {
     MetaVariable::Load(stream);
 
+    stream.read(reinterpret_cast<char*>(&mLengthSize),
+        sizeof(mLengthSize));
+
     return stream.good() && mElementType->Load(stream) && IsValid();
 }
 
 bool MetaVariableList::Save(std::ostream& stream) const
 {
-    MetaVariable::Save(stream);
+    bool result = false;
 
-    return IsValid() && mElementType->Save(stream);
+    if(IsValid() && MetaVariable::Save(stream))
+    {
+        stream.write(reinterpret_cast<const char*>(&mLengthSize),
+            sizeof(mLengthSize));
+
+        result = stream.good();
+    }
+
+    return result;
 }
 
 bool MetaVariableList::Load(const tinyxml2::XMLDocument& doc,
@@ -99,7 +120,39 @@ bool MetaVariableList::Load(const tinyxml2::XMLDocument& doc,
 {
     (void)doc;
 
-    return BaseLoad(root) && IsValid();
+    bool status = true;
+
+    const char *szLengthSize = root.Attribute("lensz");
+
+    if(nullptr != szLengthSize)
+    {
+        std::string lengthSize(szLengthSize);
+
+        if("1" == lengthSize)
+        {
+            SetLengthSize(1);
+        }
+        else if("2" == lengthSize)
+        {
+            SetLengthSize(2);
+        }
+        else if("4" == lengthSize)
+        {
+            SetLengthSize(4);
+        }
+        else
+        {
+            mError = "The only valid lensize values are 1, 2, and 4.";
+
+            status = false;
+        }
+    }
+    else
+    {
+        SetLengthSize(4);
+    }
+
+    return status && BaseLoad(root) && IsValid();
 }
 
 bool MetaVariableList::Save(tinyxml2::XMLDocument& doc,
@@ -108,13 +161,19 @@ bool MetaVariableList::Save(tinyxml2::XMLDocument& doc,
     tinyxml2::XMLElement *pVariableElement = doc.NewElement(elementName);
     pVariableElement->SetAttribute("type", GetType().c_str());
     pVariableElement->SetAttribute("name", GetName().c_str());
-    
+
     if(!mElementType)
     {
         return false;
     }
 
     mElementType->Save(doc, *pVariableElement, "element");
+
+    if(4 != GetLengthSize() && (1 == GetLengthSize() || 2 == GetLengthSize()))
+    {
+        pVariableElement->SetAttribute("lensz", std::to_string(
+            GetLengthSize()).c_str());
+    }
 
     parent.InsertEndChild(pVariableElement);
 
@@ -244,6 +303,7 @@ std::string MetaVariableList::GetLoadRawCode(const Generator& generator,
         {
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
+            replacements["@LENGTH_TYPE@"] = LengthSizeType();
             replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
             replacements["@VAR_LOAD_CODE@"] = code;
             replacements["@STREAM@"] = stream;
@@ -274,6 +334,7 @@ std::string MetaVariableList::GetSaveRawCode(const Generator& generator,
         {
             std::map<std::string, std::string> replacements;
             replacements["@VAR_NAME@"] = name;
+            replacements["@LENGTH_TYPE@"] = LengthSizeType();
             replacements["@VAR_SAVE_CODE@"] = code;
             replacements["@STREAM@"] = stream;
 
@@ -445,4 +506,25 @@ std::string MetaVariableList::GetAccessScriptBindings(const Generator& generator
     }
 
     return ss.str();
+}
+
+std::string MetaVariableList::LengthSizeType() const
+{
+    std::string lengthSizeType;
+
+    switch(mLengthSize)
+    {
+        case 1:
+            lengthSizeType = "uint8_t";
+            break;
+        case 2:
+            lengthSizeType = "uint16_t";
+            break;
+        default:
+        case 4:
+            lengthSizeType = "uint32_t";
+            break;
+    }
+
+    return lengthSizeType;
 }

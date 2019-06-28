@@ -67,6 +67,12 @@ using HashType = typename std::conditional<std::is_enum<Key>::value,
 template<typename Key, typename T>
 using EnumMap = std::unordered_map<Key, T, HashType<Key>>;
 
+/**
+ * Replacement for map with a enum key type and a templated value.
+ */
+template<typename Key, typename T>
+using EnumMultiMap = std::unordered_multimap<Key, T, HashType<Key>>;
+
 } // namespace libcomp
 
 #endif // LIBCOMP_SRC_ENUMMAP_H

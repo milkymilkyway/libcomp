@@ -1,6 +1,6 @@
 ([&]() -> bool
 {
-    uint32_t elementCount = static_cast<uint32_t>(@VAR_NAME@.size());
+    @LENGTH_TYPE@ elementCount = static_cast<@LENGTH_TYPE@>(@VAR_NAME@.size());
 
     @STREAM@.write(reinterpret_cast<char*>(&elementCount),
         sizeof(elementCount));
