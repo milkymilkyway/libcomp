@@ -112,7 +112,7 @@ bool MetaVariableList::Save(std::ostream& stream) const
         result = stream.good();
     }
 
-    return result;
+    return result && mElementType->Save(stream);
 }
 
 bool MetaVariableList::Load(const tinyxml2::XMLDocument& doc,
