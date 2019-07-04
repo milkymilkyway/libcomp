@@ -98,6 +98,7 @@
 
             <!-- Skill Processing -->
             <value>AFFINITY_CAP_MAX</value>
+            <value>AFFINITY_OVERRIDE</value>
             <value>BARRIER</value>
             <value>CLENCH_CHANCE</value>
             <value>CLENCH_REFLECT_CHANCE</value>

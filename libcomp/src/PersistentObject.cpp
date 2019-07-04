@@ -411,8 +411,15 @@ namespace libcomp
                 .Func("Update", &PersistentObject::Update)
                 .Func("Delete", &PersistentObject::Delete)
                 .StaticFunc("Register", &PersistentObject::Register)
-                .StaticFunc<std::list<std::shared_ptr<PersistentObject>> (*)(size_t, const std::shared_ptr<Database>&)>("LoadObjects", &PersistentObject::LoadObjects)
-                .StaticFunc<size_t (*)(const std::string&)>("GetTypeHashByName", &PersistentObject::GetTypeHashByName)
+                .StaticFunc<std::shared_ptr<PersistentObject>(*)(size_t,
+                    const std::shared_ptr<Database>&, const libobjgen::UUID&,
+                    bool, bool)>("LoadObjectByUUID",
+                        &PersistentObject::LoadObjectByUUID)
+                .StaticFunc<std::list<std::shared_ptr<PersistentObject>> (*)(
+                    size_t, const std::shared_ptr<Database>&)>("LoadObjects",
+                        &PersistentObject::LoadObjects)
+                .StaticFunc<size_t (*)(const std::string&)>(
+                    "GetTypeHashByName", &PersistentObject::GetTypeHashByName)
                 ; // Last call to binding
         }
 

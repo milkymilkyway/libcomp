@@ -95,6 +95,7 @@
     <include path="binarydata/cdevildungeondata.xml"/>
     <include path="binarydata/cdevilequipmentexclusivedata.xml"/>
     <include path="binarydata/cequipmodeldata.xml"/>
+    <include path="binarydata/ceventdata.xml"/>
     <include path="binarydata/ceventmessagedata.xml"/>
     <include path="binarydata/cguardianassistdata.xml"/>
     <include path="binarydata/chelpdata.xml"/>
