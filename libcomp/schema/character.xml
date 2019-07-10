@@ -145,6 +145,7 @@
             <value type="u16"/> <!-- Count -->
         </member>
         <member type="s8" name="DemonQuestDaily"/>
+        <member type="u32" name="DemonQuestResetTime"/>
         <member type="s8" name="TimeTrialID" default="-1"/>
         <member type="u16" name="TimeTrialTime"/>
         <member type="enum" name="TimeTrialResult" underlying="int8_t">
