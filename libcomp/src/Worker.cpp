@@ -125,7 +125,10 @@ void Worker::HandleMessage(libcomp::Message::Message *pMessage)
         // Attempt to find a manager to process this message.
         auto range = mManagers.equal_range(pMessage->GetType());
 
-        // Process the message with the list of managers.
+        // List of managers to process for.
+        std::list<std::shared_ptr<Manager>> managers;
+
+        // Get the list of managers to process.
         for(auto it = range.first; it != range.second; ++it)
         {
             auto manager = it->second;
@@ -134,7 +137,16 @@ void Worker::HandleMessage(libcomp::Message::Message *pMessage)
             {
                 LOG_ERROR("Manager is null!\n");
             }
-            else if(manager->ProcessMessage(pMessage))
+            else
+            {
+                managers.push_back(manager);
+            }
+        }
+
+        // Process the message with the list of managers.
+        for(auto manager : managers)
+        {
+            if(manager->ProcessMessage(pMessage))
             {
                 didProcess = true;
             }
