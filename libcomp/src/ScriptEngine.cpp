@@ -30,7 +30,7 @@
 #include "BaseServer.h"
 #include "Constants.h"
 #include "Database.h"
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "DefinitionManager.h"
 #include "Log.h"
 #include "ServerDataManager.h"
@@ -322,7 +322,7 @@ bool ScriptEngine::BindingExists(const std::string& name, bool lockBinding)
 
 bool ScriptEngine::Include(const std::string& path)
 {
-    std::vector<char> file = libcomp::Decrypt::LoadFile(path);
+    std::vector<char> file = libcomp::Crypto::LoadFile(path);
     LOG_INFO(libcomp::String("Include: %1\n").Arg(path));
     if(file.empty())
     {

@@ -527,8 +527,13 @@ MACRO(CREATE_GTESTS)
                 "Tests/${PROJECT_NAME}")
 
             # Link the libraries to the test executable.
-            TARGET_LINK_LIBRARIES(${ttest} gtest ${TEST_LIBS}
-                ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
+            IF(USE_MBED_TLS)
+                TARGET_LINK_LIBRARIES(${ttest} gtest ${TEST_LIBS}
+                    ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES} mbedcrypto)
+            ELSE(USE_MBED_TLS)
+                TARGET_LINK_LIBRARIES(${ttest} gtest ${TEST_LIBS}
+                    ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
+            ENDIF(USE_MBED_TLS)
 
             # Add the test to CTest.
             IF("${TEST_TARGET}" STREQUAL "test")

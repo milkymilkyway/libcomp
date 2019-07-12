@@ -29,7 +29,7 @@
 #include <sqrat.h>
 #include <PopIgnore.h>
 
-#include <Decrypt.h>
+#include <Crypto.h>
 #include <Log.h>
 #include <Packet.h>
 #include <ScriptEngine.h>
@@ -1061,8 +1061,8 @@ TEST(ScriptEngine, Integer64)
 
     for(int i = 0; i < 8; ++i)
     {
-        randomDataSigned[i] = (uint8_t)libcomp::Decrypt::GenerateSessionKey();
-        randomDataUnsigned[i] = (uint8_t)libcomp::Decrypt::GenerateSessionKey();
+        randomDataSigned[i] = (uint8_t)libcomp::Crypto::GenerateSessionKey();
+        randomDataUnsigned[i] = (uint8_t)libcomp::Crypto::GenerateSessionKey();
     }
 
     std::shared_ptr<Sqrat::ObjectReference<objects::TestObjectE>> ref;

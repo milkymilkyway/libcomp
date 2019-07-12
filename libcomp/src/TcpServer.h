@@ -29,6 +29,7 @@
 
 // libcomp Includes
 #include "CString.h"
+#include "Crypto.h"
 
 // Boost ASIO Includes
 #include "PushIgnore.h"
@@ -39,9 +40,6 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-
-// OpenSSL Includes
-#include <openssl/dh.h>
 
 namespace libcomp
 {
@@ -94,44 +92,15 @@ public:
      * Generate a Diffie-Hellman key pair.
      * @return Generated key pair or nullptr on failure.
      */
-    static DH* GenerateDiffieHellman();
+    static std::shared_ptr<Crypto::DiffieHellman> GenerateDiffieHellman();
 
     /**
      * Create a Diffie-Helman key pair given the hex encoded prime.
      * @param prime Hex encoded string representing the prime.
      * @return Generated key pair or nullptr on failure.
      */
-    static DH* LoadDiffieHellman(const String& prime);
-
-    /**
-     * Create a Diffie-Helman key pair given the binary encoded prime.
-     * @param data Binary data representing the prime.
-     * @return Generated key pair or nullptr on failure.
-     */
-    static DH* LoadDiffieHellman(const std::vector<char>& data);
-
-    /**
-     * Create a Diffie-Helman key pair given the binary encoded prime.
-     * @param pData Pointer to buffer containing data representing the prime.
-     * @param dataSize Size of the data buffer.
-     * @return Generated key pair or nullptr on failure.
-     */
-    static DH* LoadDiffieHellman(const void *pData, size_t dataSize);
-
-    /**
-     * Save a Diffie-Hellman key pair (the prime) to a binary buffer.
-     * @param pDiffieHellman Key pair to save.
-     * @return Buffer containing the prime (empty on failure).
-     */
-    static std::vector<char> SaveDiffieHellman(const DH *pDiffieHellman);
-
-    /**
-     * Copy a Diffie-Hellman key pair.
-     * @note This will not copy the private key (just the base and prime).
-     * @param pDiffieHellman Diffie-Hellman key pair to copy.
-     * @return Copied key pair or nullptr on failure.
-     */
-    static DH* CopyDiffieHellman(const DH *pDiffieHellman);
+    static std::shared_ptr<Crypto::DiffieHellman> LoadDiffieHellman(
+        const String& prime);
 
     /**
      * Called when the server has started.
@@ -157,13 +126,14 @@ protected:
      * Get the Diffie-Hellman key pair used by this server.
      * @return Key pair or nullptr if one is not set.
      */
-    const DH* GetDiffieHellman() const;
+    std::shared_ptr<Crypto::DiffieHellman> GetDiffieHellman() const;
 
     /**
      * Set the Diffie-Hellman key pair used by this server.
-     * @param pDiffieHellman Pointer to the key pair to use.
+     * @param diffieHellman Pointer to the key pair to use.
      */
-    void SetDiffieHellman(DH *pDiffieHellman);
+    void SetDiffieHellman(const std::shared_ptr<
+        Crypto::DiffieHellman>& diffieHellman);
 
     /**
      * Called to handle a new connection to the server. This will call
@@ -191,7 +161,7 @@ private:
     std::thread mServiceThread;
 
     /// Diffie-Hellman key pair used to encrypt connections.
-    DH *mDiffieHellman;
+    std::shared_ptr<Crypto::DiffieHellman> mDiffieHellman;
 
     /// Address the server is listening on.
     String mListenAddress;

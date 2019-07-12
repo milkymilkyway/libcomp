@@ -1,5 +1,5 @@
 /**
- * @file libcomp/tests/Decrypt.cpp
+ * @file libcomp/tests/Crypto.cpp
  * @ingroup libcomp
  *
  * @author COMP Omega <compomega@tutanota.com>
@@ -29,7 +29,7 @@
 #include <PopIgnore.h>
 
 #include <Config.h>
-#include <Decrypt.h>
+#include <Crypto.h>
 #include <Exception.h>
 
 #include <regex>
@@ -38,44 +38,44 @@ using namespace libcomp;
 
 TEST(GenerateRandom, DefaultsTo80Digits)
 {
-    ASSERT_FALSE(Decrypt::GenerateRandom().IsEmpty()) << "GenerateRandom "
+    ASSERT_FALSE(Crypto::GenerateRandom().IsEmpty()) << "GenerateRandom "
         "should not return an error on any sane server.";
 
-    ASSERT_EQ(Decrypt::GenerateRandom().Length(), 80) <<
+    ASSERT_EQ(Crypto::GenerateRandom().Length(), 80) <<
         "GenerateRandom defaults to a wrong string length.";
 }
 
 TEST(GenerateRandom, OddOutputGeneratesError)
 {
-    ASSERT_THROW(Decrypt::GenerateRandom(3), libcomp::Exception)
+    ASSERT_THROW(Crypto::GenerateRandom(3), libcomp::Exception)
         << "GenerateRandom should return an error for odd string lengths.";
 }
 
 TEST(GenerateRandom, OutputIsHex)
 {
-    ASSERT_TRUE(std::regex_match(Decrypt::GenerateRandom().ToUtf8(),
+    ASSERT_TRUE(std::regex_match(Crypto::GenerateRandom().ToUtf8(),
         std::regex("^[a-zA-Z0-9]*$"))) << "GenerateRandom should return "
         "valid hex.";
 }
 
 TEST(GenerateRandom, OutputChanges)
 {
-    ASSERT_NE(Decrypt::GenerateRandom(), Decrypt::GenerateRandom()) <<
+    ASSERT_NE(Crypto::GenerateRandom(), Crypto::GenerateRandom()) <<
         "GenerateRandom is always returning the same value.";
 }
 
 TEST(GenerateRandom, SpecificLengthEqualsOutput)
 {
-    ASSERT_EQ(Decrypt::GenerateRandom(20).Length(), 20) <<
+    ASSERT_EQ(Crypto::GenerateRandom(20).Length(), 20) <<
         "GenerateRandom should return the length given.";
 }
 
 TEST(GenerateRandom, NegativeOrZeroReturnsDefault)
 {
-    EXPECT_EQ(Decrypt::GenerateRandom(0).Length(), 80) <<
+    EXPECT_EQ(Crypto::GenerateRandom(0).Length(), 80) <<
         "GenerateRandom should return an empty string for an invalid size.";
 
-    EXPECT_EQ(Decrypt::GenerateRandom(-11).Length(), 80) <<
+    EXPECT_EQ(Crypto::GenerateRandom(-11).Length(), 80) <<
         "GenerateRandom should return an empty string for an invalid size.";
 }
 
@@ -83,7 +83,7 @@ TEST(GenerateSessionKey, ValueIsNotNegative)
 {
     for(int i = 0; i < 1000; ++i)
     {
-        EXPECT_GT((int)Decrypt::GenerateSessionKey(), 0) <<
+        EXPECT_GT((int)Crypto::GenerateSessionKey(), 0) <<
             "GenerateSessionKey should not be negative.";
     }
 }
@@ -92,11 +92,11 @@ TEST(GenerateSessionKey, ValueChangesBetweenCalls)
 {
     for(int i = 0; i < 1000; ++i)
     {
-        EXPECT_NE(Decrypt::GenerateSessionKey(), 0) << "GenerateSessionKey "
+        EXPECT_NE(Crypto::GenerateSessionKey(), 0) << "GenerateSessionKey "
             "should not return an error on any sane server.";
 
-        EXPECT_NE(Decrypt::GenerateSessionKey(),
-            Decrypt::GenerateSessionKey()) <<
+        EXPECT_NE(Crypto::GenerateSessionKey(),
+            Crypto::GenerateSessionKey()) <<
             "GenerateSessionKey is always returning the same value.";
     }
 }
@@ -105,57 +105,58 @@ TEST(Decrypt, LoadFile)
 {
     // Read the first 4 bytes from a file. Should be OK for a stream.
 #if _WIN32
-    EXPECT_EQ(4, Decrypt::LoadFile("c:\\windows\\explorer.exe", 4).size());
+    EXPECT_EQ(4, Crypto::LoadFile("c:\\windows\\explorer.exe", 4).size());
 #else
-    EXPECT_EQ(4, Decrypt::LoadFile("/dev/urandom", 4).size());
+    EXPECT_EQ(4, Crypto::LoadFile("/dev/urandom", 4).size());
 #endif // _WIN32
 
     // Attempt to read an entire stream. This should fail.
-    EXPECT_EQ(0, Decrypt::LoadFile("/dev/urandom").size());
+    EXPECT_EQ(0, Crypto::LoadFile("/dev/urandom").size());
 
     // We should be able to read the entire contents of a regular file.
 #if _WIN32
-    EXPECT_NE(0, Decrypt::LoadFile("c:\\windows\\system.ini").size());
+    EXPECT_NE(0, Crypto::LoadFile("c:\\windows\\system.ini").size());
 #else
-    EXPECT_NE(0, Decrypt::LoadFile("/etc/crontab").size());
+    EXPECT_NE(0, Crypto::LoadFile("/etc/crontab").size());
 #endif // _WIN32
 
     // Try a directory.
 #if _WIN32
-    EXPECT_EQ(0, Decrypt::LoadFile("c:\\windows").size());
+    EXPECT_EQ(0, Crypto::LoadFile("c:\\windows").size());
 #else
-    EXPECT_EQ(0, Decrypt::LoadFile("/etc").size());
+    EXPECT_EQ(0, Crypto::LoadFile("/etc").size());
 #endif // _WIN32
 
     // Try a bad path.
-    EXPECT_EQ(0, Decrypt::LoadFile("/_bad_path_").size());
+    EXPECT_EQ(0, Crypto::LoadFile("/_bad_path_").size());
 }
 
+#ifndef USE_MBED_TLS
 TEST(GenDiffieHellman, EmptyArgsReturnError)
 {
-    EXPECT_TRUE(Decrypt::GenDiffieHellman(String(), String(),
+    EXPECT_TRUE(Crypto::GenDiffieHellman(String(), String(),
         String()).IsEmpty()) << "GenDiffieHellman should return an empty "
         "string with empty arguments.";
 }
 
 TEST(GenDiffieHellman, BadArgsReturnError)
 {
-    EXPECT_TRUE(Decrypt::GenDiffieHellman("Z", "200", "3").IsEmpty()) <<
+    EXPECT_TRUE(Crypto::GenDiffieHellman("Z", "200", "3").IsEmpty()) <<
         "GenDiffieHellman should return an empty string with bad arguments.";
 
-    EXPECT_TRUE(Decrypt::GenDiffieHellman("a", "^", "3").IsEmpty()) <<
+    EXPECT_TRUE(Crypto::GenDiffieHellman("a", "^", "3").IsEmpty()) <<
         "GenDiffieHellman should return an empty string with bad arguments.";
 
-    EXPECT_TRUE(Decrypt::GenDiffieHellman("a", "200", "*").IsEmpty()) <<
+    EXPECT_TRUE(Crypto::GenDiffieHellman("a", "200", "*").IsEmpty()) <<
         "GenDiffieHellman should return an empty string with bad arguments.";
 }
 
 TEST(GenDiffieHellman, ReturnsCorrectAnswer)
 {
-    EXPECT_EQ(Decrypt::GenDiffieHellman("a", "200", "3").ToLower(), "01e8") <<
+    EXPECT_EQ(Crypto::GenDiffieHellman("a", "200", "3").ToLower(), "01e8") <<
         "GenDiffieHellman should return the correct answer.";
 
-    EXPECT_EQ(Decrypt::GenDiffieHellman("132D492f1B19DC66171851Be1736fC7c"
+    EXPECT_EQ(Crypto::GenDiffieHellman("132D492f1B19DC66171851Be1736fC7c"
         "1658f3F610Ce0632139843b01732D5A2", "0010000000000000000",
         "2").ToLower(), "4032b73b418efa84") << "GenDiffieHellman should "
         "return the correct answer.";
@@ -163,18 +164,19 @@ TEST(GenDiffieHellman, ReturnsCorrectAnswer)
 
 TEST(GenDiffieHellman, PaddingWorks)
 {
-    EXPECT_EQ(Decrypt::GenDiffieHellman("a", "200", "3", 8).ToLower(),
+    EXPECT_EQ(Crypto::GenDiffieHellman("a", "200", "3", 8).ToLower(),
         "000001e8") << "GenDiffieHellman should return the correct answer "
         "with padding added.";
 
     // A padding (outputSize) value that is too low should not truncate
     // the result.
-    EXPECT_EQ(Decrypt::GenDiffieHellman("132D492f1B19DC66171851Be1736fC7c"
+    EXPECT_EQ(Crypto::GenDiffieHellman("132D492f1B19DC66171851Be1736fC7c"
         "1658f3F610Ce0632139843b01732D5A2", "0010000000000000000",
         "2", 8).ToLower(), "4032b73b418efa84") << "GenDiffieHellman should "
         "return the correct answer with padding if the result is less than"
         "the output size specified.";
 }
+#endif
 
 TEST(EncryptDecrypt, File)
 {
@@ -219,9 +221,9 @@ TEST(EncryptDecrypt, File)
             sizeof(encryptedFile));
     }
 
-    ASSERT_TRUE(Decrypt::EncryptFile(TEMP_FILE, decryptedData));
+    ASSERT_TRUE(Crypto::EncryptFile(TEMP_FILE, decryptedData));
 
-    std::vector<char> dataCopy = Decrypt::LoadFile(TEMP_FILE);
+    std::vector<char> dataCopy = Crypto::LoadFile(TEMP_FILE);
 
     EXPECT_EQ(dataCopy.size(), encryptedData.size());
 
@@ -231,7 +233,7 @@ TEST(EncryptDecrypt, File)
             encryptedData.size()), 0);
     }
 
-    dataCopy = Decrypt::DecryptFile(TEMP_FILE);
+    dataCopy = Crypto::DecryptFile(TEMP_FILE);
 
     EXPECT_EQ(dataCopy.size(), decryptedData.size());
 
@@ -240,6 +242,46 @@ TEST(EncryptDecrypt, File)
         EXPECT_EQ(memcmp(&dataCopy[0], &decryptedData[0],
             decryptedData.size()), 0);
     }
+}
+
+TEST(Hash, Password)
+{
+    String hash = "e6e8ba72bf2bab68c923599a08489c6f3a35018e870d490fa25b4c2a2d82"
+        "361093b9a8f1d0cdd02e5a7dd5e714dc090263e2e90af3d3d861c056f28a4adb2d95";
+
+    EXPECT_EQ(hash, Crypto::HashPassword("test", "12345"));
+}
+
+TEST(Hash, SHA1)
+{
+    String hash = "e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe";
+
+    static const unsigned char dataBuffer[] = {
+        0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x20, 0x74, 0x65,
+        0x73, 0x74, 0x20, 0x66, 0x69, 0x6c, 0x65, 0x2e, 0x0a
+    };
+
+    std::vector<char> data(reinterpret_cast<const char*>(
+        dataBuffer), reinterpret_cast<const char*>(dataBuffer) +
+        sizeof(dataBuffer));
+
+    EXPECT_EQ(hash, Crypto::SHA1(data));
+}
+
+TEST(Hash, MD5)
+{
+    String hash = "2d282102fa671256327d4767ec23bc6b";
+
+    static const unsigned char dataBuffer[] = {
+        0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x20, 0x74, 0x65,
+        0x73, 0x74, 0x20, 0x66, 0x69, 0x6c, 0x65, 0x2e, 0x0a
+    };
+
+    std::vector<char> data(reinterpret_cast<const char*>(
+        dataBuffer), reinterpret_cast<const char*>(dataBuffer) +
+        sizeof(dataBuffer));
+
+    EXPECT_EQ(hash, Crypto::MD5(data));
 }
 
 int main(int argc, char *argv[])

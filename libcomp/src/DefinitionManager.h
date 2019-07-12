@@ -35,7 +35,7 @@
 // libcomp Includes
 #include "CString.h"
 #include "DataStore.h"
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "MiCorrectTbl.h"
 #include "Object.h"
 

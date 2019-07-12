@@ -49,6 +49,7 @@ SET(${PROJECT_NAME}_SRCS
     src/ChannelConnection.cpp
     src/Compress.cpp
     src/Convert.cpp
+    src/Crypto.cpp
     src/CString.cpp
     src/Database.cpp
     src/DatabaseBind.cpp
@@ -61,7 +62,6 @@ SET(${PROJECT_NAME}_SRCS
     src/DataFile.cpp
     src/DataStore.cpp
     src/DataSyncManager.cpp
-    src/Decrypt.cpp
     src/DefinitionManager.cpp
     src/DynamicObject.cpp
     src/DynamicVariable.cpp
@@ -154,7 +154,7 @@ SET(${PROJECT_NAME}_HDRS
     src/DataFile.h
     src/DataStore.h
     src/DataSyncManager.h
-    src/Decrypt.h
+    src/Crypto.h
     src/DefinitionManager.h
     src/DynamicObject.h
     src/DynamicVariable.h
@@ -1141,6 +1141,10 @@ ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
 
 TARGET_COMPILE_DEFINITIONS(comp PUBLIC ${SQRAT_DEFINES})
 
+IF(USE_MBED_TLS)
+    TARGET_COMPILE_DEFINITIONS(comp PUBLIC USE_MBED_TLS=1)
+ENDIF(USE_MBED_TLS)
+
 SET_TARGET_PROPERTIES(comp PROPERTIES FOLDER "Libraries")
 
 IF(SYSTEMD_FOUND)
@@ -1159,10 +1163,17 @@ IF(SYSTEMD_FOUND)
     SET(SYSTEMD_LIBS ${SYSTEMD_LIBRARIES})
 ENDIF(SYSTEMD_FOUND)
 
-TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient ${OPENSSL_LIBRARIES}
-    ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} objgen sqlite3
-    squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
-    ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
+IF(USE_MBED_TLS)
+    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient
+        mbedcrypto ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+        objgen sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
+        ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
+ELSE(USE_MBED_TLS)
+    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient
+        ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+        objgen sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
+        ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
+ENDIF(USE_MBED_TLS)
 
 ADD_DEPENDENCIES(comp asio gsl)
 
@@ -1178,10 +1189,10 @@ ENDIF(USE_COTIRE)
 # List of unit tests to add to CTest.
 SET(${PROJECT_NAME}_TEST_SRCS
     Convert
-    Decrypt
+    Crypto
 
     # This test can take too long so disable it for now.
-    # DiffieHellman
+    DiffieHellman
 
     GeneratedObjects
     MariaDB

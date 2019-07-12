@@ -105,8 +105,17 @@ TARGET_INCLUDE_DIRECTORIES(objgen PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/res
 )
 
-TARGET_LINK_LIBRARIES(objgen ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} tinyxml2
-    ttvfs ttvfs_zip)
+IF(USE_MBED_TLS)
+    TARGET_COMPILE_DEFINITIONS(objgen PUBLIC USE_MBED_TLS=1)
+ENDIF(USE_MBED_TLS)
+
+IF(USE_MBED_TLS)
+    TARGET_LINK_LIBRARIES(objgen mbedcrypto ${ZLIB_LIBRARIES}
+        tinyxml2 ttvfs ttvfs_zip)
+ELSE(USE_MBED_TLS)
+    TARGET_LINK_LIBRARIES(objgen ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES}
+        tinyxml2 ttvfs ttvfs_zip)
+ENDIF(USE_MBED_TLS)
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(objgen crypt32 advapi32 iphlpapi psapi shell32 userenv ws2_32)

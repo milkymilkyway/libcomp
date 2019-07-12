@@ -27,14 +27,25 @@
 #include "UUID.h"
 #include "Endian.h"
 
-// OpenSSL Includes
+#ifdef USE_MBED_TLS
+#include <mbedtls/ctr_drbg.h>
+#else // USE_MBED_TLS
 #include <openssl/rand.h>
+#endif // USE_MBED_TLS
 
 // Standard C++11 Libraries
 #include <algorithm>
+#include <fstream>
 #include <iomanip>
 #include <regex>
 #include <sstream>
+
+#ifdef USE_MBED_TLS
+#ifdef _WIN32
+#include <wincrypt.h>
+#include <windows.h>
+#endif // _WIN32
+#endif // USE_MBED_TLS
 
 libobjgen::UUID::UUID() : mTimeAndVersion(0), mClockSequenceAndNode(0)
 {
@@ -106,10 +117,139 @@ libobjgen::UUID::UUID(const std::vector<char>& data)
     }
 }
 
+#ifdef USE_MBED_TLS
+static std::vector<char> SeedLoadFile(const std::string &path,
+    int requestedSize)
+{
+    std::ifstream::streampos fileSize;
+    std::vector<char> data;
+    std::ifstream file;
+
+    try
+    {
+        file.open(path.c_str(), std::ifstream::in | std::ifstream::binary);
+        fileSize = static_cast<std::ifstream::streampos>(requestedSize);
+
+        if(file.good() && 0 < fileSize)
+        {
+            data.resize(
+                static_cast<std::vector<char>::size_type>(fileSize));
+            file.read(&data[0], fileSize);
+        }
+
+        if(!file.good() ||
+            data.size() != static_cast<std::vector<char>::size_type>(fileSize))
+        {
+            data.clear();
+        }
+
+        return data;
+    }
+    catch(...)
+    {
+        return {};
+    }
+}
+
+static int RandomSeed(void *pUserData, uint8_t *pBuffer, size_t bufferSize)
+{
+    (void)pUserData;
+
+    // Where to store the random data.
+    std::vector<char> random;
+
+    // Copy the size (don't feel like changing this code).
+    int sz = (int)bufferSize;
+
+#ifdef _WIN32
+    HCRYPTPROV hCryptProv;
+
+    PBYTE pbData = new BYTE[sz];
+
+    if(nullptr == pbData)
+    {
+        return -1;
+    }
+
+    // On Windows, use the cryto API to generate the random data. Acquire a
+    // context to generate the random data with.
+    if(TRUE != CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
+                   CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET))
+    {
+        delete[] pbData;
+
+        return -2;
+    }
+
+    // Generate the random data.
+    if(TRUE != CryptGenRandom(hCryptProv, sz, pbData))
+    {
+        delete[] pbData;
+
+        return -3;
+    }
+
+    // Release the context.
+    if(TRUE != CryptReleaseContext(hCryptProv, 0))
+    {
+        delete[] pbData;
+
+        return -4;
+    }
+
+    // Convert the raw data to a QByteArray.
+    random = std::move(std::vector<char>(reinterpret_cast<char *>(pbData),
+        reinterpret_cast<char *>(pbData) + sz));
+#else  // _WIN32
+    // On Linux, use /dev/urandom.
+    random = SeedLoadFile("/dev/urandom", sz);
+
+    // Check that enough data was read.
+    if(random.size() != static_cast<std::vector<char>::size_type>(sz))
+    {
+        return -1;
+    }
+#endif // _WIN32
+
+    memcpy(pBuffer, &random[0], bufferSize);
+
+    return 0;
+}
+#endif // USE_MBED_TLS
+
 libobjgen::UUID libobjgen::UUID::Random()
 {
     libobjgen::UUID uuid;
 
+#ifdef USE_MBED_TLS
+    static bool didInit = false;
+    static mbedtls_ctr_drbg_context ctx;
+
+    if(!didInit)
+    {
+        mbedtls_ctr_drbg_init(&ctx);
+        mbedtls_ctr_drbg_seed(&ctx, RandomSeed, NULL, NULL, 0);
+        didInit = true;
+    }
+
+    if(0 == mbedtls_ctr_drbg_random(&ctx, (unsigned char*)&uuid.mTimeAndVersion,
+        sizeof(uuid.mTimeAndVersion)) &&
+        0 == mbedtls_ctr_drbg_random(&ctx, (unsigned char*)&uuid.mClockSequenceAndNode,
+        sizeof(uuid.mTimeAndVersion)))
+    {
+        uuid.mTimeAndVersion = (uuid.mTimeAndVersion & 0x0FFFFFFFFFFFFFFFLL) |
+            ((uint64_t)4 << 60);
+        uuid.mClockSequenceAndNode = (uuid.mClockSequenceAndNode &
+            0x3FFFFFFFFFFFFFFFLL) | 0x8000000000000000LL;
+    }
+    else
+    {
+        uuid.mTimeAndVersion = 0;
+        uuid.mClockSequenceAndNode = 0;
+    }
+
+    return uuid;
+#else // USE_MBED_TLS
     if(1 == RAND_bytes((unsigned char*)&uuid.mTimeAndVersion,
         sizeof(uuid.mTimeAndVersion)) &&
         1 == RAND_bytes((unsigned char*)&uuid.mClockSequenceAndNode,
@@ -127,6 +267,7 @@ libobjgen::UUID libobjgen::UUID::Random()
     }
 
     return uuid;
+#endif // USE_MBED_TLS
 }
 
 std::string libobjgen::UUID::ToString() const

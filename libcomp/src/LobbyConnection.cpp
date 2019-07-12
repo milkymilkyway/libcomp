@@ -40,7 +40,8 @@ LobbyConnection::LobbyConnection(asio::io_service& io_service,
 }
 
 LobbyConnection::LobbyConnection(asio::ip::tcp::socket& socket,
-    DH *pDiffieHellman) : libcomp::EncryptedConnection(socket, pDiffieHellman),
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
+    libcomp::EncryptedConnection(socket, diffieHellman),
     mMode(ConnectionMode_t::MODE_NORMAL), mListenPort(18666)
 {
 }

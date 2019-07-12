@@ -29,16 +29,13 @@
 
 // libcomp Includes
 #include "CString.h"
+#include "Crypto.h"
 #include "Packet.h"
 
 // Boost ASIO Includes
 #include "PushIgnore.h"
 #include <asio.hpp>
 #include "PopIgnore.h"
-
-// OpenSSL Includes
-#include <openssl/dh.h>
-#include <openssl/blowfish.h>
 
 // Standard C++11 Includes
 #include <mutex>
@@ -86,9 +83,10 @@ public:
     /**
      * Create a new server connection.
      * @param socket Socket provided by the server for the new client.
-     * @param pDiffieHellman Asymmetric encryption information.
+     * @param diffieHellman Asymmetric encryption information.
      */
-    TcpConnection(asio::ip::tcp::socket& socket, DH *pDiffieHellman);
+    TcpConnection(asio::ip::tcp::socket& socket, const std::shared_ptr<
+        Crypto::DiffieHellman>& diffieHellman);
 
     /**
      * Cleanup the connection object.
@@ -97,26 +95,29 @@ public:
 
     /**
      * Get the prime used in the Diffie-Hellman key exchange.
-     * @param pDiffieHellman Object that stores the DH key.
+     * @param diffieHellman Object that stores the DH key.
      * @return Prime to be used in the DH key exchange.
      */
-    static String GetDiffieHellmanPrime(const DH *pDiffieHellman);
+    static String GetDiffieHellmanPrime(const std::shared_ptr<
+        Crypto::DiffieHellman>& diffieHellman);
 
     /**
      * Generate the public key for the Diffie-Hellman key exchange.
-     * @param pDiffieHellman Object that stores the DH key.
+     * @param diffieHellman Object that stores the DH key.
      * @return Public key to be used in the DH key exchange.
      */
-    static String GenerateDiffieHellmanPublic(DH *pDiffieHellman);
+    static String GenerateDiffieHellmanPublic(const std::shared_ptr<
+        Crypto::DiffieHellman>& diffieHellman);
 
     /**
      * Return the shared private from the Diffie-Hellman key exchange.
-     * @param pDiffieHellman Object that stores the DH key.
+     * @param diffieHellman Object that stores the DH key.
      * @param otherPublic Public key from the other party.
      * @return Shared private data upon completion of the DH key exchange.
      */
     static std::vector<char> GenerateDiffieHellmanSharedData(
-        DH *pDiffieHellman, const String& otherPublic);
+        const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman,
+        const String& otherPublic);
 
     /**
      * Connect to the remote host (client role).
@@ -350,10 +351,10 @@ private:
 
 protected:
     /// Diffie-Hellman key exchange data.
-    DH *mDiffieHellman;
+    std::shared_ptr<Crypto::DiffieHellman> mDiffieHellman;
 
     /// Blowfish encryption key.
-    BF_KEY mEncryptionKey;
+    Crypto::Blowfish mEncryptionKey;
 
     /// Status of the connection.
     ConnectionStatus_t mStatus;

@@ -27,7 +27,7 @@
  * @section enc_and_dec Encryption and Decryption
  * Include the following header to use the encryption and decryption methods:
  * @code
- * #include <Decrypt.h>
+ * #include <Crypto.h>
  * @endcode
  * Client files can be read using @ref Decrypt::decryptFile and written using
  * @ref Decrypt::encryptFile. These methods will handle any encryption the

@@ -27,10 +27,13 @@
 #include "TcpServer.h"
 
 #include "Constants.h"
-#include "CryptSupport.h"
 #include "Log.h"
 #include "TcpConnection.h"
 #include "WindowsService.h"
+
+#ifndef USE_MBED_TLS
+#include "CryptSupport.h"
+#endif
 
 #ifdef HAVE_SYSTEMD
 #include <systemd/sd-daemon.h>
@@ -50,10 +53,6 @@ TcpServer::TcpServer(const String& listenAddress, uint16_t port) :
 
 TcpServer::~TcpServer()
 {
-    if(nullptr != mDiffieHellman)
-    {
-        DH_free(mDiffieHellman);
-    }
 }
 
 int TcpServer::Start(bool delayReady)
@@ -165,7 +164,7 @@ std::shared_ptr<TcpConnection> TcpServer::CreateConnection(
     asio::ip::tcp::socket& socket)
 {
     return std::make_shared<TcpConnection>(socket,
-        CopyDiffieHellman(mDiffieHellman));
+        LoadDiffieHellman(mDiffieHellman->GetPrime()));
 }
 
 void TcpServer::AcceptHandler(asio::error_code errorCode,
@@ -214,236 +213,24 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
     }
 }
 
-const DH* TcpServer::GetDiffieHellman() const
+std::shared_ptr<Crypto::DiffieHellman> TcpServer::GetDiffieHellman() const
 {
     return mDiffieHellman;
 }
 
-void TcpServer::SetDiffieHellman(DH *pDiffieHellman)
+void TcpServer::SetDiffieHellman(const std::shared_ptr<
+    Crypto::DiffieHellman>& diffieHellman)
 {
-    if(nullptr != mDiffieHellman)
-    {
-        DH_free(pDiffieHellman);
-    }
-
-    mDiffieHellman = pDiffieHellman;
+    mDiffieHellman = diffieHellman;
 }
 
-DH* TcpServer::GenerateDiffieHellman()
+std::shared_ptr<Crypto::DiffieHellman> TcpServer::GenerateDiffieHellman()
 {
-    int codes;
-
-    DH *pDiffieHellman = DH_new();
-
-    if(nullptr != pDiffieHellman)
-    {
-        if(1 != DH_generate_parameters_ex(pDiffieHellman, DH_KEY_BIT_SIZE,
-            DH_BASE_INT, NULL))
-        {
-            DH_free(pDiffieHellman);
-            pDiffieHellman = nullptr;
-        }
-
-        const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
-
-        if(pDiffieHellman)
-        {
-            DH_get0_pqg(pDiffieHellman, &p, &q, &g);
-        }
-
-        if(pDiffieHellman && (nullptr == p || nullptr == g ||
-            1 != DH_check(pDiffieHellman, &codes) ||
-            DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman)))
-        {
-            DH_free(pDiffieHellman);
-            pDiffieHellman = nullptr;
-        }
-    }
-
-    return pDiffieHellman;
+    return Crypto::DiffieHellman::Generate();
 }
 
-DH* TcpServer::LoadDiffieHellman(const String& prime)
+std::shared_ptr<Crypto::DiffieHellman> TcpServer::LoadDiffieHellman(
+    const String& prime)
 {
-    DH *pDiffieHellman = nullptr;
-
-    if(DH_KEY_HEX_SIZE == prime.Length())
-    {
-        pDiffieHellman = DH_new();
-
-        if(nullptr != pDiffieHellman)
-        {
-            DH_set0_key(pDiffieHellman, nullptr, nullptr);
-
-            BIGNUM *p = nullptr, *g = nullptr;
-
-            if(0 >= BN_hex2bn(&p, prime.C()) ||
-                0 >= BN_hex2bn(&g, DH_BASE_STRING) ||
-                nullptr == p || nullptr == g)
-            {
-                LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
-
-                DH_free(pDiffieHellman);
-                pDiffieHellman = nullptr;
-
-                if(nullptr != p)
-                {
-                    OPENSSL_free(p);
-                    p = nullptr;
-                }
-
-                if(nullptr != g)
-                {
-                    OPENSSL_free(g);
-                    g = nullptr;
-                }
-            }
-
-            if(pDiffieHellman)
-            {
-                DH_set0_pqg(pDiffieHellman, p, nullptr, g);
-            }
-
-            if(pDiffieHellman && DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
-            {
-                LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
-                LOG_DEBUG(libcomp::String("DH_SHARED_DATA_SIZE=%1/%2\n").Arg(
-                    DH_SHARED_DATA_SIZE).Arg(DH_size(pDiffieHellman)));
-
-                DH_free(pDiffieHellman);
-                pDiffieHellman = nullptr;
-            }
-        }
-        else
-        {
-            LOG_ERROR("Failed to alloc diffie hellman\n");
-        }
-    }
-    else
-    {
-        LOG_ERROR(libcomp::String("DH_KEY_HEX_SIZE=%1/%2").Arg(
-            DH_KEY_HEX_SIZE).Arg(prime.Length()));
-    }
-
-    return pDiffieHellman;
-}
-
-DH* TcpServer::LoadDiffieHellman(const std::vector<char>& data)
-{
-    return LoadDiffieHellman(&data[0], data.size());
-}
-
-DH* TcpServer::LoadDiffieHellman(const void *pData, size_t dataSize)
-{
-    DH *pDiffieHellman = nullptr;
-
-    if(nullptr != pData && DH_SHARED_DATA_SIZE == dataSize)
-    {
-        pDiffieHellman = DH_new();
-
-        if(nullptr != pDiffieHellman)
-        {
-            BIGNUM *g = nullptr;
-            BIGNUM *p = BN_bin2bn(reinterpret_cast<
-                const unsigned char*>(pData),
-                static_cast<int>(dataSize), NULL);
-
-            if(0 >= BN_hex2bn(&g, DH_BASE_STRING) ||
-                nullptr == p || nullptr == g)
-            {
-                DH_free(pDiffieHellman);
-                pDiffieHellman = nullptr;
-
-                if(nullptr != p)
-                {
-                    OPENSSL_free(p);
-                    p = nullptr;
-                }
-
-                if(nullptr != g)
-                {
-                    OPENSSL_free(g);
-                    g = nullptr;
-                }
-            }
-            else
-            {
-                DH_set0_pqg(pDiffieHellman, p, nullptr, g);
-            }
-
-            if(DH_SHARED_DATA_SIZE != DH_size(pDiffieHellman))
-            {
-                DH_free(pDiffieHellman);
-                pDiffieHellman = nullptr;
-            }
-        }
-    }
-
-    return pDiffieHellman;
-}
-
-std::vector<char> TcpServer::SaveDiffieHellman(const DH *pDiffieHellman)
-{
-    std::vector<char> data;
-
-    unsigned char primeData[DH_SHARED_DATA_SIZE];
-
-    const BIGNUM *p = pDiffieHellman ? DH_get0_p(pDiffieHellman) : nullptr;
-
-    if(nullptr != p && DH_SHARED_DATA_SIZE == BN_num_bytes(p) &&
-        DH_SHARED_DATA_SIZE == BN_bn2bin(p, primeData))
-    {
-        data.insert(data.begin(), reinterpret_cast<const char*>(primeData),
-            reinterpret_cast<const char*>(primeData) + DH_SHARED_DATA_SIZE);
-    }
-
-    return data;
-}
-
-DH* TcpServer::CopyDiffieHellman(const DH *pDiffieHellman)
-{
-    if(!pDiffieHellman)
-    {
-        return nullptr;
-    }
-
-    DH *pCopy = nullptr;
-
-    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
-    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
-
-    if(nullptr != p && nullptr != g)
-    {
-        pCopy = DH_new();
-
-        if(nullptr != pCopy)
-        {
-            BIGNUM *p_copy = BN_dup(p);
-            BIGNUM *g_copy = BN_dup(g);
-
-            if(nullptr == p_copy || nullptr == g_copy)
-            {
-                DH_free(pCopy);
-                pCopy = nullptr;
-
-                if(nullptr == p_copy)
-                {
-                    OPENSSL_free(p_copy);
-                    p_copy = nullptr;
-                }
-
-                if(nullptr == g_copy)
-                {
-                    OPENSSL_free(g_copy);
-                    g_copy = nullptr;
-                }
-            }
-            else
-            {
-                DH_set0_pqg(pCopy, p_copy, nullptr, g_copy);
-            }
-        }
-    }
-
-    return pCopy;
+    return std::make_shared<Crypto::DiffieHellman>(prime);
 }

@@ -27,7 +27,7 @@
 // libcomp Includes
 #include "DataStore.h"
 #include "DataFile.h"
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "Log.h"
 #include "ScriptEngine.h"
 
@@ -369,7 +369,7 @@ std::vector<char> DataStore::DecryptFile(const libcomp::String& path)
 {
     std::vector<char> data = ReadFile(path);
 
-    if(!data.empty() && Decrypt::DecryptFile(data))
+    if(!data.empty() && Crypto::DecryptFile(data))
     {
         return data;
     }
@@ -382,7 +382,7 @@ bool DataStore::EncryptFile(const libcomp::String& path,
 {
     std::vector<char> dataCopy = data;
 
-    if(!Decrypt::EncryptFile(dataCopy))
+    if(!Crypto::EncryptFile(dataCopy))
     {
         return false;
     }
@@ -396,7 +396,7 @@ libcomp::String DataStore::GetHash(const libcomp::String& path)
 
     if(!data.empty())
     {
-        return Decrypt::SHA1(data);
+        return Crypto::SHA1(data);
     }
 
     return {};

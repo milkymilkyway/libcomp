@@ -34,7 +34,8 @@ InternalConnection::InternalConnection(asio::io_service& io_service) :
 }
 
 InternalConnection::InternalConnection(asio::ip::tcp::socket& socket,
-    DH *pDiffieHellman) : libcomp::EncryptedConnection(socket, pDiffieHellman)
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
+    libcomp::EncryptedConnection(socket, diffieHellman)
 {
 }
 

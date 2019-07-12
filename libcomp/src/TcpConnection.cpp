@@ -27,9 +27,12 @@
 #include "TcpConnection.h"
 
 #include "Constants.h"
-#include "CryptSupport.h"
 #include "Log.h"
 #include "Object.h"
+
+#ifndef USE_MBED_TLS
+#include "CryptSupport.h"
+#endif
 
 using namespace libcomp;
 
@@ -44,10 +47,10 @@ TcpConnection::TcpConnection(asio::io_service& io_service) :
 }
 
 TcpConnection::TcpConnection(asio::ip::tcp::socket& socket,
-    DH *pDiffieHellman) : mSocket(std::move(socket)),
-    mDiffieHellman(pDiffieHellman), mStatus(TcpConnection::STATUS_CONNECTED),
-    mRole(TcpConnection::ROLE_SERVER), mRemoteAddress("0.0.0.0"),
-    mSendingPacket(false)
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
+    mSocket(std::move(socket)), mDiffieHellman(diffieHellman),
+    mStatus(TcpConnection::STATUS_CONNECTED), mRole(TcpConnection::ROLE_SERVER),
+    mRemoteAddress("0.0.0.0"), mSendingPacket(false)
 {
     // Cache the remote address.
     try
@@ -64,11 +67,6 @@ TcpConnection::~TcpConnection()
 {
     LOG_DEBUG(libcomp::String(String("Deleting connection '%1'\n").Arg(
         GetName())));
-
-    if(nullptr != mDiffieHellman)
-    {
-        DH_free(mDiffieHellman);
-    }
 }
 
 bool TcpConnection::Connect(const String& host, uint16_t port, bool async)
@@ -461,113 +459,27 @@ void TcpConnection::SetEncryptionKey(const void *pData, size_t dataSize)
 {
     if(nullptr != pData && BF_NET_KEY_BYTE_SIZE <= dataSize)
     {
-        BF_set_key(&mEncryptionKey, BF_NET_KEY_BYTE_SIZE,
-            reinterpret_cast<const unsigned char*>(pData));
+        mEncryptionKey.SetKey(pData, BF_NET_KEY_BYTE_SIZE);
     }
 }
 
-String TcpConnection::GetDiffieHellmanPrime(const DH *pDiffieHellman)
+String TcpConnection::GetDiffieHellmanPrime(const std::shared_ptr<
+    Crypto::DiffieHellman>& diffieHellman)
 {
-    if(!pDiffieHellman)
-    {
-        return {};
-    }
-
-    String prime;
-
-    const BIGNUM *p = DH_get0_p(pDiffieHellman);
-
-    if(nullptr != p)
-    {
-        char *pHexResult = BN_bn2hex(p);
-
-        if(nullptr != pHexResult)
-        {
-            prime = pHexResult;
-
-            OPENSSL_free(pHexResult);
-
-            if(DH_KEY_HEX_SIZE != prime.Length())
-            {
-                prime.Clear();
-            }
-        }
-    }
-
-    return prime;
+    return diffieHellman->GetPrime();
 }
 
-String TcpConnection::GenerateDiffieHellmanPublic(DH *pDiffieHellman)
+String TcpConnection::GenerateDiffieHellmanPublic(const std::shared_ptr<
+    Crypto::DiffieHellman>& diffieHellman)
 {
-    if(!pDiffieHellman)
-    {
-        return {};
-    }
-
-    String publicKey;
-
-    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
-    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
-
-    if(nullptr != p && nullptr != g && 1 == DH_generate_key(pDiffieHellman))
-    {
-        const BIGNUM *pub_key = DH_get0_pub_key(pDiffieHellman);
-
-        if(nullptr != pub_key)
-        {
-            char *pHexResult = BN_bn2hex(pub_key);
-
-            if(nullptr != pHexResult)
-            {
-                publicKey = String(pHexResult);
-
-                OPENSSL_free(pHexResult);
-            }
-        }
-    }
-
-    return publicKey;
+    return diffieHellman->GeneratePublic();
 }
 
 std::vector<char> TcpConnection::GenerateDiffieHellmanSharedData(
-    DH *pDiffieHellman, const String& otherPublic)
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman,
+    const String& otherPublic)
 {
-    if(!pDiffieHellman)
-    {
-        return {};
-    }
-
-    std::vector<char> data;
-
-    unsigned char sharedData[DH_SHARED_DATA_SIZE];
-
-    const BIGNUM *pub_key = DH_get0_pub_key(pDiffieHellman);
-    const BIGNUM *p = nullptr, *q = nullptr, *g = nullptr;
-    DH_get0_pqg(pDiffieHellman, &p, &q, &g);
-
-    if(nullptr != p && nullptr != g &&  nullptr != pub_key &&
-        DH_SHARED_DATA_SIZE == DH_size(pDiffieHellman))
-    {
-        BIGNUM *pOtherPublic = nullptr;
-
-        if(0 < BN_hex2bn(&pOtherPublic, otherPublic.C()) &&
-            nullptr != pOtherPublic && BF_NET_KEY_BYTE_SIZE <=
-            DH_compute_key(sharedData, pOtherPublic, pDiffieHellman))
-        {
-            data.insert(data.begin(),
-                reinterpret_cast<const char*>(sharedData),
-                reinterpret_cast<const char*>(sharedData) +
-                BF_NET_KEY_BYTE_SIZE);
-        }
-
-        if(nullptr != pOtherPublic)
-        {
-            BN_clear_free(pOtherPublic);
-            pOtherPublic = nullptr;
-        }
-    }
-
-    return data;
+    return diffieHellman->GenerateSecret(otherPublic);
 }
 
 void TcpConnection::BroadcastPacket(const std::list<std::shared_ptr<

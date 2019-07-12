@@ -38,7 +38,7 @@
 #include <DataFile.h>
 #include <DatabaseMariaDB.h>
 #include <DatabaseSQLite3.h>
-#include <Decrypt.h>
+#include <Crypto.h>
 #include <Log.h>
 #include <MemoryManager.h>
 #include <MessageInit.h>
@@ -661,9 +661,9 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
                 return false;
             }
 
-            libcomp::String salt = libcomp::Decrypt::GenerateRandom(10);
+            libcomp::String salt = libcomp::Crypto::GenerateRandom(10);
             account->SetSalt(salt);
-            account->SetPassword(libcomp::Decrypt::HashPassword(
+            account->SetPassword(libcomp::Crypto::HashPassword(
                 account->GetPassword(), salt));
         }
 

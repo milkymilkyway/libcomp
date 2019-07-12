@@ -138,9 +138,10 @@ public:
     /**
      * Create a new encrypted connection.
      * @param socket Socket provided by the server for the new client.
-     * @param pDiffieHellman Asymmetric encryption information.
+     * @param diffieHellman Asymmetric encryption information.
      */
-    EncryptedConnection(asio::ip::tcp::socket& socket, DH *pDiffieHellman);
+    EncryptedConnection(asio::ip::tcp::socket& socket, const std::shared_ptr<
+        Crypto::DiffieHellman>& diffieHellman);
 
     /**
      * Cleanup the connection object.

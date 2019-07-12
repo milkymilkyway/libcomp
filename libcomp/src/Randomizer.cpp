@@ -27,7 +27,7 @@
 #include "Randomizer.h"
 
 // libcomp Includes
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "ScriptEngine.h"
 
 using namespace libcomp;
@@ -62,7 +62,7 @@ void Randomizer::SeedRNG()
     if(seed == 0)
     {
         // Generate the default seed
-        auto b = libcomp::Decrypt::GenerateRandom(8).Data();
+        auto b = libcomp::Crypto::GenerateRandom(8).Data();
         seed = *((uint64_t*)&b[0]);
 
         // Seed the high precision random number generators

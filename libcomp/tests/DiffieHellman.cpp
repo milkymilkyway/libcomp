@@ -28,68 +28,14 @@
 #include <gtest/gtest.h>
 #include <PopIgnore.h>
 
-#include <Log.h>
-#include <TcpServer.h>
+#include <Crypto.h>
 #include <TcpConnection.h>
+#include <TcpServer.h>
 
 using namespace libcomp;
 
-TEST(DiffieHellman, GenerateSaveLoad)
-{
-    DH *pDiffieHellman = TcpServer::GenerateDiffieHellman();
-    ASSERT_NE(pDiffieHellman, nullptr);
-
-    String prime = TcpConnection::GetDiffieHellmanPrime(pDiffieHellman);
-    ASSERT_EQ(prime.Length(), DH_KEY_HEX_SIZE);
-
-    DH *pCopy = TcpServer::CopyDiffieHellman(pDiffieHellman);
-    ASSERT_NE(pCopy, nullptr);
-
-    std::vector<char> data = TcpServer::SaveDiffieHellman(pDiffieHellman);
-    ASSERT_EQ(data.size(), DH_SHARED_DATA_SIZE);
-
-    ASSERT_EQ(TcpConnection::GetDiffieHellmanPrime(pCopy), prime);
-
-    DH_free(pDiffieHellman);
-    DH_free(pCopy);
-
-    pDiffieHellman = TcpServer::LoadDiffieHellman(data);
-    ASSERT_NE(pDiffieHellman, nullptr);
-
-    ASSERT_EQ(TcpConnection::GetDiffieHellmanPrime(pDiffieHellman), prime);
-
-    DH_free(pDiffieHellman);
-}
-
-#if 0
-inline void ExecTime(std::chrono::high_resolution_clock::time_point& t1,
-    const libcomp::String& title = "Time")
-{
-    std::chrono::high_resolution_clock::time_point t2 =
-        std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<
-        std::chrono::microseconds>(t2 - t1).count();
-    LOG_DEBUG(libcomp::String("%1: %2\n").Arg(title).Arg(duration));
-}
-#else
-inline void ExecTime(std::chrono::high_resolution_clock::time_point& t1,
-    const libcomp::String& title = "Time")
-{
-    (void)t1;
-    (void)title;
-}
-#endif
-
 TEST(DiffieHellman, KeyExchange)
 {
-    std::chrono::high_resolution_clock::time_point t1;
-
-    Log::GetSingletonPtr()->AddStandardOutputHook();
-
-    DH *pClient = nullptr;
-    DH *pServer = nullptr;
-
     // (server=>client) First packet.
     // Sends base, prime, and server public.
     String prime = "9C4169BBE8F535F7A7404D4EB3AE22CF63C0450FC2C7B2A5A03794D4"
@@ -98,37 +44,29 @@ TEST(DiffieHellman, KeyExchange)
         "2301F6A7EC4DB7DAFC2CFD1F417E0B634033FEE8B102D62A28EC03D95266E2B0B3";
     ASSERT_EQ(prime.Length(), DH_KEY_HEX_SIZE);
 
-    t1 = std::chrono::high_resolution_clock::now();
-    pServer = TcpServer::LoadDiffieHellman(prime);
-    ExecTime(t1, "LoadDiffieHellman");
-    ASSERT_NE(pServer, nullptr);
+    Crypto::DiffieHellman dhServer(prime);
+    ASSERT_TRUE(dhServer.IsValid());
 
-    t1 = std::chrono::high_resolution_clock::now();
-    String serverPublic = TcpConnection::GenerateDiffieHellmanPublic(pServer);
-    ExecTime(t1, "GenerateDiffieHellmanPublic");
+    String serverPublic = dhServer.GeneratePublic();
     ASSERT_EQ(serverPublic.Length(), DH_KEY_HEX_SIZE);
 
     // (client=>server) Second packet.
     // Gets base, prime, and server public.
     // Sends client public.
     // Calculates client copy of shared data.
-    pClient = TcpServer::LoadDiffieHellman(prime);
-    ASSERT_NE(pClient, nullptr);
+    Crypto::DiffieHellman dhClient(prime);
+    ASSERT_TRUE(dhClient.IsValid());
 
-    String clientPublic = TcpConnection::GenerateDiffieHellmanPublic(pClient);
+    String clientPublic = dhClient.GeneratePublic();
     ASSERT_EQ(clientPublic.Length(), DH_KEY_HEX_SIZE);
 
-    t1 = std::chrono::high_resolution_clock::now();
-    std::vector<char> clientData =
-        TcpConnection::GenerateDiffieHellmanSharedData(pClient, serverPublic);
+    std::vector<char> clientData = dhClient.GenerateSecret(serverPublic);
     ASSERT_EQ(clientData.size(), BF_NET_KEY_BYTE_SIZE);
-    ExecTime(t1, "GenerateDiffieHellmanSharedData");
 
     // (server) Third packet.
     // Gets client public.
     // Calculates server copy of shared data.
-    std::vector<char> serverData =
-        TcpConnection::GenerateDiffieHellmanSharedData(pServer, clientPublic);
+    std::vector<char> serverData = dhServer.GenerateSecret(clientPublic);
     ASSERT_EQ(serverData.size(), BF_NET_KEY_BYTE_SIZE);
 
     // Check they have the same data.
@@ -136,9 +74,6 @@ TEST(DiffieHellman, KeyExchange)
 
     // Check the public keys do not match.
     ASSERT_NE(serverPublic, clientPublic);
-
-    DH_free(pClient);
-    DH_free(pServer);
 }
 
 int main(int argc, char *argv[])

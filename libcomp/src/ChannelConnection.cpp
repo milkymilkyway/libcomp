@@ -28,7 +28,7 @@
 
 // libcomp Includes
 #include "Constants.h"
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "Log.h"
 
 using namespace libcomp;
@@ -39,7 +39,8 @@ ChannelConnection::ChannelConnection(asio::io_service& io_service) :
 }
 
 ChannelConnection::ChannelConnection(asio::ip::tcp::socket& socket,
-    DH *pDiffieHellman) : libcomp::EncryptedConnection(socket, pDiffieHellman)
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
+    libcomp::EncryptedConnection(socket, diffieHellman)
 {
 }
 
@@ -186,7 +187,7 @@ void ChannelConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
             }
 
             // Encrypt the packet
-            Decrypt::EncryptPacket(mEncryptionKey, finalPacket);
+            mEncryptionKey.EncryptPacket(finalPacket);
 
             mOutgoing = finalPacket;
         }

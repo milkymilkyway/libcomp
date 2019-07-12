@@ -28,7 +28,7 @@
 
 // libcomp Includes
 #include "Constants.h"
-#include "Decrypt.h"
+#include "Crypto.h"
 #include "Exception.h"
 #include "Log.h"
 #include "MessageConnectionClosed.h"
@@ -51,8 +51,9 @@ EncryptedConnection::EncryptedConnection(asio::io_service& io_service) :
 }
 
 EncryptedConnection::EncryptedConnection(asio::ip::tcp::socket& socket,
-    DH *pDiffieHellman) : libcomp::TcpConnection(socket, pDiffieHellman),
-    mPacketParser(nullptr), mCaptureFile(nullptr)
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
+    libcomp::TcpConnection(socket, diffieHellman), mPacketParser(nullptr),
+    mCaptureFile(nullptr)
 {
 }
 
@@ -588,7 +589,7 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
     uint32_t paddedSize, uint32_t realSize)
 {
     // Decrypt the packet
-    Decrypt::DecryptPacket(mEncryptionKey, packet);
+    mEncryptionKey.DecryptPacket(packet);
 
     // Save the packet to the capture.
     if(nullptr != mCaptureFile)
@@ -798,7 +799,7 @@ void EncryptedConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
         }
 
         // Encrypt the packet
-        Decrypt::EncryptPacket(mEncryptionKey, finalPacket);
+        mEncryptionKey.EncryptPacket(finalPacket);
 
         mOutgoing = finalPacket;
     }
