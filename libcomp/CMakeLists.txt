@@ -1164,8 +1164,9 @@ IF(SYSTEMD_FOUND)
 ENDIF(SYSTEMD_FOUND)
 
 IF(USE_MBED_TLS)
-    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient
-        mbedcrypto ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+    # We still need to link to OpenSSL for the MariaDB library
+    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient mbedcrypto
+        ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
         objgen sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
         ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
 ELSE(USE_MBED_TLS)
