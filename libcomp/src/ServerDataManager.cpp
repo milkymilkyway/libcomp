@@ -614,14 +614,16 @@ void ServerDataManager::ApplyZonePartial(
         zone->InsertSkillBlacklist(skillID);
     }
 
-    // Build new NPC set
     auto npcs = zone->GetNPCs();
-    for(auto& npc : partial->GetNPCs())
+    auto objects = zone->GetObjects();
+    if(positionReplace)
     {
-        if(positionReplace)
+        // Remove any NPCs/objects that share the same spot ID or are within
+        // 10 units from the new one (X or Y). Do this before adding new as
+        // the partial is allowed to place multiple at the same location just
+        // like the zone can
+        for(auto& npc : partial->GetNPCs())
         {
-            // Remove any NPCs that share the same spot ID or are within
-            // 10 units from the new one (X or Y)
             npcs.remove_if([npc](
                 const std::shared_ptr<objects::ServerNPC>& oNPC)
                 {
@@ -633,22 +635,8 @@ void ServerDataManager::ApplyZonePartial(
                 });
         }
 
-        // Removes supported via 0 ID
-        if(npc->GetID())
+        for(auto& obj : partial->GetObjects())
         {
-            npcs.push_back(npc);
-        }
-    }
-    zone->SetNPCs(npcs);
-
-    // Build new object set
-    auto objects = zone->GetObjects();
-    for(auto& obj : partial->GetObjects())
-    {
-        if(positionReplace)
-        {
-            // Remove any objects that share the same spot ID or are within
-            // 10 units from the new one (X and Y)
             objects.remove_if([obj](
                 const std::shared_ptr<objects::ServerObject>& oObj)
                 {
@@ -659,7 +647,22 @@ void ServerDataManager::ApplyZonePartial(
                             fabs(oObj->GetY() - obj->GetY()) < 10.f);
                 });
         }
+    }
 
+    // Build new NPC set
+    for(auto& npc : partial->GetNPCs())
+    {
+        // Removes supported via 0 ID
+        if(npc->GetID())
+        {
+            npcs.push_back(npc);
+        }
+    }
+    zone->SetNPCs(npcs);
+
+    // Build new object set
+    for(auto& obj : partial->GetObjects())
+    {
         // Removes supported via 0 ID
         if(obj->GetID())
         {

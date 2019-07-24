@@ -58,5 +58,8 @@
         <member type="list" name="Drops">
             <element type="ItemDrop*"/>
         </member>
+        <member type="list" name="Conditions">
+            <element type="EventCondition*"/>
+        </member>
     </object>
 </objgen>
