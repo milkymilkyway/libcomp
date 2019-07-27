@@ -38,6 +38,7 @@
 #include <ActionZoneChange.h>
 #include <ActionZoneInstance.h>
 #include <AILogicGroup.h>
+#include <DemonFamiliarityType.h>
 #include <DemonPresent.h>
 #include <DemonQuestReward.h>
 #include <DropSet.h>
@@ -350,6 +351,13 @@ const std::shared_ptr<objects::AILogicGroup> ServerDataManager::GetAILogicGroup(
     return GetObjectByID<uint16_t, objects::AILogicGroup>(id, mAILogicGroups);
 }
 
+const std::shared_ptr<objects::DemonFamiliarityType>
+    ServerDataManager::GetDemonFamiliarityTypeData(int32_t id)
+{
+    return GetObjectByID<int32_t, objects::DemonFamiliarityType>(id,
+        mDemonFamiliarityTypeData);
+}
+
 const std::shared_ptr<objects::DemonPresent> ServerDataManager::GetDemonPresentData(uint32_t id)
 {
     return GetObjectByID<uint32_t, objects::DemonPresent>(id, mDemonPresentData);
@@ -397,6 +405,14 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
             failure = !LoadObjects<objects::AILogicGroup>(
                 pDataStore, "/data/ailogicgroup", definitionManager, true,
                 true);
+        }
+
+        if(!failure)
+        {
+            LOG_DEBUG("Loading demon familiarity type server definitions...\n");
+            failure = !LoadObjects<objects::DemonFamiliarityType>(
+                pDataStore, "/data/demonfamiliaritytype", definitionManager,
+                true, true);
         }
 
         if(!failure)
@@ -1004,12 +1020,14 @@ namespace libcomp
             {
                 for(auto sPair : prt->GetSpawns())
                 {
-                    if(definitionManager->GetDevilData(
-                        sPair.second->GetEnemyType()) == nullptr)
+                    // Enemy type can be zero if appending sub-lists
+                    auto enemyType = sPair.second->GetEnemyType();
+                    if(enemyType && definitionManager
+                        ->GetDevilData(enemyType) == nullptr)
                     {
                         LOG_ERROR(libcomp::String("Invalid spawn enemy type"
                             " encountered in zone partial %1: %2\n").Arg(id)
-                            .Arg(sPair.second->GetEnemyType()));
+                            .Arg(enemyType));
                         return false;
                     }
                     else if(sPair.second->GetBossGroup() &&
@@ -1349,6 +1367,32 @@ namespace libcomp
         }
 
         mAILogicGroups[id] = grp;
+
+        return true;
+    }
+
+    template<>
+    bool ServerDataManager::LoadObject<objects::DemonFamiliarityType>(
+        const tinyxml2::XMLDocument& doc, const tinyxml2::XMLElement *objNode,
+        DefinitionManager* definitionManager)
+    {
+        (void)definitionManager;
+
+        auto fType = std::make_shared<objects::DemonFamiliarityType>();
+        if(!fType->Load(doc, *objNode))
+        {
+            return false;
+        }
+
+        int32_t id = fType->GetID();
+        if(mDemonFamiliarityTypeData.find(id) != mDemonFamiliarityTypeData.end())
+        {
+            LOG_ERROR(libcomp::String("Duplicate demon familiarity type entry"
+                " encountered: %1\n").Arg(id));
+            return false;
+        }
+
+        mDemonFamiliarityTypeData[id] = fType;
 
         return true;
     }

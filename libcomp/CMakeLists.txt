@@ -500,6 +500,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     Character.cpp
     DemonBox.h
     DemonBox.cpp
+    DemonFamiliarityType.h
+    DemonFamiliarityType.cpp
     DemonPresent.h
     DemonPresent.cpp
     DemonQuestReward.h

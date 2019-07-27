@@ -50,6 +50,7 @@ namespace objects
 {
 class Action;
 class AILogicGroup;
+class DemonFamiliarityType;
 class DemonPresent;
 class DemonQuestReward;
 class DropSet;
@@ -209,6 +210,15 @@ public:
      * @return Pointer to the AI logic group matching the specified id
      */
     const std::shared_ptr<objects::AILogicGroup> GetAILogicGroup(uint16_t id);
+
+    /**
+     * Get a demon familiarity type entry by definition ID
+     * @param id Definition ID of a demon familiarity type entry to load
+     * @return Pointer to the demon familiarity type entry matching the
+     *  specified id
+     */
+    const std::shared_ptr<objects::DemonFamiliarityType>
+        GetDemonFamiliarityTypeData(int32_t id);
 
     /**
      * Get a demon present entry by definition ID
@@ -530,6 +540,10 @@ private:
     /// Map of AI logic groups by definition ID
     std::unordered_map<uint16_t,
         std::shared_ptr<objects::AILogicGroup>> mAILogicGroups;
+
+    /// Map of demon familiarity type entries by definition ID
+    std::unordered_map<int32_t, std::shared_ptr<
+        objects::DemonFamiliarityType>> mDemonFamiliarityTypeData;
 
     /// Map of demon present entries by definition ID
     std::unordered_map<uint32_t,
