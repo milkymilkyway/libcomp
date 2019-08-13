@@ -172,8 +172,12 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
         auto configIter = mRegisteredTypes.find(type);
         if(configIter == mRegisteredTypes.end())
         {
-            LOG_WARNING(libcomp::String("Ignoring sync request for"
-                " unregistered type: %1\n").Arg(lType));
+            LogDataSyncManagerWarning([&]()
+            {
+                return String("Ignoring sync request for"
+                    " unregistered type: %1\n").Arg(lType);
+            });
+
             return true;
         }
 
@@ -182,21 +186,29 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
         bool isPersistent = false;
         auto typeHash = PersistentObject::GetTypeHashByName(type,
             isPersistent);
-    
+
         if(!isPersistent)
         {
             if(!config->BuildHandler)
             {
-                LOG_ERROR(libcomp::String("Non-persistent object type without"
-                    " a registered build handler encountered: %1\n")
-                    .Arg(type));
+                LogDataSyncManagerError([&]()
+                {
+                    return String("Non-persistent object type without"
+                        " a registered build handler encountered: %1\n")
+                        .Arg(type);
+                });
+
                 return false;
             }
             else if(!config->UpdateHandler && !config->SyncCompleteHandler)
             {
-                LOG_ERROR(libcomp::String("Object type without a registered"
-                    " update or sync complete handler encountered: %1\n")
-                    .Arg(type));
+                LogDataSyncManagerError([&]()
+                {
+                    return String("Object type without a registered"
+                        " update or sync complete handler encountered: %1\n")
+                        .Arg(type);
+                });
+
                 return false;
             }
         }
@@ -231,8 +243,11 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                 else
                 {
                     // Skip null UIDs
-                    LOG_ERROR(libcomp::String("Null UID encountered for"
-                        " updated sync record of type: %1\n").Arg(type));
+                    LogDataSyncManagerError([&]()
+                    {
+                        return String("Null UID encountered for"
+                            " updated sync record of type: %1\n").Arg(type);
+                    });
                 }
             }
         }
@@ -244,9 +259,13 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                 auto obj = config->BuildHandler(*this);
                 if(!obj->LoadPacket(p, false))
                 {
-                    LOG_ERROR(libcomp::String("Invalid update data stream"
-                        " received from non-persistent object of type: %1\n")
-                        .Arg(type));
+                    LogDataSyncManagerError([&]()
+                    {
+                        return String("Invalid update data stream received "
+                            "from non-persistent object of type: %1\n")
+                            .Arg(type);
+                    });
+
                     return false;
                 }
 
@@ -275,8 +294,12 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                     }
                     else if(result == SYNC_FAILED)
                     {
-                        LOG_ERROR(libcomp::String("Failed to sync update of"
-                            " record of type: %1\n").Arg(type));
+                        LogDataSyncManagerError([&]()
+                        {
+                            return String("Failed to sync update of"
+                                " record of type: %1\n").Arg(type);
+                        });
+
                         complete = false;
                     }
                 }
@@ -326,8 +349,11 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                 else
                 {
                     // Skip null UIDs
-                    LOG_ERROR(libcomp::String("Null UID encountered for"
-                        " removed sync record of type: %1\n").Arg(type));
+                    LogDataSyncManagerError([&]()
+                    {
+                        return String("Null UID encountered for"
+                            " removed sync record of type: %1\n").Arg(type);
+                    });
                 }
             }
         }
@@ -339,9 +365,13 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                 auto obj = config->BuildHandler(*this);
                 if(!obj->LoadPacket(p, false))
                 {
-                    LOG_ERROR(libcomp::String("Invalid remove data stream"
-                        " received from non-persistent object of type: %1\n")
-                        .Arg(type));
+                    LogDataSyncManagerError([&]()
+                    {
+                        return String("Invalid remove data stream received "
+                            "from non-persistent object of type: %1\n")
+                            .Arg(type);
+                    });
+
                     return false;
                 }
 
@@ -368,8 +398,12 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                     }
                     else if(result == SYNC_FAILED)
                     {
-                        LOG_ERROR(libcomp::String("Failed to sync removal of"
-                            " record of type: %1\n").Arg(type));
+                        LogDataSyncManagerError([&]()
+                        {
+                            return String("Failed to sync removal of"
+                                " record of type: %1\n").Arg(type);
+                        });
+
                         complete = false;
                     }
                 }

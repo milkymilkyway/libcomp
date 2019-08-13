@@ -178,9 +178,13 @@ const std::shared_ptr<objects::ServerZone> ServerDataManager::GetZoneData(
 
             for(uint32_t sgRemove : sgRemoves)
             {
-                LOG_DEBUG(libcomp::String("Removing empty spawn group %1"
-                    " when generating zone: %2\n").Arg(sgRemove)
-                    .Arg(zoneStr));
+                LogServerDataManagerDebug([&]()
+                {
+                    return libcomp::String("Removing empty spawn group %1"
+                        " when generating zone: %2\n").Arg(sgRemove)
+                        .Arg(zoneStr);
+                });
+
                 zone->RemoveSpawnGroups(sgRemove);
             }
 
@@ -219,9 +223,13 @@ const std::shared_ptr<objects::ServerZone> ServerDataManager::GetZoneData(
 
             for(uint32_t slgRemove : slgRemoves)
             {
-                LOG_DEBUG(libcomp::String("Removing empty spawn location group"
-                    " %1 when generating zone: %2\n").Arg(slgRemove)
-                    .Arg(zoneStr));
+                LogServerDataManagerDebug([&]()
+                {
+                    return String("Removing empty spawn location group"
+                        " %1 when generating zone: %2\n").Arg(slgRemove)
+                        .Arg(zoneStr);
+                });
+
                 zone->RemoveSpawnLocationGroups(slgRemove);
             }
         }
@@ -311,8 +319,12 @@ bool ServerDataManager::VerifyPvPInstance(uint32_t instanceID,
             auto zoneDef = definitionManager->GetZoneData(zoneID);
             if(!zoneDef || zoneDef->GetBasic()->GetType() != 7)
             {
-                LOG_ERROR(libcomp::String("Instance contains non-PvP zones"
-                    " and cannot be used for PvP: %1\n").Arg(instanceID));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Instance contains non-PvP zones"
+                        " and cannot be used for PvP: %1\n").Arg(instanceID);
+                });
+
                 return false;
             }
         }
@@ -320,8 +332,11 @@ bool ServerDataManager::VerifyPvPInstance(uint32_t instanceID,
         return true;
     }
 
-    LOG_ERROR(libcomp::String("Failed to verify PvP instance: %1\n")
-        .Arg(instanceID));
+    LogServerDataManagerError([&]()
+    {
+        return String("Failed to verify PvP instance: %1\n").Arg(instanceID);
+    });
+
     return false;
 }
 
@@ -401,7 +416,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
         // Load definition dependent server definitions from path or file
         if(!failure)
         {
-            LOG_DEBUG("Loading AI logic group server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading AI logic group server definitions...\n");
+
             failure = !LoadObjects<objects::AILogicGroup>(
                 pDataStore, "/data/ailogicgroup", definitionManager, true,
                 true);
@@ -409,7 +426,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading demon familiarity type server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading demon familiarity type server definitions...\n");
+
             failure = !LoadObjects<objects::DemonFamiliarityType>(
                 pDataStore, "/data/demonfamiliaritytype", definitionManager,
                 true, true);
@@ -417,7 +436,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading demon present server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading demon present server definitions...\n");
+
             failure = !LoadObjects<objects::DemonPresent>(
                 pDataStore, "/data/demonpresent", definitionManager, true,
                 true);
@@ -425,7 +446,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading demon quest reward server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading demon quest reward server definitions...\n");
+
             failure = !LoadObjects<objects::DemonQuestReward>(
                 pDataStore, "/data/demonquestreward", definitionManager, true,
                 true);
@@ -433,7 +456,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading drop set server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading drop set server definitions...\n");
+
             failure = !LoadObjects<objects::DropSet>(
                 pDataStore, "/data/dropset", definitionManager, true,
                 true);
@@ -445,7 +470,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading enchant set server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading enchant set server definitions...\n");
+
             failure = !LoadObjects<objects::EnchantSetData>(
                 pDataStore, "/data/enchantset", definitionManager, true,
                 true);
@@ -453,7 +480,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading enchant special server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading enchant special server definitions...\n");
+
             failure = !LoadObjects<objects::EnchantSpecialData>(
                 pDataStore, "/data/enchantspecial", definitionManager, true,
                 true);
@@ -461,7 +490,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading s-item server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading s-item server definitions...\n");
+
             failure = !LoadObjects<objects::MiSItemData>(
                 pDataStore, "/data/sitemextended", definitionManager, true,
                 true);
@@ -469,7 +500,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading s-status server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading s-status server definitions...\n");
+
             failure = !LoadObjects<objects::MiSStatusData>(
                 pDataStore, "/data/sstatus", definitionManager, true,
                 true);
@@ -477,7 +510,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
         if(!failure)
         {
-            LOG_DEBUG("Loading tokusei server definitions...\n");
+            LogServerDataManagerDebugMsg(
+                "Loading tokusei server definitions...\n");
+
             failure = !LoadObjects<objects::Tokusei>(
                 pDataStore, "/data/tokusei", definitionManager, true,
                 true);
@@ -486,28 +521,34 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
     if(!failure)
     {
-        LOG_DEBUG("Loading zone server definitions...\n");
+        LogServerDataManagerDebugMsg("Loading zone server definitions...\n");
+
         failure = !LoadObjects<objects::ServerZone>(pDataStore, "/zones",
             definitionManager, false, false);
     }
 
     if(!failure)
     {
-        LOG_DEBUG("Loading zone partial server definitions...\n");
+        LogServerDataManagerDebugMsg(
+            "Loading zone partial server definitions...\n");
+
         failure = !LoadObjects<objects::ServerZonePartial>(pDataStore,
             "/zones/partial", definitionManager, true, false);
     }
 
     if(!failure)
     {
-        LOG_DEBUG("Loading event server definitions...\n");
+        LogServerDataManagerDebugMsg("Loading event server definitions...\n");
+
         failure = !LoadObjects<objects::Event>(pDataStore, "/events",
             definitionManager, true, false);
     }
 
     if(!failure)
     {
-        LOG_DEBUG("Loading zone instance server definitions...\n");
+        LogServerDataManagerDebugMsg(
+            "Loading zone instance server definitions...\n");
+
         failure = !LoadObjects<objects::ServerZoneInstance>(
             pDataStore, "/data/zoneinstance", definitionManager, true,
             true);
@@ -515,7 +556,9 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
     if(!failure)
     {
-        LOG_DEBUG("Loading zone instance variant server definitions...\n");
+        LogServerDataManagerDebugMsg(
+            "Loading zone instance variant server definitions...\n");
+
         failure = !LoadObjects<objects::ServerZoneInstanceVariant>(
             pDataStore, "/data/zoneinstancevariant", definitionManager,
             true, true);
@@ -523,14 +566,16 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
     if(!failure)
     {
-        LOG_DEBUG("Loading shop server definitions...\n");
+        LogServerDataManagerDebugMsg("Loading shop server definitions...\n");
+
         failure = !LoadObjects<objects::ServerShop>(pDataStore, "/shops",
             definitionManager, true, false);
     }
 
     if(!failure)
     {
-        LOG_DEBUG("Loading server scripts...\n");
+        LogServerDataManagerDebugMsg("Loading server scripts...\n");
+
         failure = !LoadScripts(pDataStore, "/scripts",
             &ServerDataManager::LoadScript);
     }
@@ -588,17 +633,25 @@ bool ServerDataManager::ApplyZonePartial(std::shared_ptr<objects::ServerZone> zo
     auto originDef = GetZoneData(id, dynamicMapID, false);
     if(originDef == zone)
     {
-        LOG_ERROR(libcomp::String("Attempted to apply partial definition to"
-            " original zone definition: %1%2\n").Arg(id).Arg(id != dynamicMapID
-                ? libcomp::String(" (%1)").Arg(dynamicMapID) : ""));
+        LogServerDataManagerError([&]()
+        {
+            return String("Attempted to apply partial definition to"
+                " original zone definition: %1%2\n").Arg(id).Arg(
+                id != dynamicMapID ? String(" (%1)").Arg(dynamicMapID) : "");
+        });
+
         return false;
     }
 
     auto partial = GetZonePartialData(partialID);
     if(!partial)
     {
-        LOG_ERROR(libcomp::String("Invalid zone partial ID encountered: %1\n")
-            .Arg(partialID));
+        LogServerDataManagerError([&]()
+        {
+            return String("Invalid zone partial ID encountered: %1\n")
+                .Arg(partialID);
+        });
+
         return false;
     }
 
@@ -754,8 +807,12 @@ void ServerDataManager::AppendPendingDrops()
         auto it = mDropSetData.find(pair.first);
         if(it != mDropSetData.end())
         {
-            LOG_DEBUG(libcomp::String("Appending %1 drop(s) to drop set %2\n")
-                .Arg(pair.second.size()).Arg(pair.first));
+            LogServerDataManagerDebug([&]()
+            {
+                return String("Appending %1 drop(s) to drop set %2\n")
+                    .Arg(pair.second.size()).Arg(pair.first);
+            });
+
             for(auto drop : pair.second)
             {
                 it->second->AppendDrops(drop);
@@ -763,8 +820,11 @@ void ServerDataManager::AppendPendingDrops()
         }
         else
         {
-            LOG_WARNING(libcomp::String("Failed to append drops to unknown"
-                " drop set %1\n").Arg(pair.first));
+            LogServerDataManagerWarning([&]()
+            {
+                return String("Failed to append drops to unknown"
+                " drop set %1\n").Arg(pair.first);
+            });
         }
     }
 
@@ -790,14 +850,20 @@ bool ServerDataManager::LoadScripts(gsl::not_null<DataStore*> pDataStore,
             std::vector<char> data = pDataStore->ReadFile(path);
             if(!handler(*this, path, std::string(data.begin(), data.end())))
             {
-                LOG_ERROR(libcomp::String("Failed to load script file: %1\n").Arg(path));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Failed to load script file: %1\n").Arg(path);
+                });
+
                 return false;
             }
 
-            LOG_DEBUG(libcomp::String("Loaded script file: %1\n").Arg(path));
+            LogServerDataManagerDebug([&]()
+            {
+                return String("Loaded script file: %1\n").Arg(path);
+            });
         }
     }
-
 
     return true;
 }
@@ -842,8 +908,11 @@ namespace libcomp
             auto def = definitionManager->GetZoneData(id);
             if(!def)
             {
-                LOG_WARNING(libcomp::String("Skipping unknown zone: %1\n")
-                    .Arg(zoneStr));
+                LogServerDataManagerWarning([&]()
+                {
+                    return String("Skipping unknown zone: %1\n").Arg(zoneStr);
+                });
+
                 return true;
             }
 
@@ -853,8 +922,11 @@ namespace libcomp
         if(mZoneData.find(id) != mZoneData.end() &&
             mZoneData[id].find(dynamicMapID) != mZoneData[id].end())
         {
-            LOG_ERROR(libcomp::String("Duplicate zone encountered: %1\n")
-                .Arg(zoneStr));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate zone encountered: %1\n").Arg(zoneStr);
+            });
+
             return false;
         }
 
@@ -866,18 +938,26 @@ namespace libcomp
                 if(definitionManager->GetDevilData(
                     sPair.second->GetEnemyType()) == nullptr)
                 {
-                    LOG_ERROR(libcomp::String("Invalid spawn enemy type"
-                        " encountered in zone %1: %2\n").Arg(zoneStr)
-                        .Arg(sPair.second->GetEnemyType()));
+                    LogServerDataManagerError([&]()
+                    {
+                        return String("Invalid spawn enemy type"
+                            " encountered in zone %1: %2\n").Arg(zoneStr)
+                            .Arg(sPair.second->GetEnemyType());
+                    });
+
                     return false;
                 }
                 else if(sPair.second->GetBossGroup() &&
                     sPair.second->GetCategory() !=
                     objects::Spawn::Category_t::BOSS)
                 {
-                    LOG_ERROR(libcomp::String("Invalid spawn boss group"
-                        " encountered in zone %1: %2\n").Arg(zoneStr)
-                        .Arg(sPair.first));
+                    LogServerDataManagerError([&]()
+                    {
+                        return String("Invalid spawn boss group"
+                            " encountered in zone %1: %2\n").Arg(zoneStr)
+                            .Arg(sPair.first);
+                    });
+
                     return false;
                 }
             }
@@ -891,9 +971,13 @@ namespace libcomp
             {
                 if(!zone->SpawnsKeyExists(sPair.first))
                 {
-                    LOG_ERROR(libcomp::String("Invalid spawn group spawn ID"
-                        " encountered in zone %1: %2\n").Arg(zoneStr)
-                        .Arg(sPair.first));
+                    LogServerDataManagerError([&]()
+                    {
+                        return String("Invalid spawn group spawn ID"
+                            " encountered in zone %1: %2\n").Arg(zoneStr)
+                            .Arg(sPair.first);
+                    });
+
                     return false;
                 }
             }
@@ -913,9 +997,13 @@ namespace libcomp
             {
                 if(!zone->SpawnGroupsKeyExists(sgID))
                 {
-                    LOG_ERROR(libcomp::String("Invalid spawn location group"
-                        " spawn group ID encountered in zone %1: %2\n")
-                        .Arg(zoneStr).Arg(sgID));
+                    LogServerDataManagerError([&]()
+                    {
+                        return String("Invalid spawn location group"
+                            " spawn group ID encountered in zone %1: %2\n")
+                            .Arg(zoneStr).Arg(sgID);
+                    });
+
                     return false;
                 }
             }
@@ -998,7 +1086,12 @@ namespace libcomp
         auto id = prt->GetID();
         if(mZonePartialData.find(id) != mZonePartialData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate zone partial encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate zone partial encountered: %1\n")
+                    .Arg(id);
+            });
+
             return false;
         }
 
@@ -1009,8 +1102,8 @@ namespace libcomp
             if(prt->DynamicMapIDsCount() || prt->NPCsCount() ||
                 prt->ObjectsCount() || prt->SpotsCount())
             {
-                LOG_WARNING("Direct global partial zone definitions specified"
-                    " but will be ignored\n");
+                LogServerDataManagerWarningMsg("Direct global partial zone "
+                    "definitions specified but will be ignored\n");
             }
         }
         else
@@ -1025,18 +1118,26 @@ namespace libcomp
                     if(enemyType && definitionManager
                         ->GetDevilData(enemyType) == nullptr)
                     {
-                        LOG_ERROR(libcomp::String("Invalid spawn enemy type"
-                            " encountered in zone partial %1: %2\n").Arg(id)
-                            .Arg(enemyType));
+                        LogServerDataManagerError([&]()
+                        {
+                            return String("Invalid spawn enemy type"
+                                " encountered in zone partial %1: %2\n").Arg(id)
+                                .Arg(enemyType);
+                        });
+
                         return false;
                     }
                     else if(sPair.second->GetBossGroup() &&
                         sPair.second->GetCategory() !=
                         objects::Spawn::Category_t::BOSS)
                     {
-                        LOG_ERROR(libcomp::String("Invalid spawn boss group"
-                            " encountered in zone paritial %1: %2\n").Arg(id)
-                            .Arg(sPair.first));
+                        LogServerDataManagerError([&]()
+                        {
+                            return String("Invalid spawn boss group "
+                                "encountered in zone paritial %1: %2\n")
+                                .Arg(id).Arg(sPair.first);
+                        });
+
                         return false;
                     }
                 }
@@ -1121,14 +1222,19 @@ namespace libcomp
 
         if(event->GetID().IsEmpty())
         {
-            LOG_ERROR("Event with no ID encountered\n");
+            LogServerDataManagerErrorMsg("Event with no ID encountered\n");
+
             return false;
         }
 
         auto id = std::string(event->GetID().C());
         if(mEventData.find(id) != mEventData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate event encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate event encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1162,8 +1268,12 @@ namespace libcomp
         auto id = inst->GetID();
         if(definitionManager && !definitionManager->GetZoneData(inst->GetLobbyID()))
         {
-            LOG_WARNING(libcomp::String("Skipping zone instance with unknown lobby: %1\n")
-                .Arg(inst->GetLobbyID()));
+            LogServerDataManagerWarning([&]()
+            {
+                return String("Skipping zone instance %1 with unknown lobby "
+                    "%2\n").Arg(inst->GetID()).Arg(inst->GetLobbyID());
+            });
+
             return true;
         }
 
@@ -1171,8 +1281,13 @@ namespace libcomp
         size_t zoneIDCount = inst->ZoneIDsCount();
         if(zoneIDCount != inst->DynamicMapIDsCount())
         {
-            LOG_ERROR(libcomp::String("Zone instance encountered with zone and dynamic"
-                " map counts that do not match\n"));
+            LogServerDataManagerError([&]()
+            {
+                return libcomp::String("Zone instance %1 encountered with zone "
+                    "and dynamic map counts that do not match\n")
+                    .Arg(inst->GetID());
+            });
+
             return false;
         }
 
@@ -1184,15 +1299,24 @@ namespace libcomp
             if(mZoneData.find(zoneID) == mZoneData.end() ||
                 mZoneData[zoneID].find(dynamicMapID) == mZoneData[zoneID].end())
             {
-                LOG_ERROR(libcomp::String("Invalid zone encountered for instance: %1 (%2)\n")
-                    .Arg(zoneID).Arg(dynamicMapID));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Invalid zone encountered for instance: "
+                        "%1 (%2)\n").Arg(zoneID).Arg(dynamicMapID);
+                });
+
                 return false;
             }
         }
 
         if(mZoneInstanceData.find(id) != mZoneInstanceData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate zone instance encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate zone instance encountered: %1\n")
+                .Arg(id);
+            });
+
             return false;
         }
 
@@ -1218,8 +1342,12 @@ namespace libcomp
         auto id = variant->GetID();
         if(mZoneInstanceVariantData.find(id) != mZoneInstanceVariantData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate zone instance variant"
-                " encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate zone instance variant"
+                    " encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1229,54 +1357,77 @@ namespace libcomp
         case objects::ServerZoneInstanceVariant::InstanceType_t::TIME_TRIAL:
             if(timeCount != 4)
             {
-                LOG_ERROR(libcomp::String("Time trial zone instance variant"
-                    " encountered without 4 time points specified: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Time trial zone instance variant"
+                        " encountered without 4 time points specified: %1\n")
+                        .Arg(id);
+                });
+
                 return false;
             }
             break;
         case objects::ServerZoneInstanceVariant::InstanceType_t::PVP:
             if(timeCount != 2 && timeCount != 3)
             {
-                LOG_ERROR(libcomp::String("PVP zone instance variant"
-                    " encountered without 2 or 3 time points specified: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("PVP zone instance variant encountered "
+                        "without 2 or 3 time points specified: %1\n").Arg(id);
+                });
+
                 return false;
             }
             break;
         case objects::ServerZoneInstanceVariant::InstanceType_t::DEMON_ONLY:
             if(timeCount != 3 && timeCount != 4)
             {
-                LOG_ERROR(libcomp::String("Demon only zone instance variant"
-                    " encountered without 3 or 4 time points specified: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Demon only zone instance variant"
+                        " encountered without 3 or 4 time points specified: "
+                        "%1\n").Arg(id);
+                });
+
                 return false;
             }
             break;
         case objects::ServerZoneInstanceVariant::InstanceType_t::DIASPORA:
             if(timeCount != 2)
             {
-                LOG_ERROR(libcomp::String("Diaspora zone instance variant"
-                    " encountered without 2 time points specified: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Diaspora zone instance variant"
+                        " encountered without 2 time points specified: %1\n")
+                        .Arg(id);
+                });
+
                 return false;
             }
             break;
         case objects::ServerZoneInstanceVariant::InstanceType_t::MISSION:
             if(timeCount != 1)
             {
-                LOG_ERROR(libcomp::String("Mission zone instance variant"
-                    " encountered without time point specified: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Mission zone instance variant"
+                        " encountered without time point specified: %1\n")
+                        .Arg(id);
+                });
+
                 return false;
             }
             break;
         case objects::ServerZoneInstanceVariant::InstanceType_t::PENTALPHA:
             if(variant->GetSubID() >= 5)
             {
-                LOG_ERROR(libcomp::String("Pentalpha zone instance variant"
-                    " encountered with invalid sub ID: %1\n")
-                    .Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Pentalpha zone instance variant"
+                        " encountered with invalid sub ID: %1\n")
+                        .Arg(id);
+                });
+
                 return false;
             }
             break;
@@ -1323,16 +1474,23 @@ namespace libcomp
         uint32_t id = (uint32_t)shop->GetShopID();
         if(mShopData.find(id) != mShopData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate shop encountered: %1\n")
-                .Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate shop encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
         // Tab count cannot exceed max s8, apply lower arbitrary limit
         if(shop->TabsCount() > 100)
         {
-            LOG_ERROR(libcomp::String("Shop with more than 100 tabs"
-                " encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Shop with more than 100 tabs"
+                    " encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1361,8 +1519,12 @@ namespace libcomp
         uint16_t id = grp->GetID();
         if(mAILogicGroups.find(id) != mAILogicGroups.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate AI logic group entry"
-                " encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate AI logic group entry"
+                    " encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1387,8 +1549,12 @@ namespace libcomp
         int32_t id = fType->GetID();
         if(mDemonFamiliarityTypeData.find(id) != mDemonFamiliarityTypeData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate demon familiarity type entry"
-                " encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate demon familiarity type entry"
+                    " encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1412,7 +1578,12 @@ namespace libcomp
         uint32_t id = present->GetID();
         if(mDemonPresentData.find(id) != mDemonPresentData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate demon present entry encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate demon present entry encountered: %1\n")
+                    .Arg(id);
+            });
+
             return false;
         }
 
@@ -1436,7 +1607,12 @@ namespace libcomp
         uint32_t id = reward->GetID();
         if(mDemonQuestRewardData.find(id) != mDemonQuestRewardData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate demon quest reward entry encountered: %1\n").Arg(id));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate demon quest reward entry "
+                    "encountered: %1\n").Arg(id);
+            });
+
             return false;
         }
 
@@ -1472,8 +1648,12 @@ namespace libcomp
             uint32_t giftBoxID = dropSet->GetGiftBoxID();
             if(mDropSetData.find(id) != mDropSetData.end())
             {
-                LOG_ERROR(libcomp::String("Duplicate drop set"
-                    " encountered: %1\n").Arg(id));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Duplicate drop set encountered: %1\n")
+                        .Arg(id);
+                });
+
                 return false;
             }
 
@@ -1482,8 +1662,12 @@ namespace libcomp
                 if(mGiftDropSetLookup.find(giftBoxID) !=
                     mGiftDropSetLookup.end())
                 {
-                    LOG_ERROR(libcomp::String("Duplicate drop set gift box ID"
-                        " encountered: %1\n").Arg(giftBoxID));
+                    LogServerDataManagerError([&]()
+                    {
+                        return String("Duplicate drop set gift box ID"
+                            " encountered: %1\n").Arg(giftBoxID);
+                    });
+
                     return false;
                 }
 
@@ -1569,8 +1753,12 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     engine.Using<ServerScript>();
     if(!engine.Eval(source))
     {
-        LOG_ERROR(libcomp::String("Improperly formatted script encountered: %1\n")
-            .Arg(path));
+        LogServerDataManagerError([&]()
+        {
+            return String("Improperly formatted script encountered: %1\n")
+                .Arg(path);
+        });
+
         return false;
     }
 
@@ -1578,7 +1766,11 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     auto fDef = root.GetFunction("define");
     if(fDef.IsNull())
     {
-        LOG_ERROR(libcomp::String("Invalid script encountered: %1\n").Arg(path));
+        LogServerDataManagerError([&]()
+        {
+            return String("Invalid script encountered: %1\n").Arg(path);
+        });
+
         return false;
     }
 
@@ -1586,7 +1778,11 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     auto result = fDef.Evaluate<int>(script);
     if(!result || *result != 0 || script->Name.IsEmpty() || script->Type.IsEmpty())
     {
-        LOG_ERROR(libcomp::String("Script is not properly defined: %1\n").Arg(path));
+        LogServerDataManagerError([&]()
+        {
+            return String("Script is not properly defined: %1\n").Arg(path);
+        });
+
         return false;
     }
 
@@ -1597,16 +1793,24 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     {
         if(mAIScripts.find(script->Name.C()) != mAIScripts.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate AI script encountered: %1\n")
-                .Arg(script->Name.C()));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate AI script encountered: %1\n")
+                    .Arg(script->Name.C());
+            });
+
             return false;
         }
 
         fDef = root.GetFunction("prepare");
         if(fDef.IsNull())
         {
-            LOG_ERROR(libcomp::String("AI script encountered"
-                " with no 'prepare' function: %1\n").Arg(script->Name.C()));
+            LogServerDataManagerError([&]()
+            {
+                return String("AI script encountered with no 'prepare' "
+                    "function: %1\n").Arg(script->Name.C());
+            });
+
             return false;
         }
 
@@ -1616,8 +1820,12 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     {
         if(mScripts.find(script->Name.C()) != mScripts.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate script encountered: %1\n")
-                .Arg(script->Name.C()));
+            LogServerDataManagerError([&]()
+            {
+                return String("Duplicate script encountered: %1\n")
+                    .Arg(script->Name.C());
+            });
+
             return false;
         }
 
@@ -1628,9 +1836,13 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
             fDef = root.GetFunction("check");
             if(fDef.IsNull())
             {
-                LOG_ERROR(libcomp::String("Event conditional script encountered"
-                    " with no 'check' function: %1\n")
-                    .Arg(script->Name.C()));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Event conditional script encountered"
+                        " with no 'check' function: %1\n")
+                        .Arg(script->Name.C());
+                });
+
                 return false;
             }
         }
@@ -1639,18 +1851,26 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
             fDef = root.GetFunction("transform");
             if(fDef.IsNull())
             {
-                LOG_ERROR(libcomp::String("Transform script encountered"
+                LogServerDataManagerError([&]()
+                {
+                    return String("Transform script encountered"
                     " with no 'transform' function: %1\n")
-                    .Arg(script->Name.C()));
+                    .Arg(script->Name.C());
+                });
+
                 return false;
             }
 
             fDef = root.GetFunction("prepare");
             if(!fDef.IsNull())
             {
-                LOG_ERROR(libcomp::String("Transform script encountered"
-                    " with reserved function name 'prepare': %1\n")
-                    .Arg(script->Name.C()));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Transform script encountered"
+                        " with reserved function name 'prepare': %1\n")
+                        .Arg(script->Name.C());
+                });
+
                 return false;
             }
         }
@@ -1659,8 +1879,12 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
             fDef = root.GetFunction("run");
             if(fDef.IsNull())
             {
-                LOG_ERROR(libcomp::String("Custom action script encountered"
-                    " with no 'run' function: %1\n").Arg(script->Name.C()));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Custom action script encountered with no "
+                        "'run' function: %1\n").Arg(script->Name.C());
+                });
+
                 return false;
             }
         }
@@ -1669,15 +1893,23 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
             fDef = root.GetFunction("start");
             if(fDef.IsNull())
             {
-                LOG_ERROR(libcomp::String("Web game script encountered"
-                    " with no 'start' function: %1\n").Arg(script->Name.C()));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Web game script encountered with no "
+                        "'start' function: %1\n").Arg(script->Name.C());
+                });
+
                 return false;
             }
         }
         else
         {
-            LOG_ERROR(libcomp::String("Invalid script type encountered: %1\n")
-                .Arg(script->Type.C()));
+            LogServerDataManagerError([&]()
+            {
+                return String("Invalid script type encountered: %1\n")
+                    .Arg(script->Type.C());
+            });
+
             return false;
         }
 
@@ -1735,11 +1967,14 @@ bool ServerDataManager::ValidateActions(const std::list<std::shared_ptr<
 
             if(warn)
             {
-                LOG_WARNING(libcomp::String("Zone change action encountered"
-                    " mid-action set in a context outside of an event. This"
-                    " can cause unexpected behavior for multi-channel setups."
-                    " Move to the end of the set to avoid errors: %1\n")
-                    .Arg(source));
+                LogServerDataManagerWarning([&]()
+                {
+                    return String("Zone change action encountered mid-action "
+                        "set in a context outside of an event. This can cause "
+                        "unexpected behavior for multi-channel setups. Move "
+                        "to the end of the set to avoid errors: %1\n")
+                        .Arg(source);
+                });
             }
         }
 
@@ -1788,9 +2023,13 @@ bool ServerDataManager::ValidateActions(const std::list<std::shared_ptr<
         case objects::Action::ActionType_t::ZONE_INSTANCE:
             if(autoCtx)
             {
-                LOG_ERROR(libcomp::String("Non-player context with player"
-                    " required action type %1 encountered: %2\n")
-                    .Arg((int32_t)action->GetActionType()).Arg(source));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Non-player context with player"
+                        " required action type %1 encountered: %2\n")
+                        .Arg((int32_t)action->GetActionType()).Arg(source);
+                });
+
                 return false;
             }
             break;

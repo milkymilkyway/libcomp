@@ -83,8 +83,11 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
 
             if(mLongParsers.end() == match)
             {
-                LOG_ERROR(String("Unknown command line option %1\n").Arg(
-                    matches[1]));
+                LogGeneralError([&]()
+                {
+                    return String("Unknown command line option %1\n")
+                        .Arg(matches[1]);
+                });
 
                 return false;
             }
@@ -93,8 +96,11 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
 
             if(ArgumentType::NONE == pArg->argType)
             {
-                LOG_ERROR(String("Command line option %1 can't have an "
-                    "argument.\n").Arg(matches[1]));
+                LogGeneralError([&]()
+                {
+                    return String("Command line option %1 can't have an "
+                        "argument.\n").Arg(matches[1]);
+                });
 
                 return false;
             }
@@ -110,8 +116,10 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
 
             if(mLongParsers.end() == match)
             {
-                LOG_ERROR(String("Unknown command line option %1\n").Arg(
-                    arg));
+                LogGeneralError([&]()
+                {
+                    return String("Unknown command line option %1\n").Arg(arg);
+                });
 
                 return false;
             }
@@ -130,8 +138,11 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
             {
                 if(i >= (argc - 1))
                 {
-                    LOG_ERROR(String("Command line option %1 requires "
-                        "an argument.\n").Arg(arg));
+                    LogGeneralError([&]()
+                    {
+                        return String("Command line option %1 requires "
+                            "an argument.\n").Arg(arg);
+                    });
 
                     return false;
                 }
@@ -155,8 +166,11 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
 
                 if(mShortParsers.end() == match)
                 {
-                    LOG_ERROR(String("Unknown command line option -%1\n").Arg(
-                        std::string(1, opt)));
+                    LogGeneralError([&]()
+                    {
+                        return String("Unknown command line option -%1\n")
+                            .Arg(std::string(1, opt));
+                    });
 
                     return false;
                 }
@@ -165,9 +179,12 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
 
                 if(ArgumentType::NONE != pArg->argType && 2 < arg.Length())
                 {
-                    LOG_ERROR(String("Multiple short arguments can't be "
-                        "specified together if any of them can have "
-                        "an argument: %1\n").Arg(arg));
+                    LogGeneralError([&]()
+                    {
+                        return String("Multiple short arguments can't be "
+                            "specified together if any of them can have "
+                            "an argument: %1\n").Arg(arg);
+                    });
 
                     return false;
                 }
@@ -184,8 +201,11 @@ bool ArgumentParser::Parse(const std::vector<String>& arguments)
                 {
                     if(i >= (argc - 1))
                     {
-                        LOG_ERROR(String("Command line option -%1 requires "
-                            "an argument.\n").Arg(std::string(1, opt)));
+                        LogGeneralError([&]()
+                        {
+                            return String("Command line option -%1 requires "
+                                "an argument.\n").Arg(std::string(1, opt));
+                        });
 
                         return false;
                     }

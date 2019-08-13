@@ -58,7 +58,10 @@ ServerCommandLineParser::ServerCommandLineParser() : ArgumentParser(),
 
         if(!ok)
         {
-            LOG_ERROR(String("Invalid process ID %1\n").Arg(arg));
+            LogGeneralError([&]()
+            {
+                return String("Invalid process ID %1\n").Arg(arg);
+            });
         }
 
         return ok;

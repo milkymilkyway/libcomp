@@ -117,7 +117,10 @@ static void SquirrelPrintFunction(HSQUIRRELVM vm, const SQChar *szFormat, ...)
 
     for(String msg : messages)
     {
-        LOG_INFO(String("SQUIRREL: %1\n").Arg(msg));
+        LogScriptEngineInfo([&]()
+        {
+            return String("SQUIRREL: %1\n").Arg(msg);
+        });
     }
 
     delete[] szBuffer;
@@ -144,7 +147,10 @@ static void SquirrelErrorFunction(HSQUIRRELVM vm, const SQChar *szFormat, ...)
 
     for(String msg : messages)
     {
-        LOG_ERROR(String("SQUIRREL: %1\n").Arg(msg));
+        LogScriptEngineError([&]()
+        {
+            return String("SQUIRREL: %1\n").Arg(msg);
+        });
     }
 
     delete[] szBuffer;
@@ -170,7 +176,7 @@ static void SquirrelPrintFunctionRaw(HSQUIRRELVM vm,
 
     std::list<String> messages = String(szBuffer).Split("\n");
 
-    LOG_INFO(szBuffer);
+    LogScriptEngineInfoMsg(szBuffer);
 
     delete[] szBuffer;
 }
@@ -197,7 +203,7 @@ static void SquirrelErrorFunctionRaw(HSQUIRRELVM vm,
 
     for(String msg : messages)
     {
-        LOG_ERROR(msg + "\n");
+        LogScriptEngineErrorMsg(msg + "\n");
     }
 
     delete[] szBuffer;
@@ -220,9 +226,12 @@ ScriptEngine::ScriptEngine(bool useRawPrint) : mUseRawPrint(useRawPrint)
         {
             (void)vm;
 
-            LOG_ERROR(String("Failed to compile Squirrel script: "
-                "%1:%2:%3:  %4\n").Arg(szSource).Arg((int64_t)line).Arg(
-                (int64_t)column).Arg(szDescription));
+            LogScriptEngineError([&]()
+            {
+                return String("Failed to compile Squirrel script: "
+                    "%1:%2:%3:  %4\n").Arg(szSource).Arg((int64_t)line)
+                    .Arg((int64_t)column).Arg(szDescription);
+            });
         });
     if(useRawPrint)
     {
@@ -323,7 +332,12 @@ bool ScriptEngine::BindingExists(const std::string& name, bool lockBinding)
 bool ScriptEngine::Include(const std::string& path)
 {
     std::vector<char> file = libcomp::Crypto::LoadFile(path);
-    LOG_INFO(libcomp::String("Include: %1\n").Arg(path));
+
+    LogScriptEngineInfo([&]()
+    {
+        return String("Include: %1\n").Arg(path);
+    });
+
     if(file.empty())
     {
         auto msg = libcomp::String("Failed to include script file: "
@@ -335,7 +349,7 @@ bool ScriptEngine::Include(const std::string& path)
         }
         else
         {
-            LOG_ERROR(msg);
+            LogScriptEngineErrorMsg(msg);
         }
 
         return false;
@@ -354,7 +368,7 @@ bool ScriptEngine::Include(const std::string& path)
         }
         else
         {
-            LOG_ERROR(msg);
+            LogScriptEngineErrorMsg(msg);
         }
 
         return false;
@@ -369,8 +383,10 @@ bool ScriptEngine::Import(const std::string& module)
 
     if(result)
     {
-        LOG_WARNING(libcomp::String("Module has already been imported: "
-            "%s\n").Arg(module));
+        LogScriptEngineWarning([&]()
+        {
+            return String("Module has already been imported: %s\n").Arg(module);
+        });
 
         return false;
     }
@@ -379,8 +395,10 @@ bool ScriptEngine::Import(const std::string& module)
 
     if(mModules.end() == it)
     {
-        LOG_ERROR(libcomp::String("Failed to import script module: "
-            "%1\n").Arg(module));
+        LogScriptEngineError([&]()
+        {
+            return String("Failed to import script module: %1\n").Arg(module);
+        });
 
         return false;
     }

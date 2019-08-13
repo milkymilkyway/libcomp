@@ -44,7 +44,7 @@ DataStore::DataStore(const char *szProgram)
     // Init PhysFS.
     if(0 == PHYSFS_init(szProgram))
     {
-        LOG_CRITICAL("Failed to init PhysFS!\n");
+        LogDataStoreCriticalMsg("Failed to init PhysFS!\n");
     }
 
     // Allow symlinks in the datastore directory.
@@ -56,7 +56,7 @@ DataStore::~DataStore()
     // Make sure PhysFS is cleaned up.
     if(0 == PHYSFS_deinit())
     {
-        LOG_WARNING("Failed to cleanup PhysFS.\n");
+        LogDataStoreWarningMsg("Failed to cleanup PhysFS.\n");
     }
 }
 
@@ -88,8 +88,11 @@ bool DataStore::AddSearchPaths(const std::list<libcomp::String>& paths)
     // Set the write directory.
     if(0 == PHYSFS_setWriteDir(lastPath.C()))
     {
-        LOG_ERROR(libcomp::String("DataStore: Failed to set the write "
-            "directory to: %1\n").Arg(lastPath));
+        LogDataStoreError([&]()
+        {
+            return String("DataStore: Failed to set the write "
+                "directory to: %1\n").Arg(lastPath);
+        });
 
         return false;
     }
@@ -107,8 +110,11 @@ bool DataStore::GetListing(const libcomp::String& path,
 
     if(NULL == szFiles)
     {
-        LOG_WARNING(libcomp::String("DataStore: Failed to enumerate "
-            "directory: %1\n").Arg(path));
+        LogDataStoreWarning([&]()
+        {
+            return String("DataStore: Failed to enumerate "
+                "directory: %1\n").Arg(path);
+        });
 
         return false;
     }
@@ -198,21 +204,33 @@ bool DataStore::PrintListing(const libcomp::String& path, bool recursive,
 
     if(GetListing(path, files, dirs, symLinks, recursive, fullPath))
     {
-        LOG_DEBUG(libcomp::String("Listing for: %1\n").Arg(path));
+        LogDataStoreDebug([&]()
+        {
+            return String("Listing for: %1\n").Arg(path);
+        });
 
         for(libcomp::String file : files)
         {
-            LOG_DEBUG(libcomp::String("File: %1\n").Arg(file));
+            LogDataStoreDebug([&]()
+            {
+                return String("File: %1\n").Arg(file);
+            });
         }
 
         for(libcomp::String dir : dirs)
         {
-            LOG_DEBUG(libcomp::String("Directory: %1\n").Arg(dir));
+            LogDataStoreDebug([&]()
+            {
+                return String("Directory: %1\n").Arg(dir);
+            });
         }
 
         for(libcomp::String symLink : symLinks)
         {
-            LOG_DEBUG(libcomp::String("Symbolic Link: %1\n").Arg(symLink));
+            LogDataStoreDebug([&]()
+            {
+                return String("Symbolic Link: %1\n").Arg(symLink);
+            });
         }
 
         return true;
@@ -230,7 +248,10 @@ bool DataStore::AddSearchPath(const libcomp::String& path, bool append)
     // will override files contained in a path later in the list.
     if(0 == PHYSFS_mount(path.C(), szMountPoint, append ? 1 : 0))
     {
-        LOG_ERROR(libcomp::String("DataStore: Error:  %1\n").Arg(GetError()));
+        LogDataStoreError([&]()
+        {
+            return String("DataStore: Error:  %1\n").Arg(GetError());
+        });
 
         return false;
     }

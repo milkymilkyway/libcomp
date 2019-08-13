@@ -68,18 +68,20 @@ bool BaseServer::Initialize()
 
     if(nullptr == GetDiffieHellman())
     {
-        LOG_WARNING("No DH key pair set in the config file, it will"
+        LogServerErrorMsg("No DH key pair set in the config file, it will"
             " need to be generated on startup.\n");
     }
 
     if(mConfig->GetPort() == 0)
     {
-        LOG_WARNING("No port specified.\n");
+        LogServerWarningMsg("No port specified.\n");
         return false;
     }
 
-    LOG_DEBUG(libcomp::String("Port: %1\n").Arg(
-        mConfig->GetPort()));
+    LogServerDebug([&]()
+    {
+        return String("Port: %1\n").Arg(mConfig->GetPort());
+    });
 
     libcomp::String constantsPath = mConfig->GetServerConstantsPath();
     if(constantsPath.IsEmpty())
@@ -90,15 +92,19 @@ bool BaseServer::Initialize()
 
     if(!libcomp::ServerConstants::Initialize(constantsPath))
     {
-        LOG_CRITICAL(libcomp::String("Server side constants failed to load"
-            " from file path: %1\n").Arg(constantsPath));
+        LogServerCritical([&]()
+        {
+            return String("Server side constants failed to load"
+                " from file path: %1\n").Arg(constantsPath);
+        });
 
         return false;
     }
 
     if(0 == mConfig->DataStoreCount())
     {
-        LOG_CRITICAL("At least one data store path must be specified.\n");
+        LogServerCriticalMsg(
+            "At least one data store path must be specified.\n");
 
         return false;
     }
@@ -136,7 +142,10 @@ bool BaseServer::Initialize()
 
         for(auto archive : archives)
         {
-            LOG_DEBUG(libcomp::String("Adding archive: %1\n").Arg(archive));
+            LogServerDebug([&]()
+            {
+                return String("Adding archive: %1\n").Arg(archive);
+            });
 
             mDataStore.AddSearchPath(archive.c_str(), true);
         }
@@ -145,13 +154,13 @@ bool BaseServer::Initialize()
     switch(mConfig->GetDatabaseType())
     {
         case objects::ServerConfig::DatabaseType_t::SQLITE3:
-            LOG_DEBUG("Using SQLite3 Database.\n");
+            LogServerDebugMsg("Using SQLite3 Database.\n");
             break;
         case objects::ServerConfig::DatabaseType_t::MARIADB:
-            LOG_DEBUG("Using MariaDB Database.\n");
+            LogServerDebugMsg("Using MariaDB Database.\n");
             break;
         default:
-            LOG_CRITICAL("Invalid database type specified.\n");
+            LogServerCriticalMsg("Invalid database type specified.\n");
             return false;
             break;
     }
@@ -169,7 +178,7 @@ bool BaseServer::Initialize()
     // The message queue better exist!
     if(nullptr == msgQueue)
     {
-        LOG_CRITICAL("Main message queue is missing.\n");
+        LogServerCriticalMsg("Main message queue is missing.\n");
 
         return false;
     }
@@ -206,7 +215,8 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
             }
             else
             {
-                LOG_CRITICAL("No SQLite3 Database configuration specified.\n");
+                LogServerCriticalMsg(
+                    "No SQLite3 Database configuration specified.\n");
             }
             break;
         case objects::ServerConfig::DatabaseType_t::MARIADB:
@@ -219,11 +229,12 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
             }
             else
             {
-                LOG_CRITICAL("No MariaDB Database configuration specified.\n");
+                LogServerCriticalMsg(
+                    "No MariaDB Database configuration specified.\n");
             }
             break;
         default:
-            LOG_CRITICAL("Invalid database type specified.\n");
+            LogServerCriticalMsg("Invalid database type specified.\n");
             break;
     }
 
@@ -235,7 +246,8 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
     // Open the database.
     if(!db->Open() || !db->IsOpen())
     {
-        LOG_CRITICAL("Failed to open database.\n");
+        LogServerCriticalMsg("Failed to open database.\n");
+
         return nullptr;
     }
 
@@ -268,8 +280,9 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
             auto configFile = configIter->second->GetMockDataFilename();
             if(configFile.IsEmpty())
             {
-                LOG_CRITICAL("Data mocking enabled but no setup file"
+                LogServerCriticalMsg("Data mocking enabled but no setup file"
                     " specified.\n");
+
                 initFailure = true;
             }
             else
@@ -278,7 +291,8 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
                     configFile.ToUtf8();
                 if(!InsertDataFromFile(configPath, db))
                 {
-                    LOG_CRITICAL("Mock data failed to insert.\n");
+                    LogServerCriticalMsg("Mock data failed to insert.\n");
+
                     initFailure = true;
                 }
             }
@@ -291,7 +305,8 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
 
     if(initFailure)
     {
-        LOG_CRITICAL("Failed to init database.\n");
+        LogServerCriticalMsg("Failed to init database.\n");
+
         return nullptr;
     }
 
@@ -344,8 +359,10 @@ void BaseServer::ServerReady()
     if(0 < pid)
     {
 #ifndef _WIN32
-        LOG_DEBUG(String("Sending startup notification to "
-            "PID %1\n").Arg(pid));
+        LogServerDebug([&]()
+        {
+            return String("Sending startup notification to PID %1\n").Arg(pid);
+        });
 
         kill((pid_t)pid, SIGUSR2);
 #endif // !_WIN32
@@ -400,14 +417,20 @@ bool BaseServer::ReadConfig(std::shared_ptr<objects::ServerConfig> config, libco
     tinyxml2::XMLDocument doc;
     if (tinyxml2::XML_SUCCESS != doc.LoadFile(filePath.C()))
     {
-        LOG_WARNING(libcomp::String("Failed to parse config file: %1\n").Arg(
-            filePath));
+        LogServerWarning([&]()
+        {
+            return String("Failed to parse config file: %1\n").Arg(filePath);
+        });
+
         return false;
     }
     else
     {
-        LOG_DEBUG(libcomp::String("Reading config file: %1\n").Arg(
-            filePath));
+        LogServerDebug([&]()
+        {
+            return String("Reading config file: %1\n").Arg(filePath);
+        });
+
         return ReadConfig(config, doc);
     }
 }
@@ -430,16 +453,46 @@ bool BaseServer::ReadConfig(std::shared_ptr<objects::ServerConfig> config, tinyx
     {
         auto log = libcomp::Log::GetSingletonPtr();
 
-        log->SetLogLevelEnabled(libcomp::Log::LOG_LEVEL_DEBUG,
-            config->GetLogDebug());
-        log->SetLogLevelEnabled(libcomp::Log::LOG_LEVEL_INFO,
-            config->GetLogInfo());
-        log->SetLogLevelEnabled(libcomp::Log::LOG_LEVEL_WARNING,
-            config->GetLogWarning());
-        log->SetLogLevelEnabled(libcomp::Log::LOG_LEVEL_ERROR,
-            config->GetLogError());
-        log->SetLogLevelEnabled(libcomp::Log::LOG_LEVEL_CRITICAL,
-            config->GetLogCritical());
+        for(auto pair : config->GetLogLevels())
+        {
+            LogComponent_t comp = StringToLogComponent(pair.first);
+
+            if(libcomp::LogComponent_t::Invalid != comp)
+            {
+                Log::Level_t level;
+
+                switch(pair.second)
+                {
+                    case objects::ServerConfig::LogLevel_t::LEVEL_DEBUG:
+                        level = Log::LOG_LEVEL_DEBUG;
+                        break;
+                    case objects::ServerConfig::LogLevel_t::LEVEL_INFO:
+                        level = Log::LOG_LEVEL_INFO;
+                        break;
+                    case objects::ServerConfig::LogLevel_t::LEVEL_WARNING:
+                        level = Log::LOG_LEVEL_WARNING;
+                        break;
+                    case objects::ServerConfig::LogLevel_t::LEVEL_ERROR:
+                        level = Log::LOG_LEVEL_ERROR;
+                        break;
+                    default:
+                        level = Log::LOG_LEVEL_CRITICAL;
+                        break;
+                }
+
+                log->SetLogLevel(comp, level);
+            }
+            else
+            {
+                LogServerCritical([&]()
+                {
+                    return String("Unknown log component '%1'. Please check "
+                        "your configuration.\n").Arg(pair.first);
+                });
+            }
+
+        }
+
         log->SetLogRotationEnabled(config->GetLogRotation());
         log->SetLogCompression(config->GetLogCompression());
         log->SetLogRotationCount(config->GetLogRotationCount());
@@ -469,9 +522,10 @@ void BaseServer::CreateWorkers()
         switch(numberOfWorkers)
         {
             case 0:
-                LOG_WARNING("The maximum hardware concurrency level of this"
-                    " machine could not be detected. Multi-threaded processing"
-                    " will be disabled.\n");
+                LogServerWarningMsg("The maximum hardware concurrency level of "
+                    "this machine could not be detected. Multi-threaded "
+                    "processing will be disabled.\n");
+
                 numberOfWorkers = 1;
                 break;
             case 1:
@@ -499,7 +553,9 @@ bool BaseServer::AssignMessageQueue(const std::shared_ptr<
 
     if(!worker)
     {
-        LOG_CRITICAL("The server failed to assign a worker to an incoming connection.\n");
+        LogServerCriticalMsg("The server failed to assign a worker to an "
+            "incoming connection.\n");
+
         return false;
     }
 
@@ -569,7 +625,10 @@ bool BaseServer::InsertDataFromFile(const libcomp::String& filePath,
         return false;
     }
 
-    LOG_DEBUG(libcomp::String("Inserting records from file '%1'...\n").Arg(filePath));
+    LogServerDebug([&]()
+    {
+        return String("Inserting records from file '%1'...\n").Arg(filePath);
+    });
 
     PersistentObjectMap records;
     if(LoadDataFromFile(filePath, records, true, specificTypes))
@@ -600,7 +659,10 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
         return false;
     }
 
-    LOG_DEBUG(libcomp::String("Loading records from file '%1'...\n").Arg(filePath));
+    LogServerDebug([&]()
+    {
+        return String("Loading records from file '%1'...\n").Arg(filePath);
+    });
 
     const tinyxml2::XMLElement *objXml = doc.RootElement()->FirstChildElement("object");
 
@@ -631,8 +693,12 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
                 uuid = libobjgen::UUID(uuidText);
                 if(uuid.IsNull())
                 {
-                    LOG_ERROR(libcomp::String("Null UID specified for %1 entry"
-                        " while loading file '%2'\n").Arg(name).Arg(filePath));
+                    LogServerError([&]()
+                    {
+                        return String("Null UID specified for %1 entry while "
+                            "loading file '%2'\n").Arg(name).Arg(filePath);
+                    });
+
                     return false;
                 }
                 break;
@@ -643,8 +709,12 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
         auto record = libcomp::PersistentObject::New(typeHash);
         if(!record->Load(doc, *objXml))
         {
-            LOG_ERROR(libcomp::String("Failed to load %1 entry from file '%2'\n")
-                .Arg(name).Arg(filePath));
+            LogServerError([&]()
+            {
+                return String("Failed to load %1 entry from file '%2'\n")
+                    .Arg(name).Arg(filePath);
+            });
+
             return false;
         }
 
@@ -656,8 +726,9 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
             if(account->GetUsername().IsEmpty() ||
                 account->GetPassword().IsEmpty())
             {
-                LOG_ERROR("Attempted to create an account with no username"
-                    " or no password.\n");
+                LogServerErrorMsg("Attempted to create an account with no "
+                    "username or no password.\n");
+
                 return false;
             }
 

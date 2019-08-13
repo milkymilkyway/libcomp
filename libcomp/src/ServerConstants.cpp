@@ -47,7 +47,7 @@ bool ServerConstants::Initialize(const String& filePath)
     tinyxml2::XMLDocument doc;
     if(tinyxml2::XML_SUCCESS != doc.LoadFile(filePath.C()))
     {
-        LOG_ERROR("Server contants XML is not valid.");
+        LogServerConstantsErrorMsg("Server contants XML is not valid.");
         return false;
     }
 
@@ -350,7 +350,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
     if(!success)
     {
-        LOG_ERROR("Failed to load one or more primitive constant values\n");
+        LogServerConstantsErrorMsg(
+            "Failed to load one or more primitive constant values\n");
         return false;
     }
 
@@ -360,7 +361,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load ADJUSTMENT_ITEMS\n");
+            LogServerConstantsErrorMsg("Failed to load ADJUSTMENT_ITEMS\n");
             return false;
         }
 
@@ -369,26 +370,29 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load ADJUSTMENT_ITEMS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load ADJUSTMENT_ITEMS key\n");
                 return false;
             }
             else if(sConstants.ADJUSTMENT_ITEMS.find(key) !=
                 sConstants.ADJUSTMENT_ITEMS.end())
             {
-                LOG_ERROR("Duplicate ADJUSTMENT_ITEMS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate ADJUSTMENT_ITEMS key encountered\n");
                 return false;
             }
             else if(!ToIntegerArray(sConstants.ADJUSTMENT_ITEMS[key],
                     libcomp::String(pair.second).Split(",")))
             {
-                LOG_ERROR("Failed to load an element in ADJUSTMENT_ITEMS\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load an element in ADJUSTMENT_ITEMS\n");
                 return false;
             }
         }
     }
     else
     {
-        LOG_ERROR("ADJUSTMENT_ITEMS not found\n");
+        LogServerConstantsErrorMsg("ADJUSTMENT_ITEMS not found\n");
         return false;
     }
 
@@ -398,7 +402,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load ADJUSTMENT_SKILLS\n");
+            LogServerConstantsErrorMsg("Failed to load ADJUSTMENT_SKILLS\n");
             return false;
         }
 
@@ -407,26 +411,29 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load ADJUSTMENT_SKILLS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load ADJUSTMENT_SKILLS key\n");
                 return false;
             }
             else if(sConstants.ADJUSTMENT_SKILLS.find(key) !=
                 sConstants.ADJUSTMENT_SKILLS.end())
             {
-                LOG_ERROR("Duplicate ADJUSTMENT_SKILLS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate ADJUSTMENT_SKILLS key encountered\n");
                 return false;
             }
             else if(!ToIntegerArray(sConstants.ADJUSTMENT_SKILLS[key],
                     libcomp::String(pair.second).Split(",")))
             {
-                LOG_ERROR("Failed to load an element in ADJUSTMENT_SKILLS\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load an element in ADJUSTMENT_SKILLS\n");
                 return false;
             }
         }
     }
     else
     {
-        LOG_ERROR("ADJUSTMENT_SKILLS not found\n");
+        LogServerConstantsErrorMsg("ADJUSTMENT_SKILLS not found\n");
         return false;
     }
 
@@ -437,13 +444,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.BARTER_COOLDOWNS))
         {
-            LOG_ERROR("Failed to load BARTER_COOLDOWNS\n");
+            LogServerConstantsErrorMsg("Failed to load BARTER_COOLDOWNS\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("BARTER_COOLDOWNS not found\n");
+        LogServerConstantsErrorMsg("BARTER_COOLDOWNS not found\n");
         return false;
     }
 
@@ -453,7 +460,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load CAMEO_MAP\n");
+            LogServerConstantsErrorMsg("Failed to load CAMEO_MAP\n");
             return false;
         }
 
@@ -462,13 +469,14 @@ bool ServerConstants::Initialize(const String& filePath)
             uint16_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load CAMEO_MAP key\n");
+                LogServerConstantsErrorMsg("Failed to load CAMEO_MAP key\n");
                 return false;
             }
             else if(sConstants.CAMEO_MAP.find(key) !=
                 sConstants.CAMEO_MAP.end())
             {
-                LOG_ERROR("Duplicate CAMEO_MAP key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate CAMEO_MAP key encountered\n");
                 return false;
             }
             else
@@ -483,7 +491,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                     if(!success)
                     {
-                        LOG_ERROR("Failed to load an element in CAMEO_MAP\n");
+                        LogServerConstantsErrorMsg(
+                            "Failed to load an element in CAMEO_MAP\n");
                         return false;
                     }
                 }
@@ -492,7 +501,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("CAMEO_MAP not found\n");
+        LogServerConstantsErrorMsg("CAMEO_MAP not found\n");
         return false;
     }
 
@@ -503,13 +512,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.CLAN_FORM_MAP))
         {
-            LOG_ERROR("Failed to load CLAN_FORM_MAP\n");
+            LogServerConstantsErrorMsg("Failed to load CLAN_FORM_MAP\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("CLAN_FORM_MAP not found\n");
+        LogServerConstantsErrorMsg("CLAN_FORM_MAP not found\n");
         return false;
     }
 
@@ -519,15 +528,15 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load CLAN_LEVEL_SKILLS\n");
+            LogServerConstantsErrorMsg("Failed to load CLAN_LEVEL_SKILLS\n");
             return false;
         }
         else
         {
             if(strList.size() != 10)
             {
-                LOG_ERROR("CLAN_LEVEL_SKILLS must specify skills for all"
-                    " 10 levels\n");
+                LogServerConstantsErrorMsg("CLAN_LEVEL_SKILLS must specify "
+                    "skills for all 10 levels\n");
                 return false;
             }
             else
@@ -545,8 +554,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                         if(!success)
                         {
-                            LOG_ERROR("Failed to load an element in"
-                                " CLAN_LEVEL_SKILLS\n");
+                            LogServerConstantsErrorMsg("Failed to load an "
+                                "element in CLAN_LEVEL_SKILLS\n");
                             return false;
                         }
                     }
@@ -558,7 +567,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("CLAN_LEVEL_SKILLS not found\n");
+        LogServerConstantsErrorMsg("CLAN_LEVEL_SKILLS not found\n");
         return false;
     }
 
@@ -568,7 +577,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load DEMON_BOOK_BONUS\n");
+            LogServerConstantsErrorMsg("Failed to load DEMON_BOOK_BONUS\n");
             return false;
         }
 
@@ -577,13 +586,15 @@ bool ServerConstants::Initialize(const String& filePath)
             uint16_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load DEMON_BOOK_BONUS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load DEMON_BOOK_BONUS key\n");
                 return false;
             }
             else if(sConstants.DEMON_BOOK_BONUS.find(key) !=
                 sConstants.DEMON_BOOK_BONUS.end())
             {
-                LOG_ERROR("Duplicate DEMON_BOOK_BONUS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate DEMON_BOOK_BONUS key encountered\n");
                 return false;
             }
             else
@@ -598,8 +609,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                     if(!success)
                     {
-                        LOG_ERROR("Failed to load an element in"
-                            " DEMON_BOOK_BONUS\n");
+                        LogServerConstantsErrorMsg("Failed to load an element "
+                            "in DEMON_BOOK_BONUS\n");
                         return false;
                     }
                 }
@@ -608,7 +619,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("DEMON_BOOK_BONUS not found\n");
+        LogServerConstantsErrorMsg("DEMON_BOOK_BONUS not found\n");
         return false;
     }
 
@@ -618,7 +629,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load DEMON_CRYSTALS\n");
+            LogServerConstantsErrorMsg("Failed to load DEMON_CRYSTALS\n");
             return false;
         }
 
@@ -627,13 +638,15 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load DEMON_CRYSTALS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load DEMON_CRYSTALS key\n");
                 return false;
             }
             else if(sConstants.DEMON_CRYSTALS.find(key) !=
                 sConstants.DEMON_CRYSTALS.end())
             {
-                LOG_ERROR("Duplicate DEMON_CRYSTALS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate DEMON_CRYSTALS key encountered\n");
                 return false;
             }
             else
@@ -648,8 +661,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                     if(!success)
                     {
-                        LOG_ERROR("Failed to load an element in"
-                            " DEMON_CRYSTALS\n");
+                        LogServerConstantsErrorMsg("Failed to load an element "
+                            "in DEMON_CRYSTALS\n");
                         return false;
                     }
                 }
@@ -658,7 +671,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("DEMON_CRYSTALS not found\n");
+        LogServerConstantsErrorMsg("DEMON_CRYSTALS not found\n");
         return false;
     }
 
@@ -668,15 +681,15 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load DEMON_FUSION_SKILLS\n");
+            LogServerConstantsErrorMsg("Failed to load DEMON_FUSION_SKILLS\n");
             return false;
         }
         else
         {
             if(strList.size() != 21)
             {
-                LOG_ERROR("DEMON_FUSION_SKILLS must specify all 21"
-                    " inheritance type skill mappings\n");
+                LogServerConstantsErrorMsg("DEMON_FUSION_SKILLS must specify "
+                    "all 21 inheritance type skill mappings\n");
                 return false;
             }
             else
@@ -687,8 +700,9 @@ bool ServerConstants::Initialize(const String& filePath)
                     auto vals = ToIntegerRange<uint32_t>(elem.C(), success);
                     if(vals.size() != 3)
                     {
-                        LOG_ERROR("DEMON_FUSION_SKILLS element encountered"
-                            " with level count other than 3\n");
+                        LogServerConstantsErrorMsg(
+                            "DEMON_FUSION_SKILLS element encountered with "
+                            "level count other than 3\n");
                         return false;
                     }
 
@@ -705,7 +719,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("DEMON_FUSION_SKILLS not found\n");
+        LogServerConstantsErrorMsg("DEMON_FUSION_SKILLS not found\n");
         return false;
     }
 
@@ -715,7 +729,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load DEMON_QUEST_XP\n");
+            LogServerConstantsErrorMsg("Failed to load DEMON_QUEST_XP\n");
             return false;
         }
         else
@@ -729,7 +743,7 @@ bool ServerConstants::Initialize(const String& filePath)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load an entry in"
+                    LogServerConstantsErrorMsg("Failed to load an entry in"
                         " DEMON_QUEST_XP\n");
                     return false;
                 }
@@ -738,7 +752,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("DEMON_QUEST_XP not found\n");
+        LogServerConstantsErrorMsg("DEMON_QUEST_XP not found\n");
         return false;
     }
 
@@ -749,13 +763,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.DEPO_MAP_DEMON))
         {
-            LOG_ERROR("Failed to load DEPO_MAP_DEMON\n");
+            LogServerConstantsErrorMsg("Failed to load DEPO_MAP_DEMON\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("DEPO_MAP_DEMON not found\n");
+        LogServerConstantsErrorMsg("DEPO_MAP_DEMON not found\n");
         return false;
     }
 
@@ -766,13 +780,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.DEPO_MAP_ITEM))
         {
-            LOG_ERROR("Failed to load DEPO_MAP_ITEM\n");
+            LogServerConstantsErrorMsg("Failed to load DEPO_MAP_ITEM\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("DEPO_MAP_ITEM not found\n");
+        LogServerConstantsErrorMsg("DEPO_MAP_ITEM not found\n");
         return false;
     }
 
@@ -782,7 +796,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load EQUIP_MOD_EDIT_ITEMS\n");
+            LogServerConstantsErrorMsg("Failed to load EQUIP_MOD_EDIT_ITEMS\n");
             return false;
         }
 
@@ -791,26 +805,29 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load EQUIP_MOD_EDIT_ITEMS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load EQUIP_MOD_EDIT_ITEMS key\n");
                 return false;
             }
             else if(sConstants.EQUIP_MOD_EDIT_ITEMS.find(key) !=
                 sConstants.EQUIP_MOD_EDIT_ITEMS.end())
             {
-                LOG_ERROR("Duplicate EQUIP_MOD_EDIT_ITEMS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate EQUIP_MOD_EDIT_ITEMS key encountered\n");
                 return false;
             }
             else if(!ToIntegerArray(sConstants.EQUIP_MOD_EDIT_ITEMS[key],
                     libcomp::String(pair.second).Split(",")))
             {
-                LOG_ERROR("Failed to load an element in EQUIP_MOD_EDIT_ITEMS\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load an element in EQUIP_MOD_EDIT_ITEMS\n");
                 return false;
             }
         }
     }
     else
     {
-        LOG_ERROR("EQUIP_MOD_EDIT_ITEMS not found\n");
+        LogServerConstantsErrorMsg("EQUIP_MOD_EDIT_ITEMS not found\n");
         return false;
     }
 
@@ -820,7 +837,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load FUSION_BOOST_SKILLS\n");
+            LogServerConstantsErrorMsg("Failed to load FUSION_BOOST_SKILLS\n");
             return false;
         }
 
@@ -829,26 +846,29 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load FUSION_BOOST_SKILLS key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load FUSION_BOOST_SKILLS key\n");
                 return false;
             }
             else if(sConstants.FUSION_BOOST_SKILLS.find(key) !=
                 sConstants.FUSION_BOOST_SKILLS.end())
             {
-                LOG_ERROR("Duplicate FUSION_BOOST_SKILLS key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate FUSION_BOOST_SKILLS key encountered\n");
                 return false;
             }
             else if(!ToIntegerArray(sConstants.FUSION_BOOST_SKILLS[key],
                     libcomp::String(pair.second).Split(",")))
             {
-                LOG_ERROR("Failed to load an element in FUSION_BOOST_SKILLS\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load an element in FUSION_BOOST_SKILLS\n");
                 return false;
             }
         }
     }
     else
     {
-        LOG_ERROR("FUSION_BOOST_SKILLS not found\n");
+        LogServerConstantsErrorMsg("FUSION_BOOST_SKILLS not found\n");
         return false;
     }
 
@@ -859,13 +879,14 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.FUSION_BOOST_STATUSES))
         {
-            LOG_ERROR("Failed to load FUSION_BOOST_STATUSES\n");
+            LogServerConstantsErrorMsg(
+                "Failed to load FUSION_BOOST_STATUSES\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("FUSION_BOOST_STATUSES not found\n");
+        LogServerConstantsErrorMsg("FUSION_BOOST_STATUSES not found\n");
         return false;
     }
 
@@ -876,13 +897,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.LEVELUP_STATUSES))
         {
-            LOG_ERROR("Failed to load LEVELUP_STATUSES\n");
+            LogServerConstantsErrorMsg("Failed to load LEVELUP_STATUSES\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("LEVELUP_STATUSES not found\n");
+        LogServerConstantsErrorMsg("LEVELUP_STATUSES not found\n");
         return false;
     }
 
@@ -893,13 +914,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.QUEST_BONUS))
         {
-            LOG_ERROR("Failed to load QUEST_BONUS\n");
+            LogServerConstantsErrorMsg("Failed to load QUEST_BONUS\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("QUEST_BONUS not found\n");
+        LogServerConstantsErrorMsg("QUEST_BONUS not found\n");
         return false;
     }
 
@@ -909,15 +930,15 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load RATE_SCALING_ITEMS\n");
+            LogServerConstantsErrorMsg("Failed to load RATE_SCALING_ITEMS\n");
             return false;
         }
         else
         {
             if(strList.size() != 4)
             {
-                LOG_ERROR("RATE_SCALING_ITEMS must specify items for each"
-                    " of the 4 types\n");
+                LogServerConstantsErrorMsg("RATE_SCALING_ITEMS must specify "
+                    "items for each of the 4 types\n");
                 return false;
             }
             else
@@ -935,8 +956,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                         if(!success)
                         {
-                            LOG_ERROR("Failed to load an element in"
-                                " RATE_SCALING_ITEMS\n");
+                            LogServerConstantsErrorMsg("Failed to load an "
+                                "element in RATE_SCALING_ITEMS\n");
                             return false;
                         }
                     }
@@ -948,7 +969,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("RATE_SCALING_ITEMS not found\n");
+        LogServerConstantsErrorMsg("RATE_SCALING_ITEMS not found\n");
         return false;
     }
 
@@ -958,7 +979,8 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load REUNION_EXTRACT_ITEMS\n");
+            LogServerConstantsErrorMsg(
+                "Failed to load REUNION_EXTRACT_ITEMS\n");
             return false;
         }
         else
@@ -972,7 +994,7 @@ bool ServerConstants::Initialize(const String& filePath)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load an entry in"
+                    LogServerConstantsErrorMsg("Failed to load an entry in"
                         " REUNION_EXTRACT_ITEMS\n");
                     return false;
                 }
@@ -981,7 +1003,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("REUNION_EXTRACT_ITEMS not found\n");
+        LogServerConstantsErrorMsg("REUNION_EXTRACT_ITEMS not found\n");
         return false;
     }
 
@@ -991,7 +1013,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load ROLLBACK_PG_ITEMS\n");
+            LogServerConstantsErrorMsg("Failed to load ROLLBACK_PG_ITEMS\n");
             return false;
         }
         else
@@ -1005,7 +1027,7 @@ bool ServerConstants::Initialize(const String& filePath)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load an entry in"
+                    LogServerConstantsErrorMsg("Failed to load an entry in"
                         " ROLLBACK_PG_ITEMS\n");
                     return false;
                 }
@@ -1014,7 +1036,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("ROLLBACK_PG_ITEMS not found\n");
+        LogServerConstantsErrorMsg("ROLLBACK_PG_ITEMS not found\n");
         return false;
     }
 
@@ -1024,7 +1046,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load SPIRIT_FUSION_BOOST\n");
+            LogServerConstantsErrorMsg("Failed to load SPIRIT_FUSION_BOOST\n");
             return false;
         }
 
@@ -1033,26 +1055,29 @@ bool ServerConstants::Initialize(const String& filePath)
             uint32_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load SPIRIT_FUSION_BOOST key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load SPIRIT_FUSION_BOOST key\n");
                 return false;
             }
             else if(sConstants.SPIRIT_FUSION_BOOST.find(key) !=
                 sConstants.SPIRIT_FUSION_BOOST.end())
             {
-                LOG_ERROR("Duplicate SPIRIT_FUSION_BOOST key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate SPIRIT_FUSION_BOOST key encountered\n");
                 return false;
             }
             else if(!ToIntegerArray(sConstants.SPIRIT_FUSION_BOOST[key],
                     libcomp::String(pair.second).Split(",")))
             {
-                LOG_ERROR("Failed to load an element in SPIRIT_FUSION_BOOST\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load an element in SPIRIT_FUSION_BOOST\n");
                 return false;
             }
         }
     }
     else
     {
-        LOG_ERROR("SPIRIT_FUSION_BOOST not found\n");
+        LogServerConstantsErrorMsg("SPIRIT_FUSION_BOOST not found\n");
         return false;
     }
 
@@ -1062,14 +1087,15 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load SYNTH_SKILLS\n");
+            LogServerConstantsErrorMsg("Failed to load SYNTH_SKILLS\n");
             return false;
         }
         else
         {
             if(strList.size() != 5)
             {
-                LOG_ERROR("SYNTH_SKILLS must specify all five skill IDs\n");
+                LogServerConstantsErrorMsg(
+                    "SYNTH_SKILLS must specify all five skill IDs\n");
                 return false;
             }
             else
@@ -1084,8 +1110,8 @@ bool ServerConstants::Initialize(const String& filePath)
                     }
                     else
                     {
-                        LOG_ERROR("Failed to load a skill ID in"
-                            " SLOT_MOD_ITEMS\n");
+                        LogServerConstantsErrorMsg("Failed to load a skill "
+                            "ID in SLOT_MOD_ITEMS\n");
                         return false;
                     }
 
@@ -1096,7 +1122,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("SYNTH_SKILLS not found\n");
+        LogServerConstantsErrorMsg("SYNTH_SKILLS not found\n");
         return false;
     }
 
@@ -1107,13 +1133,13 @@ bool ServerConstants::Initialize(const String& filePath)
         if(!LoadKeyValueStrings(complexIter->second, map) ||
             !LoadIntegerMap(map, sConstants.TEAM_STATUS_COOLDOWN))
         {
-            LOG_ERROR("Failed to load TEAM_STATUS_COOLDOWN\n");
+            LogServerConstantsErrorMsg("Failed to load TEAM_STATUS_COOLDOWN\n");
             return false;
         }
     }
     else
     {
-        LOG_ERROR("TEAM_STATUS_COOLDOWN not found\n");
+        LogServerConstantsErrorMsg("TEAM_STATUS_COOLDOWN not found\n");
         return false;
     }
 
@@ -1123,7 +1149,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load TEAM_VALUABLES\n");
+            LogServerConstantsErrorMsg("Failed to load TEAM_VALUABLES\n");
             return false;
         }
 
@@ -1132,13 +1158,15 @@ bool ServerConstants::Initialize(const String& filePath)
             int8_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load TEAM_VALUABLES key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load TEAM_VALUABLES key\n");
                 return false;
             }
             else if(sConstants.TEAM_VALUABLES.find(key) !=
                 sConstants.TEAM_VALUABLES.end())
             {
-                LOG_ERROR("Duplicate TEAM_VALUABLES key encountered\n");
+                LogServerConstantsErrorMsg(
+                    "Duplicate TEAM_VALUABLES key encountered\n");
                 return false;
             }
             else
@@ -1153,7 +1181,8 @@ bool ServerConstants::Initialize(const String& filePath)
 
                     if(!success)
                     {
-                        LOG_ERROR("Failed to load an element in TEAM_VALUABLES\n");
+                        LogServerConstantsErrorMsg(
+                            "Failed to load an element in TEAM_VALUABLES\n");
                         return false;
                     }
                 }
@@ -1162,7 +1191,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("TEAM_VALUABLES not found\n");
+        LogServerConstantsErrorMsg("TEAM_VALUABLES not found\n");
         return false;
     }
 
@@ -1172,7 +1201,8 @@ bool ServerConstants::Initialize(const String& filePath)
         std::unordered_map<std::string, std::string> map;
         if(!LoadKeyValueStrings(complexIter->second, map))
         {
-            LOG_ERROR("Failed to load TRIFUSION_SPECIAL_DARK\n");
+            LogServerConstantsErrorMsg(
+                "Failed to load TRIFUSION_SPECIAL_DARK\n");
             return false;
         }
 
@@ -1181,7 +1211,8 @@ bool ServerConstants::Initialize(const String& filePath)
             uint8_t key;
             if(!LoadInteger(pair.first, key))
             {
-                LOG_ERROR("Failed to load TRIFUSION_SPECIAL_DARK key\n");
+                LogServerConstantsErrorMsg(
+                    "Failed to load TRIFUSION_SPECIAL_DARK key\n");
                 return false;
             }
             else
@@ -1194,7 +1225,7 @@ bool ServerConstants::Initialize(const String& filePath)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load an element in"
+                    LogServerConstantsErrorMsg("Failed to load an element in"
                         " TRIFUSION_SPECIAL_DARK\n");
                     return false;
                 }
@@ -1210,7 +1241,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("TRIFUSION_SPECIAL_DARK not found\n");
+        LogServerConstantsErrorMsg("TRIFUSION_SPECIAL_DARK not found\n");
         return false;
     }
 
@@ -1220,15 +1251,16 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load TRIFUSION_SPECIAL_ELEMENTAL\n");
+            LogServerConstantsErrorMsg(
+                "Failed to load TRIFUSION_SPECIAL_ELEMENTAL\n");
             return false;
         }
         else
         {
             if(strList.size() != 6)
             {
-                LOG_ERROR("TRIFUSION_SPECIAL_ELEMENTAL must specify all 6"
-                    " two elemental combinations\n");
+                LogServerConstantsErrorMsg("TRIFUSION_SPECIAL_ELEMENTAL must "
+                    "specify all 6 two elemental combinations\n");
                 return false;
             }
             else
@@ -1240,8 +1272,8 @@ bool ServerConstants::Initialize(const String& filePath)
                         sConstants.TRIFUSION_SPECIAL_ELEMENTAL[idx++],
                         elem.Split(",")))
                     {
-                        LOG_ERROR("Failed to load an element in"
-                            " TRIFUSION_SPECIAL_ELEMENTAL\n");
+                        LogServerConstantsErrorMsg("Failed to load an element "
+                            "in TRIFUSION_SPECIAL_ELEMENTAL\n");
                         return false;
                     }
                 }
@@ -1250,7 +1282,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("TRIFUSION_SPECIAL_ELEMENTAL not found\n");
+        LogServerConstantsErrorMsg("TRIFUSION_SPECIAL_ELEMENTAL not found\n");
         return false;
     }
 
@@ -1260,7 +1292,7 @@ bool ServerConstants::Initialize(const String& filePath)
         std::list<String> strList;
         if(!LoadStringList(complexIter->second, strList))
         {
-            LOG_ERROR("Failed to load VA_ADD_ITEMS\n");
+            LogServerConstantsErrorMsg("Failed to load VA_ADD_ITEMS\n");
             return false;
         }
         else
@@ -1274,7 +1306,7 @@ bool ServerConstants::Initialize(const String& filePath)
                 }
                 else
                 {
-                    LOG_ERROR("Failed to load an element in"
+                    LogServerConstantsErrorMsg("Failed to load an element in"
                         " VA_ADD_ITEMS\n");
                     return false;
                 }
@@ -1283,7 +1315,7 @@ bool ServerConstants::Initialize(const String& filePath)
     }
     else
     {
-        LOG_ERROR("VA_ADD_ITEMS not found\n");
+        LogServerConstantsErrorMsg("VA_ADD_ITEMS not found\n");
         return false;
     }
 

@@ -155,8 +155,11 @@ bool PersistentObject::Register(const std::shared_ptr<PersistentObject>& self,
         }
         else
         {
-            LOG_ERROR(String("Duplicate object detected: %1\n").Arg(
-                uuidString));
+            LogGeneralError([&]()
+            {
+                return String("Duplicate object detected: %1\n")
+                    .Arg(uuidString);
+            });
         }
     }
 
@@ -210,8 +213,11 @@ std::shared_ptr<PersistentObject> PersistentObject::LoadObjectByUUID(
 
         if(reportError && nullptr == obj)
         {
-            LOG_ERROR(String("Unknown UUID '%1' for '%2' failed to load\n")
-                .Arg(uuid.ToString()).Arg(sTypeMap[typeHash]->GetName()));
+            LogGeneralError([&]()
+            {
+                return String("Unknown UUID '%1' for '%2' failed to load\n")
+                    .Arg(uuid.ToString()).Arg(sTypeMap[typeHash]->GetName());
+            });
         }
     }
 

@@ -58,9 +58,8 @@ static libcomp::String GetLastError(MYSQL *connection)
     return "Invalid connection.";
 }
 
-DatabaseQueryMariaDB::DatabaseQueryMariaDB(MYSQL *pDatabase,
-    bool databaseDebug) : mDatabase(pDatabase), mStatement(nullptr),
-    mStatus(0), mDatabaseDebug(databaseDebug)
+DatabaseQueryMariaDB::DatabaseQueryMariaDB(MYSQL *pDatabase) :
+    mDatabase(pDatabase), mStatement(nullptr), mStatus(0)
 {
 }
 
@@ -70,11 +69,11 @@ DatabaseQueryMariaDB::~DatabaseQueryMariaDB()
     {
         mysql_stmt_close(mStatement);
 
-        if(mDatabaseDebug)
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String("Database statement closed: %1\n"
-                ).Arg(ConnectionString(mStatement)));
-        }
+            return String("Database statement closed: %1\n")
+                .Arg(ConnectionString(mStatement));
+        });
     }
 }
 
@@ -98,45 +97,56 @@ bool DatabaseQueryMariaDB::Prepare(const String& query)
 
     mStatement = mysql_stmt_init(mDatabase);
 
-    if(nullptr == mStatement && mDatabaseDebug)
+    if(nullptr == mStatement)
     {
-        LOG_DEBUG(libcomp::String(
-            "Failed to create statement for connection: %1\n"
-            ).Arg(ConnectionString(mDatabase)));
+        LogDatabaseDebug([&]()
+        {
+            return String("Failed to create statement for connection: %1\n")
+                .Arg(ConnectionString(mDatabase));
+        });
     }
 
-    if(nullptr != mStatement && mDatabaseDebug)
+    if(nullptr != mStatement)
     {
-        LOG_DEBUG(libcomp::String(
-            "Created statement %1 for connection %2\n"
-            ).Arg(ConnectionString(mStatement)
-            ).Arg(ConnectionString(mDatabase)));
+        LogDatabaseDebug([&]()
+        {
+            return String("Created statement %1 for connection %2\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
     }
 
     unsigned long len = (unsigned long)transformed.length();
     mStatus = mysql_stmt_prepare(mStatement, transformed.c_str(),
         len);
 
-    if(mDatabaseDebug)
+    if(mStatus)
     {
-        if(mStatus)
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "Prepare '%1' FAILED for statement %2 for connection %3\n"
-                ).Arg(transformed.c_str()
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(mDatabase)));
-        }
-        else
+            return String("Prepare '%1' FAILED for statement %2 for "
+                "connection %3\n")
+                .Arg(transformed.c_str())
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "Prepare '%1' for statement %2 for connection %3\n"
-                ).Arg(transformed.c_str()
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)));
-        }
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(mDatabase));
+        });
+    }
+    else
+    {
+        LogDatabaseDebug([&]()
+        {
+            return String("Prepare '%1' for statement %2 for "
+                "connection %3\n")
+                .Arg(transformed.c_str())
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
     }
 
     return IsValid();
@@ -151,15 +161,19 @@ bool DatabaseQueryMariaDB::Execute()
 
     if(mBindings.size() > 0 && mysql_stmt_bind_param(mStatement, &mBindings[0]))
     {
-        if(mDatabaseDebug)
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String("Execute of statement %1 failed for "
-                "connection %2 due to a bad bind\n"
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(mDatabase)));
-        }
+            return String("Execute of statement %1 failed for "
+                "connection %2 due to a bad bind\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(mDatabase));
+        });
 
         mStatus = -1;
         return false;
@@ -168,48 +182,66 @@ bool DatabaseQueryMariaDB::Execute()
     mStatus = mysql_stmt_execute(mStatement);
     mAffectedRowCount = (int64_t)mysql_affected_rows(mDatabase);
 
-    if(mDatabaseDebug)
+    if(!mStatus)
     {
-        if(!mStatus)
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String("Execute of statement %1 for "
-                "connection %2 is OK with %3 rows affected\n"
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)
-                ).Arg(mAffectedRowCount));
-        }
-        else
+            return String("Execute of statement %1 for "
+                "connection %2 is OK with %3 rows affected\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase))
+                .Arg(mAffectedRowCount);
+        });
+    }
+    else
+    {
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "Execute of statement %1 failed for connection %2\n"
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(mDatabase)));
-        }
+            return String("Execute of statement %1 failed for "
+                "connection %2\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(mDatabase));
+        });
     }
 
     my_bool aBool = 1;
 
-    if(mysql_stmt_attr_set(mStatement, STMT_ATTR_UPDATE_MAX_LENGTH, &aBool) &&
-        mDatabaseDebug)
+    if(mysql_stmt_attr_set(mStatement, STMT_ATTR_UPDATE_MAX_LENGTH, &aBool))
     {
-        LOG_DEBUG(libcomp::String(
-            "mysql_stmt_attr_set of statement %1 failed for connection %2\n"
-            ).Arg(ConnectionString(mStatement)
-            ).Arg(ConnectionString(mDatabase)));
-        LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-            GetLastError(mDatabase)));
+        LogDatabaseDebug([&]()
+        {
+            return String("mysql_stmt_attr_set of statement %1 failed for "
+                "connection %2\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n").Arg(GetLastError(mDatabase));
+        });
     }
 
-    if(mysql_stmt_store_result(mStatement) && mDatabaseDebug)
+    if(mysql_stmt_store_result(mStatement))
     {
-        LOG_DEBUG(libcomp::String(
-            "mysql_stmt_store_result of statement %1 failed for connection %2\n"
-            ).Arg(ConnectionString(mStatement)
-            ).Arg(ConnectionString(mDatabase)));
-        LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-            GetLastError(mDatabase)));
+        LogDatabaseDebug([&]()
+        {
+            return String("mysql_stmt_store_result of statement %1 failed for "
+                "connection %2\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n").Arg(GetLastError(mDatabase));
+        });
     }
 
     MYSQL_RES *result = mysql_stmt_result_metadata(mStatement);
@@ -290,15 +322,21 @@ bool DatabaseQueryMariaDB::Execute()
             field = mysql_fetch_field(result);
         }
 
-        if(mysql_stmt_bind_result(mStatement, &mResultBindings[0]) &&
-            mDatabaseDebug)
+        if(mysql_stmt_bind_result(mStatement, &mResultBindings[0]))
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_stmt_bind_result of statement %1 failed for connection %2\n"
-                ).Arg(ConnectionString(mStatement)
-                ).Arg(ConnectionString(mDatabase)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(mDatabase)));
+            LogDatabaseDebug([&]()
+            {
+                return String("mysql_stmt_bind_result of statement %1 failed "
+                    "for connection %2\n")
+                    .Arg(ConnectionString(mStatement))
+                    .Arg(ConnectionString(mDatabase));
+            });
+
+            LogDatabaseDebug([&]()
+            {
+                return String("Last SQL error: %1\n")
+                    .Arg(GetLastError(mDatabase));
+            });
         }
     }
 
@@ -311,14 +349,20 @@ bool DatabaseQueryMariaDB::Next()
 {
     mStatus = mysql_stmt_fetch(mStatement);
 
-    if(mStatus && MYSQL_NO_DATA != mStatus && mDatabaseDebug)
+    if(mStatus && MYSQL_NO_DATA != mStatus)
     {
-        LOG_DEBUG(libcomp::String(
-            "mysql_stmt_fetch of statement %1 failed for connection %2\n"
-            ).Arg(ConnectionString(mStatement)
-            ).Arg(ConnectionString(mDatabase)));
-        LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-            GetLastError(mDatabase)));
+        LogDatabaseDebug([&]()
+        {
+            return String("mysql_stmt_fetch of statement %1 failed for "
+                "connection %2\n")
+                .Arg(ConnectionString(mStatement))
+                .Arg(ConnectionString(mDatabase));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n").Arg(GetLastError(mDatabase));
+        });
     }
 
     return MYSQL_NO_DATA != mStatus && IsValid();

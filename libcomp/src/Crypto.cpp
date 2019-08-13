@@ -1378,7 +1378,10 @@ Crypto::DiffieHellman::DiffieHellman(const String &prime)
                 0 >= BN_hex2bn(&g, DH_BASE_STRING) || nullptr == p ||
                 nullptr == g)
             {
-                LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
+                LogCryptoDebug([&]()
+                {
+                    return String("prime=%1\n").Arg(prime);
+                });
 
                 DH_free(d->mContext);
                 d->mContext = nullptr;
@@ -1403,10 +1406,17 @@ Crypto::DiffieHellman::DiffieHellman(const String &prime)
 
             if(d->mContext && DH_SHARED_DATA_SIZE != DH_size(d->mContext))
             {
-                LOG_DEBUG(libcomp::String("prime=%1\n").Arg(prime));
-                LOG_DEBUG(libcomp::String("DH_SHARED_DATA_SIZE=%1/%2\n")
-                              .Arg(DH_SHARED_DATA_SIZE)
-                              .Arg(DH_size(d->mContext)));
+                LogCryptoDebug([&]()
+                {
+                    return String("prime=%1\n").Arg(prime);
+                });
+
+                LogCryptoDebug([&]()
+                {
+                    return String("DH_SHARED_DATA_SIZE=%1/%2\n")
+                        .Arg(DH_SHARED_DATA_SIZE)
+                        .Arg(DH_size(d->mContext));
+                });
 
                 DH_free(d->mContext);
                 d->mContext = nullptr;
@@ -1418,14 +1428,17 @@ Crypto::DiffieHellman::DiffieHellman(const String &prime)
         }
         else
         {
-            LOG_ERROR("Failed to alloc diffie hellman\n");
+            LogCryptoErrorMsg("Failed to alloc diffie hellman\n");
         }
     }
     else
     {
-        LOG_ERROR(libcomp::String("DH_KEY_HEX_SIZE=%1/%2")
-                      .Arg(DH_KEY_HEX_SIZE)
-                      .Arg(prime.Length()));
+        LogCryptoError([&]()
+        {
+            return String("DH_KEY_HEX_SIZE=%1/%2")
+                .Arg(DH_KEY_HEX_SIZE)
+                .Arg(prime.Length());
+        });
     }
 }
 

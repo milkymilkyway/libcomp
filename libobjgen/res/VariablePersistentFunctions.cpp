@@ -42,7 +42,7 @@ std::shared_ptr<libobjgen::MetaObject> @OBJECT_NAME@::GetMetadata()
 
     if(nullptr == m)
     {
-        LOG_CRITICAL("Metadata for object '@OBJECT_NAME@' could not be generated.\n");
+        LogGeneralCriticalMsg("Metadata for object '@OBJECT_NAME@' could not be generated.\n");
         sInitializationFailed = true;
     }
 

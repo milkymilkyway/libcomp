@@ -209,7 +209,7 @@ bool MetaObjectXmlParser::LoadMembers(const std::string& object,
     //Base objects override the need for member variables
     bool result = mObject->mBaseObject.length() > 0;
     bool error = false;
-            
+
     const tinyxml2::XMLElement *pMember = root.FirstChildElement();
 
     while(!error && nullptr != pMember)
@@ -630,6 +630,28 @@ std::shared_ptr<MetaVariable> MetaObjectXmlParser::GetVariable(const tinyxml2::X
                     }
                     else
                     {
+                        if(valueMetaType == MetaVariable::MetaVariableType_t::TYPE_ENUM)
+                        {
+                            const tinyxml2::XMLElement *seMember = GetChild(pMember, "value");
+                            std::string enumName = seMember->Attribute("name");
+
+                            if(seMember && !enumName.empty())
+                            {
+                                value->SetName(enumName);
+                            }
+                            else
+                            {
+                                std::stringstream ss;
+                                ss << "Failed to parse map member '"
+                                    << szMemberName << "' because the value "
+                                    << "is an enumeration without a 'name' "
+                                    << "attribute";
+
+                                mError = ss.str();
+                            }
+
+                        }
+
                         var = std::shared_ptr<MetaVariable>(
                             new MetaVariableMap(subElems["key"], subElems["value"]));
                     }
@@ -880,7 +902,7 @@ bool MetaObjectXmlParser::DefaultsSpecified(const tinyxml2::XMLElement *pMember)
     {
         return false;
     }
-    
+
     const tinyxml2::XMLElement *cMember = pMember->FirstChildElement();
     while(nullptr != cMember)
     {

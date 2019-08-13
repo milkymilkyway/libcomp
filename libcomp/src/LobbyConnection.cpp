@@ -59,8 +59,10 @@ void LobbyConnection::ConnectionSuccess()
     }
     else
     {
-        LOG_DEBUG(libcomp::String("Client connection: %1\n").Arg(
-            GetRemoteAddress()));
+        LogConnectionDebug([&]()
+        {
+            return String("Client connection: %1\n").Arg(GetRemoteAddress());
+        });
 
         libcomp::Packet packet;
 
@@ -126,7 +128,7 @@ bool LobbyConnection::ParseExtensionConnection(libcomp::Packet& packet)
         if(ROLE_CLIENT == GetRole())
         {
             // This is a pong, notify it was received.
-            LOG_DEBUG("Got a PONG from the server.\n");
+            LogConnectionDebugMsg("Got a PONG from the server.\n");
 
             SendMessage([](const std::shared_ptr<libcomp::TcpConnection>&){
                 return new libcomp::Message::Pong();
@@ -135,7 +137,7 @@ bool LobbyConnection::ParseExtensionConnection(libcomp::Packet& packet)
         else
         {
             // This is a ping, issue a pong.
-            LOG_DEBUG("Got a PING from the client.\n");
+            LogConnectionDebugMsg("Got a PING from the client.\n");
 
             // Set the name of the connection.
             SetName("ping");
@@ -160,7 +162,7 @@ bool LobbyConnection::ParseExtensionConnection(libcomp::Packet& packet)
         if(ROLE_CLIENT == GetRole())
         {
             // This is a pong, notify it was received.
-            LOG_DEBUG("Lobby server got the notification.\n");
+            LogConnectionDebugMsg("Lobby server got the notification.\n");
 
             SendMessage([](const std::shared_ptr<libcomp::TcpConnection>&){
                 return new libcomp::Message::WorldNotification(
@@ -170,7 +172,7 @@ bool LobbyConnection::ParseExtensionConnection(libcomp::Packet& packet)
         else
         {
             // This is a ping, issue a pong.
-            LOG_DEBUG("Got a world server notification.\n");
+            LogConnectionDebugMsg("Got a world server notification.\n");
 
             uint16_t worldServerPort = static_cast<uint16_t>(
                 (first >> 16) & 0xFFFF);

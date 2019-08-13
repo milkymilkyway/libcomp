@@ -30,6 +30,7 @@
 #include "MetaObject.h"
 #include "MetaVariable.h"
 #include "MetaVariableEnum.h"
+#include "MetaVariableMap.h"
 #include "MetaVariableReference.h"
 
 // Standard C++11 Includes
@@ -65,6 +66,11 @@ std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
         auto var = *it;
 
         if(var->IsInherited()) continue;
+
+        if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_MAP)
+        {
+            var = std::dynamic_pointer_cast<MetaVariableMap>(var)->GetValueElementType();
+        }
 
         if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ENUM)
         {

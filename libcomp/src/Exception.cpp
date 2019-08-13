@@ -85,7 +85,7 @@ Exception::Exception(const String& msg, const String& f, int l) :
 
     if(TRUE != symInit)
     {
-        LOG_CRITICAL("Failed to load symbols!\n");
+        LogGeneralCriticalMsg("Failed to load symbols!\n");
     }
 
     for(USHORT i = 0; i < frameCount; ++i)
@@ -306,7 +306,7 @@ LONG WINAPI TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
             ss << "(" << symbol->Name << "+0x" << std::hex <<
                 (int64_t)displacement << ")";
-            
+
             DWORD lineDisplacement;
             IMAGEHLP_LINE64 line;
 
@@ -323,9 +323,13 @@ LONG WINAPI TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 
     delete symbol;
 
-    LOG_CRITICAL("The server has crashed with an unhandled exception. A"
-        " backtrace will follow.\n");
-    LOG_CRITICAL(libcomp::String("Backtrace: %1\n").Arg(ss.str()));
+    LogGeneralCriticalMsg("The server has crashed with an unhandled exception. "
+        "A backtrace will follow.\n");
+
+    LogGeneralCritical([&]()
+    {
+        return String("Backtrace: %1\n").Arg(ss.str());
+    });
 
     return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -363,18 +367,21 @@ void Exception::Log() const
 {
     // Basic exception log message shows the file and line number where the
     // exception occured and the message describing the exception.
-    LOG_ERROR(String(
-        "Exception at %1:%2\n"
-        "========================================"
-        "========================================\n"
-        "%3\n"
-        "========================================"
-        "========================================\n"
-        "%4\n"
-        "========================================"
-        "========================================\n"
-    ).Arg(File()).Arg(Line()).Arg(Message()).Arg(
-        String::Join(Backtrace(), "\n")));
+    LogGeneralError([&]()
+    {
+        return String(
+            "Exception at %1:%2\n"
+            "========================================"
+            "========================================\n"
+            "%3\n"
+            "========================================"
+            "========================================\n"
+            "%4\n"
+            "========================================"
+            "========================================\n"
+        ).Arg(File()).Arg(Line()).Arg(Message()).Arg(
+            String::Join(Backtrace(), "\n"));
+    });
 }
 
 static void SignalHandler(int sig)
@@ -383,11 +390,14 @@ static void SignalHandler(int sig)
 
     Exception e("SIGSEGV", __FILE__, __LINE__);
 
-    LOG_CRITICAL("The server has crashed. A backtrace will follow.\n");
+    LogGeneralCriticalMsg("The server has crashed. A backtrace will follow.\n");
 
     for(libcomp::String s : e.Backtrace())
     {
-        LOG_CRITICAL(libcomp::String("Backtrace: %1\n").Arg(s));
+        LogGeneralCritical([&]()
+        {
+            return String("Backtrace: %1\n").Arg(s);
+        });
     }
 
     exit(EXIT_FAILURE);
@@ -404,11 +414,15 @@ void Exception::RegisterSignalHandler()
     std::set_terminate([]() {
         Exception e("Unhandled Exception", __FILE__, __LINE__);
 
-        LOG_CRITICAL("The server has crashed. A backtrace will follow.\n");
+        LogGeneralCriticalMsg(
+            "The server has crashed. A backtrace will follow.\n");
 
         for(libcomp::String s : e.Backtrace())
         {
-            LOG_CRITICAL(libcomp::String("Backtrace: %1\n").Arg(s));
+            LogGeneralCritical([&]()
+            {
+                return String("Backtrace: %1\n").Arg(s);
+            });
         }
 
         exit(EXIT_FAILURE);

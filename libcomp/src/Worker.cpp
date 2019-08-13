@@ -135,7 +135,7 @@ void Worker::HandleMessage(libcomp::Message::Message *pMessage)
 
             if(!manager)
             {
-                LOG_ERROR("Manager is null!\n");
+                LogGeneralErrorMsg("Manager is null!\n");
             }
             else
             {
@@ -154,8 +154,11 @@ void Worker::HandleMessage(libcomp::Message::Message *pMessage)
 
         if(!didProcess)
         {
-            LOG_ERROR(libcomp::String("Failed to process message in worker "
-                "'%1':\n%2\n").Arg(mWorkerName).Arg(pMessage->Dump()));
+            LogGeneralError([&]()
+            {
+                return String("Failed to process message in worker '%1':\n%2\n")
+                    .Arg(mWorkerName).Arg(pMessage->Dump());
+            });
         }
     }
 

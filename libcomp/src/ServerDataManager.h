@@ -416,8 +416,12 @@ private:
 
         if(data.empty())
         {
-            LOG_WARNING(libcomp::String("File does not exist or is"
-                " empty: %1\n").Arg(filePath));
+            LogServerDataManagerWarning([&]()
+            {
+                return String("File does not exist or is empty: %1\n")
+                    .Arg(filePath);
+            });
+
             return true;
         }
 
@@ -434,15 +438,22 @@ private:
         {
             if(!LoadObject<T>(objsDoc, objNode, definitionManager))
             {
-                LOG_ERROR(libcomp::String("Failed to load XML file: %1\n")
-                    .Arg(filePath));
+                LogServerDataManagerError([&]()
+                {
+                    return String("Failed to load XML file: %1\n")
+                        .Arg(filePath);
+                });
+
                 return false;
             }
 
             objNode = objNode->NextSiblingElement("object");
         }
 
-        LOG_DEBUG(libcomp::String("Loaded XML file: %1\n").Arg(filePath));
+        LogServerDataManagerWarning([&]()
+        {
+            return String("Loaded XML file: %1\n").Arg(filePath);
+        });
 
         return true;
     }

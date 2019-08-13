@@ -57,20 +57,23 @@ const Packet& PacketException::GetPacket() const
 void PacketException::Log() const
 {
     // Log the exception and include a dump of the packet data.
-    LOG_ERROR(String(
-        "Packet exception at %1:%2\n"
-        "========================================"
-        "========================================\n"
-        "%3\n"
-        "----------------------------------------"
-        "----------------------------------------\n"
-        "Packet:\n"
-        "%4\n"
-        "\n"
-        "Backtrace:\n"
-        "%5\n"
-        "========================================"
-        "========================================\n"
-    ).Arg(File()).Arg(Line()).Arg(Message()).Arg(
-        GetPacket().Dump()).Arg(String::Join(Backtrace(), "\n")));
+    LogGeneralError([&]()
+    {
+        return String(
+            "Packet exception at %1:%2\n"
+            "========================================"
+            "========================================\n"
+            "%3\n"
+            "----------------------------------------"
+            "----------------------------------------\n"
+            "Packet:\n"
+            "%4\n"
+            "\n"
+            "Backtrace:\n"
+            "%5\n"
+            "========================================"
+            "========================================\n"
+        ).Arg(File()).Arg(Line()).Arg(Message()).Arg(
+            GetPacket().Dump()).Arg(String::Join(Backtrace(), "\n"));
+    });
 }

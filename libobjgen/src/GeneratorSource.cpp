@@ -30,6 +30,7 @@
 #include "MetaObject.h"
 #include "MetaVariable.h"
 #include "MetaVariableEnum.h"
+#include "MetaVariableMap.h"
 #include "MetaVariableReference.h"
 
 // Standard C++ Includes
@@ -416,7 +417,7 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
             ss << code;
             ss << Tab(2) << "if(!status)" << std::endl;
             ss << Tab(2) << "{" << std::endl;
-            ss << Tab(3) << "LOG_ERROR(\"Failed to load member '"
+            ss << Tab(3) << "LogGeneralErrorMsg(\"Failed to load member '"
             << var->GetName() << "' for object '" << obj.GetName()
                 << "'\\n\");" << std::endl;
             ss << Tab(2) << "}" << std::endl;
@@ -633,8 +634,14 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
         {
             auto var = *it;
 
-            if(!var->IsInherited() &&
-                var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ENUM)
+            if(var->IsInherited()) continue;
+
+            if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_MAP)
+            {
+                var = std::dynamic_pointer_cast<MetaVariableMap>(var)->GetValueElementType();
+            }
+
+            if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ENUM)
             {
                 auto eVar = std::dynamic_pointer_cast<MetaVariableEnum>(var);
 

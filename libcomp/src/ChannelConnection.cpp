@@ -179,7 +179,7 @@ void ChannelConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
 
                 if(!mCaptureFile->good())
                 {
-                    LOG_CRITICAL("Failed to write capture file.\n");
+                    LogConnectionCriticalMsg("Failed to write capture file.\n");
 
                     delete mCaptureFile;
                     mCaptureFile = nullptr;

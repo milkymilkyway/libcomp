@@ -431,6 +431,12 @@ std::string MetaVariableMap::GetUtilityDeclarations(const Generator& generator,
             "VariableMapUtilityDeclarations", replacements) << std::endl;
     }
 
+    if(mValueElementType && mValueElementType->GetMetaType() ==
+        MetaVariableType_t::TYPE_ENUM)
+    {
+        ss << mValueElementType->GetUtilityDeclarations(generator, name, tabLevel);
+    }
+
     return ss.str();
 }
 
@@ -462,6 +468,12 @@ std::string MetaVariableMap::GetUtilityFunctions(const Generator& generator,
             replacements) << std::endl;
     }
 
+    if(mValueElementType && mValueElementType->GetMetaType() ==
+        MetaVariableType_t::TYPE_ENUM)
+    {
+        ss << mValueElementType->GetUtilityFunctions(generator, object, name);
+    }
+
     return ss.str();
 }
 
@@ -470,7 +482,7 @@ std::string MetaVariableMap::GetAccessScriptBindings(const Generator& generator,
     size_t tabLevel) const
 {
     std::stringstream ss;
-    
+
     if(mKeyElementType && mValueElementType)
     {
         std::map<std::string, std::string> replacements;

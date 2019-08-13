@@ -28,15 +28,75 @@
 #define LIBCOMP_SRC_LOG_H
 
 #include "CString.h"
+#include "EnumMap.h"
+#include "MessageQueue.h"
 
-#include <list>
-#include <mutex>
+#include <chrono>
 #include <fstream>
 #include <functional>
+#include <list>
+#include <mutex>
+#include <thread>
 #include <unordered_map>
 
 namespace libcomp
 {
+
+/**
+ * Log components a log message may belong to.
+ */
+enum class LogComponent_t
+{
+    AccountManager,
+    ActionManager,
+    AIManager,
+    Barter,
+    Bazaar,
+    CharacterManager,
+    ChatManager,
+    Clan,
+    Connection,
+    Crypto,
+    Database,
+    DataStore,
+    DataSyncManager,
+    DefinitionManager,
+    Demon,
+    EventManager,
+    Friend,
+    FusionManager,
+    General,
+    Invalid,
+    Item,
+    MatchManager,
+    Party,
+    ScriptEngine,
+    Server,
+    ServerConstants,
+    ServerDataManager,
+    SkillManager,
+    TokuseiManager,
+    Trade,
+    WebAPI,
+    ZoneManager,
+};
+
+/**
+ * Convert a string into a log component.
+ * @param comp String to convert.
+ * @returns Log component the string represents.
+ */
+LogComponent_t StringToLogComponent(const String& comp);
+
+/**
+ * Convert a log component into a string.
+ * @param comp Log component to convert.
+ * @returns String representation of the log component.
+ */
+String LogComponentToString(LogComponent_t comp);
+
+// Forward declaration for the Log class.
+class LogMessage;
 
 /**
  * Logging interface capable of logging messages to the terminal or a file.
@@ -88,7 +148,8 @@ public:
      * data passed to @ref Log::AddLogHook along with the function. See
      * @ref Level_t for all possible log levels.
      */
-    typedef void (*Hook_t)(Level_t level, const String& msg, void *pUserData);
+    typedef void (*Hook_t)(LogComponent_t comp, Level_t level,
+        const String& msg, void *pUserData);
 
     /**
      * Deconstruct and delete the Log singleton.
@@ -105,10 +166,10 @@ public:
 
     /**
      * Log a message.
-     * @param level Logging level of the message.
-     * @param msg The message to log.
+     * @param pMessage Message to log.
+     * @note This function will take ownership of the message.
      */
-    void LogMessage(Level_t level, const String& msg);
+    void LogMessage(libcomp::LogMessage *pMessage);
 
     /**
      * Get the path to the log file.
@@ -142,7 +203,7 @@ public:
      * the log hook function.
      * @param func Log hook function to call.
      */
-    void AddLogHook(const std::function<void(Level_t level,
+    void AddLogHook(const std::function<void(LogComponent_t comp, Level_t level,
         const String& msg)>& func);
 
     /**
@@ -156,18 +217,18 @@ public:
     void ClearHooks();
 
     /**
-     * Get if the specified logging level is enabled.
-     * @param level A logging level.
-     * @returns true if logging for the level is enabled.
+     * Get the specified logging level for a component.
+     * @param comp A logging component.
+     * @returns The logging level for the component.
      */
-    bool GetLogLevelEnabled(Level_t level) const;
+    Level_t GetLogLevel(LogComponent_t comp) const;
 
     /**
-     * Set if the specified logging level is enabled.
+     * Set the specified logging level for a component.
+     * @param comp A logging component.
      * @param level A logging level.
-     * @param enabled If logging for the level is enabled.
      */
-    void SetLogLevelEnabled(Level_t level, bool enabled);
+    void SetLogLevel(LogComponent_t comp, Level_t level);
 
     /**
      * Get if the log file timestamps are enabled.
@@ -229,6 +290,15 @@ public:
      */
     void SetLogRotationDays(int days);
 
+    /**
+     * Function to determine if a message should be logged given the provided
+     * component and log level.
+     * @param comp Component to log.
+     * @param level Level to log.
+     * @returns true if the message should be logged; false otherwise.
+     */
+    bool ShouldLog(LogComponent_t comp, Level_t level) const;
+
 protected:
     /**
      * @internal
@@ -245,6 +315,24 @@ protected:
      * Rotate the log files.
      */
     void RotateLogs();
+
+    /**
+     * @internal
+     * Log a message.
+     * @param timestamp When the log message was created.
+     * @param comp Component this log message belongs to.
+     * @param level Logging level of the message.
+     * @param msg The message to log.
+     */
+    void LogMessage(const std::chrono::time_point<
+        std::chrono::system_clock>& timestamp, LogComponent_t comp,
+        Level_t level, const String& msg);
+
+    /**
+     * @internal
+     *  Loop to process log messages.
+     */
+    void MessageLoop();
 
     /**
      * @internal
@@ -273,12 +361,6 @@ protected:
      * Path to the log file.
      */
     String mLogPath;
-
-    /**
-     * @internal
-     * Whether to log messages for each level.
-     */
-    bool mLogEnables[LOG_LEVEL_COUNT];
 
     /**
      * @internal
@@ -324,22 +406,34 @@ protected:
 
     /**
      * @internal
-     * List of log hooks.
+     * Levels of all the log components.
      */
-    std::list<std::function<void(Level_t level,
-        const String& msg)>> mLambdaHooks;
+    EnumMap<LogComponent_t, Level_t> mComponentLogLevels;
 
     /**
      * @internal
-     * Mutex to make the log thread safe.
+     * List of log hooks.
      */
-    std::mutex mLock;
+    std::list<std::function<void(LogComponent_t comp, Level_t level,
+        const String& msg)>> mLambdaHooks;
 
     /**
      * @internal
      * Number of days since the UNIX epoch for the last log message.
      */
     int64_t mLastLog;
+
+    /**
+     * @internal
+     * Messages for the log thread to process.
+     */
+    MessageQueue<libcomp::LogMessage*> mMessages;
+
+    /**
+     * @internal
+     * Thread to process log messages.
+     */
+    std::thread mThread;
 
 #ifdef _WIN32
     /**
@@ -350,51 +444,260 @@ protected:
 #endif
 };
 
+/**
+ * @internal
+ * Log message to pass to the thread.
+ */
+class LogMessage
+{
+public:
+    /**
+     * Construct the log message.
+     * @param comp Component for this message.
+     * @param level Log level for this message.
+     */
+    explicit LogMessage(LogComponent_t comp, Log::Level_t level) :
+        mComponent(comp), mLevel(level), mTimestamp(
+            std::chrono::system_clock::now())
+    {
+    }
+
+    /**
+     * Free the log message.
+     */
+    virtual ~LogMessage()
+    {
+    }
+
+    /**
+     * Override this to provide the log message.
+     * @returns Log message
+     */
+    virtual String GetMsg() const = 0;
+
+    /**
+     * Indicates if the log thread should stop.
+     * @returns true if the log thread should stop
+     */
+    virtual bool ShouldStop() const
+    {
+        return false;
+    }
+
+    /**
+     * Get the component this log message belongs to.
+     * @returns Component this log message belongs to.
+     */
+    LogComponent_t GetComponent() const
+    {
+        return mComponent;
+    }
+
+    /**
+     * Get the log level for this message.
+     * @returns Log level for this message.
+     */
+    Log::Level_t GetLevel() const
+    {
+        return mLevel;
+    }
+
+    /**
+     * Get the timestamp for this message.
+     * @returns Timestamp for this message.
+     */
+    std::chrono::time_point<std::chrono::system_clock> GetTimestamp() const
+    {
+        return mTimestamp;
+    }
+
+private:
+    /// Component the message belongs to
+    LogComponent_t mComponent;
+
+    /// Log level of the message
+    Log::Level_t mLevel;
+
+    /// Timestamp of the message
+    std::chrono::time_point<std::chrono::system_clock> mTimestamp;
+};
+
+/**
+ * @internal
+ * Implementation of a log message that takes a lambda function.
+ */
+template<typename... Function>
+class LogMessageImpl : public LogMessage
+{
+public:
+    /// Type for the lambda function binding.
+    using BindType_t = decltype(std::bind(std::declval<std::function<
+        String(Function...)>>(), std::declval<Function>()...));
+
+    /**
+     * Construct a log message that calls a lambda function for the message.
+     * @param comp Component this message belongs to.
+     * @param level Log level of the message
+     * @param f Lambda function to call
+     * @param args Arguments to pass to the lambda function.
+     */
+    template<typename... Args>
+    explicit LogMessageImpl(LogComponent_t comp, Log::Level_t level,
+        std::function<String(Function...)> f, Args&&... args) :
+        LogMessage(comp, level), mBind(std::move(f),
+        std::forward<Args>(args)...)
+    {
+    }
+
+    /**
+     * Free the log message.
+     */
+    ~LogMessageImpl() override
+    {
+    }
+
+    /**
+     * Override this to provide the log message.
+     * @returns Log message
+     */
+    String GetMsg() const override
+    {
+        return mBind();
+    }
+
+private:
+    /// Binding for the lambda function.
+    BindType_t mBind;
+};
+
+/**
+ * @internal
+ * Implementation of a log message that has a fixed string.
+ */
+class LogMessageFixed : public LogMessage
+{
+public:
+    /**
+     * Construct a log message with a fixed string.
+     * @param comp Component this message belongs to.
+     * @param level Log level of the message
+     * @param msg Message to log
+     */
+    explicit LogMessageFixed(LogComponent_t comp, Log::Level_t level,
+        const String& msg) : LogMessage(comp, level), mMessage(msg)
+    {
+    }
+
+    /**
+     * Free the log message.
+     */
+    ~LogMessageFixed() override
+    {
+    }
+
+    /**
+     * Override this to provide the log message.
+     * @returns Log message
+     */
+    String GetMsg() const override
+    {
+        return mMessage;
+    }
+
+private:
+    /// Fixed string to log
+    String mMessage;
+};
+
 } // namespace libcomp
 
 /**
- * %Log a critical error message.
- * @param msg The message to log.
- * @sa Log::LogMessage
- * @relates Log
+ * Macro to create a log function
+ * @param name Name of the function
+ * @param comp Component the functions logs
+ * @param level Log level the function logs
  */
-#define LOG_CRITICAL(msg) libcomp::Log::GetSingletonPtr()->LogMessage( \
-    libcomp::Log::LOG_LEVEL_CRITICAL, msg)
+#define LOG_FUNCTION(name, comp, level)                                        \
+static inline void name(const std::function<libcomp::String(void)>& fun)       \
+{                                                                              \
+    auto log = libcomp::Log::GetSingletonPtr();                                \
+                                                                               \
+    if(log->ShouldLog(libcomp::LogComponent_t::comp, level))                   \
+    {                                                                          \
+        auto msg = new libcomp::LogMessageFixed(                               \
+            libcomp::LogComponent_t::comp, level, fun());                      \
+        log->LogMessage(msg);                                                  \
+    }                                                                          \
+}                                                                              \
+                                                                               \
+template<typename Function, typename... Args>                                  \
+static inline void name##Delayed(Function&& f, Args&&... args)                 \
+{                                                                              \
+    auto log = libcomp::Log::GetSingletonPtr();                                \
+                                                                               \
+    if(log->ShouldLog(libcomp::LogComponent_t::comp, level))                   \
+    {                                                                          \
+        auto msg = new libcomp::LogMessageImpl<Args...>(                       \
+            libcomp::LogComponent_t::comp, level, std::forward<Function>(f),   \
+            std::forward<Args>(args)...);                                      \
+        log->LogMessage(msg);                                                  \
+    }                                                                          \
+}                                                                              \
+                                                                               \
+static inline void name##Msg(const libcomp::String& _msg)                      \
+{                                                                              \
+    auto log = libcomp::Log::GetSingletonPtr();                                \
+                                                                               \
+    if(log->ShouldLog(libcomp::LogComponent_t::comp, level))                   \
+    {                                                                          \
+        auto msg = new libcomp::LogMessageFixed(                               \
+            libcomp::LogComponent_t::comp, level, _msg);                       \
+        log->LogMessage(msg);                                                  \
+    }                                                                          \
+}
 
 /**
- * %Log an error message.
- * @param msg The message to log.
- * @sa Log::LogMessage
- * @relates Log
+ * Macro to create a set of log functions for a component
+ * @param comp Component to create the functions for
  */
-#define LOG_ERROR(msg)    libcomp::Log::GetSingletonPtr()->LogMessage( \
-    libcomp::Log::LOG_LEVEL_ERROR, msg)
+#define LOG_FUNCTIONS(comp)                                                    \
+    LOG_FUNCTION(Log##comp##Debug,    comp, libcomp::Log::LOG_LEVEL_DEBUG)     \
+    LOG_FUNCTION(Log##comp##Info,     comp, libcomp::Log::LOG_LEVEL_INFO)      \
+    LOG_FUNCTION(Log##comp##Warning,  comp, libcomp::Log::LOG_LEVEL_WARNING)   \
+    LOG_FUNCTION(Log##comp##Error,    comp, libcomp::Log::LOG_LEVEL_ERROR)     \
+    LOG_FUNCTION(Log##comp##Critical, comp, libcomp::Log::LOG_LEVEL_CRITICAL)
 
-/**
- * %Log a warning message.
- * @param msg The message to log.
- * @sa Log::LogMessage
- * @relates Log
- */
-#define LOG_WARNING(msg)  libcomp::Log::GetSingletonPtr()->LogMessage( \
-    libcomp::Log::LOG_LEVEL_WARNING, msg)
-
-/**
- * %Log a informational message.
- * @param msg The message to log.
- * @sa Log::LogMessage
- * @relates Log
- */
-#define LOG_INFO(msg)     libcomp::Log::GetSingletonPtr()->LogMessage( \
-    libcomp::Log::LOG_LEVEL_INFO, msg)
-
-/**
- * %Log a debug message.
- * @param msg The message to log.
- * @sa Log::LogMessage
- * @relates Log
- */
-#define LOG_DEBUG(msg)    libcomp::Log::GetSingletonPtr()->LogMessage( \
-    libcomp::Log::LOG_LEVEL_DEBUG, msg)
+// Add a log function set for each component here!
+LOG_FUNCTIONS(AccountManager)
+LOG_FUNCTIONS(ActionManager)
+LOG_FUNCTIONS(AIManager)
+LOG_FUNCTIONS(Barter)
+LOG_FUNCTIONS(Bazaar)
+LOG_FUNCTIONS(CharacterManager)
+LOG_FUNCTIONS(ChatManager)
+LOG_FUNCTIONS(Clan)
+LOG_FUNCTIONS(Connection)
+LOG_FUNCTIONS(Crypto)
+LOG_FUNCTIONS(Database)
+LOG_FUNCTIONS(DataStore)
+LOG_FUNCTIONS(DataSyncManager)
+LOG_FUNCTIONS(DefinitionManager)
+LOG_FUNCTIONS(Demon)
+LOG_FUNCTIONS(EventManager)
+LOG_FUNCTIONS(Friend)
+LOG_FUNCTIONS(FusionManager)
+LOG_FUNCTIONS(General)
+LOG_FUNCTIONS(Item)
+LOG_FUNCTIONS(MatchManager)
+LOG_FUNCTIONS(Party)
+LOG_FUNCTIONS(ScriptEngine)
+LOG_FUNCTIONS(Server)
+LOG_FUNCTIONS(ServerConstants)
+LOG_FUNCTIONS(ServerDataManager)
+LOG_FUNCTIONS(SkillManager)
+LOG_FUNCTIONS(TokuseiManager)
+LOG_FUNCTIONS(Trade)
+LOG_FUNCTIONS(WebAPI)
+LOG_FUNCTIONS(ZoneManager)
 
 #endif // LIBCOMP_SRC_LOG_H

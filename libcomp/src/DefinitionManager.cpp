@@ -418,19 +418,19 @@ const std::set<uint8_t> DefinitionManager::GetGuardianRaceIDs()
     return raceIDs;
 }
 
-const std::shared_ptr<objects::MiGuardianLevelData> 
+const std::shared_ptr<objects::MiGuardianLevelData>
     DefinitionManager::GetGuardianLevelData(uint32_t id)
 {
     return GetRecordByID(id, mGuardianLevelData);
 }
 
-const std::shared_ptr<objects::MiGuardianSpecialData> 
+const std::shared_ptr<objects::MiGuardianSpecialData>
     DefinitionManager::GetGuardianSpecialData(uint32_t id)
 {
     return GetRecordByID(id, mGuardianSpecialData);
 }
 
-const std::shared_ptr<objects::MiGuardianUnlockData> 
+const std::shared_ptr<objects::MiGuardianUnlockData>
     DefinitionManager::GetGuardianUnlockData(uint32_t id)
 {
     return GetRecordByID(id, mGuardianUnlockData);
@@ -1097,8 +1097,11 @@ namespace libcomp
 
             if(mDisassemblyLookup.find(itemID) != mDisassemblyLookup.end())
             {
-                LOG_DEBUG(libcomp::String("Duplicate item encountered"
-                    " for disassembly mapping: %1\n").Arg(itemID));
+                LogDefinitionManagerError([&]()
+                {
+                    return libcomp::String("Duplicate item encountered"
+                        " for disassembly mapping: %1\n").Arg(itemID);
+                });
             }
             else
             {
@@ -1161,13 +1164,19 @@ namespace libcomp
 
         if(spotLoadCount != (uint16_t)mSpotData.size())
         {
-            LOG_WARNING(libcomp::String("Loaded %1/%2 map spot definition"
-                " files.\n").Arg(mSpotData.size()).Arg(spotLoadCount));
+            LogDefinitionManagerWarning([&]()
+            {
+                return libcomp::String("Loaded %1/%2 map spot definition"
+                    " files.\n").Arg(mSpotData.size()).Arg(spotLoadCount);
+            });
         }
         else
         {
-            LOG_DEBUG(libcomp::String("Loaded %1/%2 map spot definition"
-                " files.\n").Arg(spotLoadCount).Arg(spotLoadCount));
+            LogDefinitionManagerInfo([&]()
+            {
+                return libcomp::String("Loaded %1/%2 map spot definition"
+                    " files.\n").Arg(spotLoadCount).Arg(spotLoadCount);
+            });
         }
 
         return success;
@@ -1192,8 +1201,11 @@ namespace libcomp
             {
                 if(mEnchantDemonLookup.find(demonID) != mEnchantDemonLookup.end())
                 {
-                    LOG_DEBUG(libcomp::String("Duplicate demon encountered"
-                        " for crystallization mapping: %1\n").Arg(demonID));
+                    LogDefinitionManagerError([&]()
+                    {
+                        return libcomp::String("Duplicate demon encountered"
+                            " for crystallization mapping: %1\n").Arg(demonID);
+                    });
                 }
                 else
                 {
@@ -1203,8 +1215,11 @@ namespace libcomp
 
             if(mEnchantItemLookup.find(itemID) != mEnchantItemLookup.end())
             {
-                LOG_DEBUG(libcomp::String("Duplicate item encountered"
-                    " for crystallization mapping: %1\n").Arg(itemID));
+                LogDefinitionManagerError([&]()
+                {
+                    return libcomp::String("Duplicate item encountered"
+                        " for crystallization mapping: %1\n").Arg(itemID);
+                });
             }
             else
             {
@@ -1440,8 +1455,11 @@ namespace libcomp
 
             if(mModificationLookup.find(itemID) != mModificationLookup.end())
             {
-                LOG_DEBUG(libcomp::String("Duplicate item encountered"
-                    " for modification mapping: %1\n").Arg(itemID));
+                LogDefinitionManagerError([&]()
+                {
+                    return libcomp::String("Duplicate item encountered"
+                        " for modification mapping: %1\n").Arg(itemID);
+                });
             }
             else
             {
@@ -1490,8 +1508,11 @@ namespace libcomp
             if(mModificationExtRecipeLookup.find(itemID) !=
                 mModificationExtRecipeLookup.end())
             {
-                LOG_DEBUG(libcomp::String("Duplicate item encountered"
-                    " for modification extra mapping: %1\n").Arg(itemID));
+                LogDefinitionManagerError([&]()
+                {
+                    return libcomp::String("Duplicate item encountered"
+                        " for modification extra mapping: %1\n").Arg(itemID);
+                });
             }
             else
             {
@@ -1810,7 +1831,7 @@ namespace libcomp
 
 bool DefinitionManager::LoadAllData(DataStore *pDataStore)
 {
-    LOG_INFO("Loading binary data definitions...\n");
+    LogDefinitionManagerInfoMsg("Loading binary data definitions...\n");
 
     bool success = true;
     success &= LoadData<objects::MiAIData>(pDataStore);
@@ -1870,11 +1891,11 @@ bool DefinitionManager::LoadAllData(DataStore *pDataStore)
 
     if(success)
     {
-        LOG_INFO("Definition loading complete.\n");
+        LogDefinitionManagerInfoMsg("Definition loading complete.\n");
     }
     else
     {
-        LOG_CRITICAL("Definition loading failed.\n");
+        LogDefinitionManagerCriticalMsg("Definition loading failed.\n");
     }
 
     return success;
@@ -1890,8 +1911,11 @@ namespace libcomp
         uint32_t id = record->GetID();
         if(mEnchantSetData.find(id) != mEnchantSetData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate enchant set"
-                " encountered: %1\n").Arg(id));
+            LogDefinitionManagerError([&]()
+            {
+                return libcomp::String("Duplicate enchant set"
+                    " encountered: %1\n").Arg(id);
+            });
             return false;
         }
 
@@ -1916,8 +1940,11 @@ namespace libcomp
         uint32_t id = record->GetID();
         if(mEnchantSpecialData.find(id) != mEnchantSpecialData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate enchant special"
-                " encountered: %1\n").Arg(id));
+            LogDefinitionManagerError([&]()
+            {
+                return libcomp::String("Duplicate enchant special"
+                    " encountered: %1\n").Arg(id);
+            });
             return false;
         }
 
@@ -1952,8 +1979,11 @@ namespace libcomp
         uint32_t id = record->GetID();
         if(mSStatusData.find(id) != mSStatusData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate s-status encountered: %1\n")
-                .Arg(id));
+            LogDefinitionManagerError([&]()
+            {
+                return libcomp::String("Duplicate s-status encountered: %1\n")
+                    .Arg(id);
+            });
             return false;
         }
 
@@ -1969,8 +1999,11 @@ namespace libcomp
         int32_t id = record->GetID();
         if(mTokuseiData.find(id) != mTokuseiData.end())
         {
-            LOG_ERROR(libcomp::String("Duplicate tokusei encountered: %1\n")
-                .Arg(id));
+            LogDefinitionManagerError([&]()
+            {
+                return libcomp::String(
+                    "Duplicate tokusei encountered: %1\n").Arg(id);
+            });
             return false;
         }
 
@@ -2019,16 +2052,22 @@ bool DefinitionManager::LoadBinaryDataHeader(libcomp::ObjectInStream& ois,
 
 	if(!ois.stream.good())
 	{
-		LOG_CRITICAL(libcomp::String("Failed to load/decrypt '%1'.\n")
-            .Arg(binaryFile));
+        LogDefinitionManagerCritical([&]()
+        {
+            return libcomp::String("Failed to load/decrypt '%1'.\n")
+                .Arg(binaryFile);
+        });
         return false;
 	}
 
     if(tablesExpected > 0 && tablesExpected != tableCount)
     {
-        LOG_CRITICAL(libcomp::String("Expected %1 table(s) in file '%2'"
-            " but encountered %3.\n").Arg(tablesExpected).Arg(binaryFile)
-            .Arg(tableCount));
+        LogDefinitionManagerCritical([&]()
+        {
+            return libcomp::String("Expected %1 table(s) in file '%2'"
+                " but encountered %3.\n").Arg(tablesExpected).Arg(binaryFile)
+                .Arg(tableCount);
+        });
         return false;
     }
     return true;
@@ -2039,13 +2078,19 @@ void DefinitionManager::PrintLoadResult(const libcomp::String& binaryFile,
 {
     if(success)
     {
-        LOG_DEBUG(libcomp::String("Successfully loaded %1/%2 records from %3.\n")
-            .Arg(loadedEntries).Arg(entriesExpected).Arg(binaryFile));
+        LogDefinitionManagerInfo([&]()
+        {
+            return libcomp::String("Successfully loaded %1/%2 records from %3.\n")
+                .Arg(loadedEntries).Arg(entriesExpected).Arg(binaryFile);
+        });
     }
     else
     {
-        LOG_ERROR(libcomp::String("Failed after loading %1/%2 records from %3.\n")
-            .Arg(loadedEntries).Arg(entriesExpected).Arg(binaryFile));
+        LogDefinitionManagerError([&]()
+        {
+            return libcomp::String("Failed after loading %1/%2 records from %3.\n")
+                .Arg(loadedEntries).Arg(entriesExpected).Arg(binaryFile);
+        });
     }
 }
 

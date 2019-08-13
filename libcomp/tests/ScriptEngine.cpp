@@ -50,8 +50,10 @@ TEST(ScriptEngine, EvalCompileError)
 
     // Check for a compile error that produces a log message.
     Log::GetSingletonPtr()->AddLogHook(
-        [](Log::Level_t level, const String& msg, void *pUserData)
+        [](LogComponent_t comp, Log::Level_t level, const String& msg,
+            void *pUserData)
         {
+            (void)comp;
             (void)msg;
 
             EXPECT_EQ(level, Log::LOG_LEVEL_ERROR);
@@ -73,8 +75,10 @@ TEST(ScriptEngine, EvalRuntimeError)
 
     // Check for a runtime error that produces log messages.
     Log::GetSingletonPtr()->AddLogHook(
-        [](Log::Level_t level, const String& msg, void *pUserData)
+        [](LogComponent_t comp, Log::Level_t level, const String& msg,
+            void *pUserData)
         {
+            (void)comp;
             (void)msg;
 
             EXPECT_EQ(level, Log::LOG_LEVEL_ERROR);
@@ -96,8 +100,11 @@ TEST(ScriptEngine, EvalPrint)
 
     // Check for a call to print() that produces a log message.
     Log::GetSingletonPtr()->AddLogHook(
-        [](Log::Level_t level, const String& msg, void *pUserData)
+        [](LogComponent_t comp, Log::Level_t level, const String& msg,
+            void *pUserData)
         {
+            (void)comp;
+
             EXPECT_EQ(msg, "SQUIRREL: Test\n");
             EXPECT_EQ(level, Log::LOG_LEVEL_INFO);
 
@@ -115,8 +122,10 @@ TEST(ScriptEngine, ReadOnlyPacket)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
         {
+            (void)comp;
             (void)level;
 
             scriptMessages += msg;
@@ -148,8 +157,10 @@ TEST(ScriptEngine, ReadWriteArray)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
         {
+            (void)comp;
             (void)level;
 
             scriptMessages += msg;
@@ -181,8 +192,10 @@ TEST(ScriptEngine, FunctionCall)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
         {
+            (void)comp;
             (void)level;
 
             scriptMessages += msg;
@@ -238,8 +251,10 @@ TEST(ScriptEngine, GeneratedObject)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -276,8 +291,10 @@ TEST(ScriptEngine, ScriptA_ScriptB)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -327,8 +344,10 @@ TEST(ScriptEngine, ServerA_ScriptB)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -372,8 +391,10 @@ TEST(ScriptEngine, ServerA_ServerB)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -418,8 +439,10 @@ TEST(ScriptEngine, ScriptA_ServerB)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -473,8 +496,10 @@ TEST(ScriptEngine, CString)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -522,8 +547,10 @@ TEST(ScriptEngine, DowncastChild)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -583,8 +610,10 @@ TEST(ScriptEngine, GetObjectList)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -652,8 +681,10 @@ TEST(ScriptEngine, SetObjectList)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -717,8 +748,10 @@ TEST(ScriptEngine, SetBadObjectList)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -772,8 +805,10 @@ TEST(ScriptEngine, GetObjectListProp)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -841,8 +876,10 @@ TEST(ScriptEngine, SetObjectListProp)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -906,8 +943,10 @@ TEST(ScriptEngine, SetBadObjectListProp)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -961,8 +1000,10 @@ TEST(ScriptEngine, ListOfIntegers)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;
@@ -1026,8 +1067,10 @@ TEST(ScriptEngine, Integer64)
     String scriptMessages;
 
     Log::GetSingletonPtr()->AddLogHook(
-        [&scriptMessages](Log::Level_t level, const String& msg)
+        [&scriptMessages](LogComponent_t comp, Log::Level_t level,
+            const String& msg)
     {
+        (void)comp;
         (void)level;
 
         scriptMessages += msg;

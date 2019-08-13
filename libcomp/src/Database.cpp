@@ -297,16 +297,20 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
     DataStore *pDataStore, const libcomp::String& migration,
     const libcomp::String& path)
 {
-    LOG_DEBUG(libcomp::String("Applying migration %1 to database.\n"
-        ).Arg(migration));
+    LogDatabaseError([&]()
+    {
+        return String("Applying migration %1 to database.\n").Arg(migration);
+    });
 
     // Load the script.
     auto script = pDataStore->ReadFile(path);
 
     if(script.empty())
     {
-        LOG_ERROR(libcomp::String("Failed to load migration script: "
-            "%1\n").Arg(path));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to load migration script: %1\n").Arg(path);
+        });
 
         return false;
     }
@@ -320,8 +324,10 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
     // Parse the script.
     if(!engine->Eval(&script[0], path))
     {
-        LOG_ERROR(libcomp::String("Failed to run migration script: "
-            "%1\n").Arg(path));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to run migration script: %1\n").Arg(path);
+        });
 
         return false;
     }
@@ -335,8 +341,10 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
 
     if(!ref || !(*ref))
     {
-        LOG_ERROR(libcomp::String("Migration script failed: "
-            "%1\n").Arg(path));
+        LogDatabaseError([&]()
+        {
+            return String("Migration script failed: %1\n").Arg(path);
+        });
 
         return false;
     }

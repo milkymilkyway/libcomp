@@ -56,7 +56,7 @@ public:
      * @param retryDelay Delay in milliseconds between execution retry
      *  attempts
      */
-    DatabaseQueryMariaDB(MYSQL *pDatabase, bool databaseDebug);
+    DatabaseQueryMariaDB(MYSQL *pDatabase);
 
     /**
      * Clean up the query.
@@ -184,9 +184,6 @@ private:
 
     /// Buffer containing length values for bound and selected values
     std::list<unsigned long> mBufferLengths;
-
-    /// If we should output SQL debug logs.
-    bool mDatabaseDebug;
 };
 
 } // namespace libcomp

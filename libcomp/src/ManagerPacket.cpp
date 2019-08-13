@@ -69,8 +69,11 @@ bool ManagerPacket::ProcessMessage(const libcomp::Message::Message *pMessage)
 
         if(it == mPacketParsers.end())
         {
-            LOG_ERROR(libcomp::String("Unknown packet with command code "
-                "0x%1.\n").Arg(code, 4, 16, '0'));
+            LogConnectionError([&]()
+            {
+                return String("Unknown packet with command code 0x%1.\n")
+                    .Arg(code, 4, 16, '0');
+            });
 
             return false;
         }

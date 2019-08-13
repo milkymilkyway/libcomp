@@ -84,18 +84,21 @@ bool DatabaseMariaDB::Close(MYSQL*& connection)
     {
         mysql_close(connection);
 
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String("Database connection closed: %1\n"
-                ).Arg(ConnectionString(connection)));
-        }
+            return String("Database connection closed: %1\n"
+                ).Arg(ConnectionString(connection));
+        });
 
         connection = nullptr;
     }
-    else if(mConfig->GetDatabaseDebug())
+    else
     {
-        LOG_DEBUG(libcomp::String("Database connection NOT closed: %1\n"
-            ).Arg(ConnectionString(connection)));
+        LogDatabaseDebug([&]()
+        {
+            return String("Database connection NOT closed: %1\n"
+                ).Arg(ConnectionString(connection));
+        });
     }
 
     return true;
@@ -110,8 +113,7 @@ bool DatabaseMariaDB::IsOpen() const
 DatabaseQuery DatabaseMariaDB::Prepare(const String& query)
 {
     auto connection = GetConnection(true);
-    return DatabaseQuery(new DatabaseQueryMariaDB(connection,
-        mConfig->GetDatabaseDebug()), query);
+    return DatabaseQuery(new DatabaseQueryMariaDB(connection), query);
 }
 
 bool DatabaseMariaDB::Exists()
@@ -120,10 +122,14 @@ bool DatabaseMariaDB::Exists()
         "SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = '%1';")
         .Arg(std::dynamic_pointer_cast<objects::DatabaseConfigMariaDB>(
             mConfig)->GetDatabaseName()));
+
     if(!q.Execute())
     {
-        LOG_CRITICAL(String("Failed to query for database: %1\n").Arg(
-            GetLastError()));
+        LogDatabaseCritical([&]()
+        {
+            return String("Failed to query for database: %1\n")
+                .Arg(GetLastError());
+        });
 
         return false;
     }
@@ -140,7 +146,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
 {
     if(!IsOpen())
     {
-        LOG_ERROR("Trying to setup a database that is not open!\n");
+        LogDatabaseErrorMsg("Trying to setup a database that is not open!\n");
 
         return false;
     }
@@ -152,7 +158,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
         // Delete the old database if it exists.
         if(!Execute(String("DROP DATABASE IF EXISTS %1;").Arg(databaseName)))
         {
-            LOG_ERROR("Failed to delete existing database\n");
+            LogDatabaseErrorMsg("Failed to delete existing database\n");
 
             return false;
         }
@@ -161,7 +167,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
         if(!Execute(String("CREATE DATABASE %1 CHARACTER SET utf8mb4 "
             "COLLATE utf8mb4_general_ci;").Arg(databaseName)))
         {
-            LOG_ERROR("Failed to create database\n");
+            LogDatabaseErrorMsg("Failed to create database\n");
 
             return false;
         }
@@ -169,24 +175,27 @@ bool DatabaseMariaDB::Setup(bool rebuild,
         // Use the database.
         if(!Use())
         {
-            LOG_ERROR("Failed to use the newly created database\n");
+            LogDatabaseErrorMsg("Failed to use the newly created database\n");
 
             return false;
         }
     }
     else if(!Use())
     {
-        LOG_ERROR("Failed to use the existing database\n");
+        LogDatabaseErrorMsg("Failed to use the existing database\n");
 
         return false;
     }
 
-    LOG_DEBUG(String("Database connection established to '%1' database.\n")
-        .Arg(databaseName));
+    LogDatabaseDebug([&]()
+    {
+        return String("Database connection established to '%1' database.\n")
+            .Arg(databaseName);
+    });
 
     if(!VerifyAndSetupSchema(rebuild))
     {
-        LOG_ERROR("Schema verification and setup failed.\n");
+        LogDatabaseErrorMsg("Schema verification and setup failed.\n");
 
         return false;
     }
@@ -199,11 +208,11 @@ bool DatabaseMariaDB::Setup(bool rebuild,
 
         if(Execute(ss.str()))
         {
-            LOG_DEBUG("Migration table created.\n");
+            LogDatabaseErrorMsg("Migration table created.\n");
         }
         else
         {
-            LOG_ERROR("Failed to create the migration table!\n");
+            LogDatabaseErrorMsg("Failed to create the migration table!\n");
 
             return false;
         }
@@ -234,7 +243,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
 
                 if(!query.IsValid() || !query.Bind("file", migration))
                 {
-                    LOG_ERROR("Failed to bind when checking for "
+                    LogDatabaseErrorMsg("Failed to bind when checking for "
                         "migration.\n");
 
                     return false;
@@ -242,8 +251,8 @@ bool DatabaseMariaDB::Setup(bool rebuild,
 
                 if(!query.Execute() || !query.Next())
                 {
-                    LOG_ERROR("Failed to execute query when checking for "
-                        "migration.\n");
+                    LogDatabaseErrorMsg("Failed to execute query when checking "
+                        "for migration.\n");
 
                     return false;
                 }
@@ -252,9 +261,9 @@ bool DatabaseMariaDB::Setup(bool rebuild,
 
                 if(!query.GetValue("COUNT(`Migration`)", count))
                 {
-                    LOG_ERROR("Failed to get value from query when checking "
-                        "for migration.\n");
-                    LOG_DEBUG(GetLastError());
+                    LogDatabaseErrorMsg("Failed to get value from query when "
+                        "checking for migration.\n");
+                    LogDatabaseDebugMsg(GetLastError());
 
                     return false;
                 }
@@ -273,8 +282,8 @@ bool DatabaseMariaDB::Setup(bool rebuild,
                             !query.Bind("file", migration) ||
                             !query.Execute())
                         {
-                            LOG_ERROR("Failed to insert migration into "
-                                "database.\n");
+                            LogDatabaseErrorMsg("Failed to insert migration "
+                                "into database.\n");
 
                             return false;
                         }
@@ -288,7 +297,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
         }
         else
         {
-            LOG_ERROR("Migration directory does not exist!\n");
+            LogDatabaseErrorMsg("Migration directory does not exist!\n");
 
             return false;
         }
@@ -314,7 +323,7 @@ std::list<std::shared_ptr<PersistentObject>> DatabaseMariaDB::LoadObjects(
 
     if(nullptr == metaObject)
     {
-        LOG_ERROR("Failed to lookup MetaObject.\n");
+        LogDatabaseErrorMsg("Failed to lookup MetaObject.\n");
 
         return {};
     }
@@ -329,25 +338,46 @@ std::list<std::shared_ptr<PersistentObject>> DatabaseMariaDB::LoadObjects(
 
     if(!query.IsValid())
     {
-        LOG_ERROR(String("Failed to prepare SQL query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to prepare SQL query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return {};
     }
 
     if(nullptr != pValue && !pValue->Bind(query))
     {
-        LOG_ERROR(String("Failed to bind value: %1\n").Arg(
-            pValue->GetColumn()));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to bind value: %1\n")
+                .Arg(pValue->GetColumn());
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return {};
     }
 
     if(!query.Execute())
     {
-        LOG_ERROR(String("Failed to execute query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to execute query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return {};
     }
@@ -370,8 +400,11 @@ std::list<std::shared_ptr<PersistentObject>> DatabaseMariaDB::LoadObjects(
 
     if(failures > 0)
     {
-        LOG_ERROR(String("%1 '%2' row%3 failed to load.\n").Arg(failures).Arg(
-            metaObject->GetName()).Arg(failures != 1 ? "s" : ""));
+        LogDatabaseError([&]()
+        {
+            return String("%1 '%2' row%3 failed to load.\n").Arg(failures)
+                .Arg(metaObject->GetName()).Arg(failures != 1 ? "s" : "");
+        });
     }
 
     return objects;
@@ -416,16 +449,27 @@ bool DatabaseMariaDB::InsertSingleObject(std::shared_ptr<PersistentObject>& obj)
 
     if(!query.IsValid())
     {
-        LOG_ERROR(String("Failed to prepare SQL query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to prepare SQL query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
 
     if(!query.Bind("UID", obj->GetUUID()))
     {
-        LOG_ERROR("Failed to bind value: UID\n");
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseErrorMsg("Failed to bind value: UID\n");
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -434,9 +478,16 @@ bool DatabaseMariaDB::InsertSingleObject(std::shared_ptr<PersistentObject>& obj)
     {
         if(!value->Bind(query))
         {
-            LOG_ERROR(String("Failed to bind value: %1\n").Arg(
-                value->GetColumn()));
-            LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+            LogDatabaseError([&]()
+            {
+                return String("Failed to bind value: %1\n")
+                    .Arg(value->GetColumn());
+            });
+
+            LogDatabaseError([&]()
+            {
+                return String("Database said: %1\n").Arg(GetLastError());
+            });
 
             return false;
         }
@@ -446,8 +497,15 @@ bool DatabaseMariaDB::InsertSingleObject(std::shared_ptr<PersistentObject>& obj)
 
     if(!query.Execute())
     {
-        LOG_ERROR(String("Failed to execute query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to execute query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -492,16 +550,27 @@ bool DatabaseMariaDB::UpdateSingleObject(std::shared_ptr<PersistentObject>& obj)
 
     if(!query.IsValid())
     {
-        LOG_ERROR(String("Failed to prepare SQL query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to prepare SQL query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
 
     if(!query.Bind("UID", obj->GetUUID()))
     {
-        LOG_ERROR("Failed to bind value: UID\n");
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseErrorMsg("Failed to bind value: UID\n");
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -510,9 +579,16 @@ bool DatabaseMariaDB::UpdateSingleObject(std::shared_ptr<PersistentObject>& obj)
     {
         if(!value->Bind(query))
         {
-            LOG_ERROR(String("Failed to bind value: %1\n").Arg(
-                value->GetColumn()));
-            LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+            LogDatabaseError([&]()
+            {
+                return String("Failed to bind value: %1\n")
+                    .Arg(value->GetColumn());
+            });
+
+            LogDatabaseError([&]()
+            {
+                return String("Database said: %1\n").Arg(GetLastError());
+            });
 
             return false;
         }
@@ -522,8 +598,15 @@ bool DatabaseMariaDB::UpdateSingleObject(std::shared_ptr<PersistentObject>& obj)
 
     if(!query.Execute())
     {
-        LOG_ERROR(String("Failed to execute query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to execute query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -582,12 +665,15 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
     auto databaseName = std::dynamic_pointer_cast<objects::DatabaseConfigMariaDB>(
         mConfig)->GetDatabaseName();
 
-    LOG_DEBUG("Verifying database table structure.\n");
-    DatabaseQuery q = Prepare(libcomp::String("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE"
-        " FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '%1';").Arg(databaseName));
+    LogDatabaseDebugMsg("Verifying database table structure.\n");
+
+    DatabaseQuery q = Prepare(libcomp::String("SELECT TABLE_NAME, COLUMN_NAME, "
+        "DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '%1';")
+        .Arg(databaseName));
+
     if(!q.Execute())
     {
-        LOG_CRITICAL("Failed to query for existing columns\n");
+        LogDatabaseCriticalMsg("Failed to query for existing columns\n");
 
         return false;
     }
@@ -603,8 +689,11 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
         if(!q.GetValue("TABLE_NAME", name) || !q.GetValue("COLUMN_NAME", colName)
             || !q.GetValue("DATA_TYPE", colType))
         {
-            LOG_CRITICAL(String("Invalid query results returned from the COLUMNS table.\n")
-                .Arg(name));
+            LogDatabaseCritical([&]()
+            {
+                return String("Invalid query results returned from the COLUMNS "
+                    "table.\n").Arg(name);
+            });
 
             return false;
         }
@@ -616,7 +705,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
         " FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%1';").Arg(databaseName));
     if(!q.Execute())
     {
-        LOG_CRITICAL("Failed to query for existing indexes\n");
+        LogDatabaseCriticalMsg("Failed to query for existing indexes\n");
 
         return false;
     }
@@ -629,8 +718,11 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
         if(!q.GetValue("TABLE_NAME", name) || !q.GetValue("INDEX_NAME", idxName))
         {
-            LOG_CRITICAL(String("Invalid query results returned from the STATISTICS table.\n")
-                .Arg(name));
+            LogDatabaseCritical([&]()
+            {
+                return String("Invalid query results returned from the "
+                    "STATISTICS table.\n").Arg(name);
+            });
 
             return false;
         }
@@ -651,9 +743,12 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
             String type = GetVariableType(*iter);
             if(type.IsEmpty())
             {
-                LOG_ERROR(String(
-                    "Unsupported field type encountered: %1\n")
-                    .Arg((*iter)->GetCodeType()));
+                LogDatabaseError([&]()
+                {
+                    return String("Unsupported field type encountered: %1\n")
+                        .Arg((*iter)->GetCodeType());
+                });
+
                 return false;
             }
             vars.push_back(*iter);
@@ -712,19 +807,25 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
         {
             if(mConfig->GetAutoSchemaUpdate())
             {
-                LOG_DEBUG(String("Archiving table '%1'...\n")
-                    .Arg(metaObject.GetName()));
+                LogDatabaseDebug([&]()
+                {
+                    return String("Archiving table '%1'...\n")
+                        .Arg(metaObject.GetName());
+                });
 
-                LOG_DEBUG(String("Dropping table '%1'...\n")
-                    .Arg(metaObject.GetName()));
+                LogDatabaseDebug([&]()
+                {
+                    return String("Dropping table '%1'...\n")
+                        .Arg(metaObject.GetName());
+                });
 
                 if(Execute(String("DROP TABLE `%1`;").Arg(objName)))
                 {
-                    LOG_DEBUG("Re-creation complete\n");
+                    LogDatabaseDebugMsg("Re-creation complete\n");
                 }
                 else
                 {
-                    LOG_ERROR("Re-creation failed\n");
+                    LogDatabaseErrorMsg("Re-creation failed\n");
                     return false;
                 }
 
@@ -732,17 +833,24 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
             }
             else
             {
-                LOG_ERROR(String("The schema for '%1' does not match"
-                    " and cannot be used until it has been corrected!\n")
-                    .Arg(metaObject.GetName()));
+                LogDatabaseError([&]()
+                {
+                    return String("The schema for '%1' does not match and "
+                        "cannot be used until it has been corrected!\n")
+                        .Arg(metaObject.GetName());
+                });
+
                 return false;
             }
         }
 
         if(creating)
         {
-            LOG_DEBUG(String("Creating table '%1'...\n")
-                .Arg(metaObject.GetName()));
+            LogDatabaseDebug([&]()
+            {
+                return String("Creating table '%1'...\n")
+                    .Arg(metaObject.GetName());
+            });
 
             bool success = false;
 
@@ -762,18 +870,22 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
             if(success)
             {
-                LOG_DEBUG("Creation complete\n");
+                LogDatabaseDebugMsg("Creation complete\n");
             }
             else
             {
-                LOG_ERROR("Creation failed\n");
+                LogDatabaseErrorMsg("Creation failed\n");
+
                 return false;
             }
         }
         else if(updating)
         {
-            LOG_DEBUG(String("Updating table '%1'...\n")
-                .Arg(metaObject.GetName()));
+            LogDatabaseDebug([&]()
+            {
+                return String("Updating table '%1'...\n")
+                    .Arg(metaObject.GetName());
+            });
 
             auto objColumns = fieldMap[objNameLower];
 
@@ -800,13 +912,20 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
                     if(Execute(String("ALTER TABLE `%1` ADD `%2` %3;")
                         .Arg(objName).Arg(var->GetName()).Arg(type)))
                     {
-                        LOG_DEBUG(String("Created column '%1'\n")
-                            .Arg(var->GetName()));
+                        LogDatabaseDebug([&]()
+                        {
+                            return String("Created column '%1'\n")
+                                .Arg(var->GetName());
+                        });
                     }
                     else
                     {
-                        LOG_ERROR(String("Failed to create column '%1'\n")
-                            .Arg(var->GetName()));
+                        LogDatabaseError([&]()
+                        {
+                            return String("Failed to create column '%1'\n")
+                                .Arg(var->GetName());
+                        });
+
                         return false;
                     }
 
@@ -816,19 +935,29 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
                                     .Arg(col->GetColumn()));
                     if(!col->Bind(q))
                     {
-                        LOG_DEBUG(String("Failed to bind default value for column '%1'\n")
-                                .Arg(col->GetColumn()));
+                        LogDatabaseDebug([&]()
+                        {
+                            return String("Failed to bind default value for "
+                                "column '%1'\n").Arg(col->GetColumn());
+                        });
                     }
 
                     if(q.Execute())
                     {
-                        LOG_DEBUG(String("Applied default value to column '%1'\n")
-                            .Arg(col->GetColumn()));
+                        LogDatabaseDebug([&]()
+                        {
+                            return String("Applied default value to column "
+                                "'%1'\n").Arg(col->GetColumn());
+                        });
                     }
                     else
                     {
-                        LOG_ERROR(String("Failed to apply default value to column '%1'\n")
-                            .Arg(col->GetColumn()));
+                        LogDatabaseError([&]()
+                        {
+                            return String("Failed to apply default value to "
+                                "column '%1'\n").Arg(col->GetColumn());
+                        });
+
                         return false;
                     }
                 }
@@ -864,13 +993,20 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
                 if(Execute(cmd))
                 {
-                    LOG_DEBUG(String("Created '%1' column index.\n")
-                        .Arg(indexStr));
+                    LogDatabaseDebug([&]()
+                    {
+                        return String("Created '%1' column index.\n")
+                            .Arg(indexStr);
+                    });
                 }
                 else
                 {
-                    LOG_ERROR(String("Creation of '%1' column index failed.\n")
-                        .Arg(indexStr));
+                    LogDatabaseError([&]()
+                    {
+                        return String("Creation of '%1' column index failed.\n")
+                            .Arg(indexStr);
+                    });
+
                     return false;
                 }
             }
@@ -878,12 +1014,14 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
         if(!creating && !recreating && !updating && needsIndex.size() == 0)
         {
-            LOG_DEBUG(String("'%1': Verified\n")
-                .Arg(metaObject.GetName()));
+            LogDatabaseDebug([&]()
+            {
+                return String("'%1': Verified\n").Arg(metaObject.GetName());
+            });
         }
     }
 
-    LOG_DEBUG("Database verification complete.\n");
+    LogDatabaseDebugMsg("Database verification complete.\n");
 
     return true;
 }
@@ -899,14 +1037,17 @@ bool DatabaseMariaDB::ProcessStandardChangeSet(const std::shared_ptr<
 
     if(mysql_autocommit(connection, false))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_autocommit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_autocommit failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         return false;
     }
@@ -943,40 +1084,52 @@ bool DatabaseMariaDB::ProcessStandardChangeSet(const std::shared_ptr<
     {
         result = !mysql_commit(connection);
 
-        if(!result && mConfig->GetDatabaseDebug())
+        if(!result)
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_commit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
+            LogDatabaseDebug([&]()
+            {
+                return String("mysql_commit failed for connection: %1\n")
+                    .Arg(ConnectionString(connection));
+            });
+
+            LogDatabaseDebug([&]()
+            {
+                return String("Last SQL error: %1\n")
+                    .Arg(GetLastError(connection));
+            });
         }
     }
     else if(mysql_rollback(connection))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_rollback failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_rollback failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         // If this happens the server may need to be shut down
-        LOG_CRITICAL("Rollback failed!\n");
+        LogDatabaseCriticalMsg("Rollback failed!\n");
     }
 
     if(mysql_autocommit(connection, true))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_autocommit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_autocommit failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         return false;
     }
@@ -995,14 +1148,17 @@ bool DatabaseMariaDB::ProcessOperationalChangeSet(const std::shared_ptr<
 
     if(mysql_autocommit(connection, false))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_autocommit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_autocommit failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         return false;
     }
@@ -1040,40 +1196,52 @@ bool DatabaseMariaDB::ProcessOperationalChangeSet(const std::shared_ptr<
     {
         result = !mysql_commit(connection);
 
-        if(!result && mConfig->GetDatabaseDebug())
+        if(!result)
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_autocommit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
+            LogDatabaseDebug([&]()
+            {
+                return String("mysql_autocommit failed for connection: %1\n")
+                    .Arg(ConnectionString(connection));
+            });
+
+            LogDatabaseDebug([&]()
+            {
+                return String("Last SQL error: %1\n")
+                    .Arg(GetLastError(connection));
+            });
         }
     }
     else if(mysql_rollback(connection))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_rollback failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_rollback failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         // If this happens the server may need to be shut down
-        LOG_CRITICAL("Rollback failed!\n");
+        LogDatabaseCriticalMsg("Rollback failed!\n");
     }
 
     if(mysql_autocommit(connection, true))
     {
-        if(mConfig->GetDatabaseDebug())
+        LogDatabaseDebug([&]()
         {
-            LOG_DEBUG(libcomp::String(
-                "mysql_autocommit failed for connection: %1\n"
-                ).Arg(ConnectionString(connection)));
-            LOG_DEBUG(libcomp::String("Last SQL error: %1\n").Arg(
-                GetLastError(connection)));
-        }
+            return String("mysql_autocommit failed for connection: %1\n")
+                .Arg(ConnectionString(connection));
+        });
+
+        LogDatabaseDebug([&]()
+        {
+            return String("Last SQL error: %1\n")
+                .Arg(GetLastError(connection));
+        });
 
         return false;
     }
@@ -1140,8 +1308,15 @@ bool DatabaseMariaDB::ProcessExplicitUpdate(const std::shared_ptr<
 
     if(!query.IsValid())
     {
-        LOG_ERROR(String("Failed to prepare SQL query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to prepare SQL query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -1151,9 +1326,15 @@ bool DatabaseMariaDB::ProcessExplicitUpdate(const std::shared_ptr<
     {
         if(!cPair.second->Bind(query, idx++))
         {
-            LOG_ERROR(String("Failed to bind value: %1\n").Arg(
-                cPair.first));
-            LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+            LogDatabaseError([&]()
+            {
+                return String("Failed to bind value: %1\n").Arg(cPair.first);
+            });
+
+            LogDatabaseError([&]()
+            {
+                return String("Database said: %1\n").Arg(GetLastError());
+            });
 
             return false;
         }
@@ -1161,8 +1342,12 @@ bool DatabaseMariaDB::ProcessExplicitUpdate(const std::shared_ptr<
 
     if(!query.Bind(idx++, obj->GetUUID()))
     {
-        LOG_ERROR("Failed to bind value: UID\n");
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseErrorMsg("Failed to bind value: UID\n");
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -1171,9 +1356,16 @@ bool DatabaseMariaDB::ProcessExplicitUpdate(const std::shared_ptr<
     {
         if(!expectedVals[cPair.first]->Bind(query, idx++))
         {
-            LOG_ERROR(String("Failed to bind where clause for value: %1\n").Arg(
-                cPair.first));
-            LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+            LogDatabaseError([&]()
+            {
+                return String("Failed to bind where clause for value: %1\n")
+                    .Arg(cPair.first);
+            });
+
+            LogDatabaseError([&]()
+            {
+                return String("Database said: %1\n").Arg(GetLastError());
+            });
 
             return false;
         }
@@ -1181,8 +1373,15 @@ bool DatabaseMariaDB::ProcessExplicitUpdate(const std::shared_ptr<
 
     if(!query.Execute())
     {
-        LOG_ERROR(String("Failed to execute query: %1\n").Arg(sql));
-        LOG_ERROR(String("Database said: %1\n").Arg(GetLastError()));
+        LogDatabaseError([&]()
+        {
+            return String("Failed to execute query: %1\n").Arg(sql);
+        });
+
+        LogDatabaseError([&]()
+        {
+            return String("Database said: %1\n").Arg(GetLastError());
+        });
 
         return false;
     }
@@ -1197,10 +1396,7 @@ bool DatabaseMariaDB::ConnectToDatabase(MYSQL*& connection, const libcomp::Strin
     connection = mysql_init(NULL);
     if(connection == NULL)
     {
-        if(mConfig->GetDatabaseDebug())
-        {
-            LOG_DEBUG(libcomp::String("mysql_init failed\n"));
-        }
+        LogDatabaseErrorMsg("mysql_init failed\n");
 
         return false;
     }
@@ -1220,7 +1416,7 @@ bool DatabaseMariaDB::ConnectToDatabase(MYSQL*& connection, const libcomp::Strin
         0);
     if(connection == NULL)
     {
-        LOG_ERROR("Failed to open database connection\n");
+        LogDatabaseErrorMsg("Failed to open database connection\n");
 
         Close(connection);
 
@@ -1230,7 +1426,8 @@ bool DatabaseMariaDB::ConnectToDatabase(MYSQL*& connection, const libcomp::Strin
     // Set the encoding of the connection.
     if(mysql_set_character_set(connection, "utf8mb4"))
     {
-        LOG_ERROR("Failed to set character set for database connection\n");
+        LogDatabaseErrorMsg(
+            "Failed to set character set for database connection\n");
 
         Close(connection);
 
@@ -1241,18 +1438,19 @@ bool DatabaseMariaDB::ConnectToDatabase(MYSQL*& connection, const libcomp::Strin
     bool reconnect = 1;
     if(mysql_options(connection, MYSQL_OPT_RECONNECT, &reconnect))
     {
-        LOG_ERROR("Failed to set MYSQL_OPT_RECONNECT on the database.\n");
+        LogDatabaseErrorMsg(
+            "Failed to set MYSQL_OPT_RECONNECT on the database.\n");
 
         Close(connection);
 
         return false;
     }
 
-    if(mConfig->GetDatabaseDebug())
+    LogDatabaseDebug([&]()
     {
-        LOG_DEBUG(libcomp::String("New database connection opened: %1\n"
-            ).Arg(ConnectionString(connection)));
-    }
+        return String("New database connection opened: %1\n")
+            .Arg(ConnectionString(connection));
+    });
 
     return true;
 }

@@ -36,9 +36,6 @@
 
 using namespace libcomp;
 
-// I don't care to see these anymore.
-#undef COMP_HACK_DEBUG
-
 TcpConnection::TcpConnection(asio::io_service& io_service) :
     mSocket(io_service), mDiffieHellman(nullptr), mStatus(
     TcpConnection::STATUS_NOT_CONNECTED), mRole(TcpConnection::ROLE_CLIENT),
@@ -65,8 +62,10 @@ TcpConnection::TcpConnection(asio::ip::tcp::socket& socket,
 
 TcpConnection::~TcpConnection()
 {
-    LOG_DEBUG(libcomp::String(String("Deleting connection '%1'\n").Arg(
-        GetName())));
+    LogConnectionDebug([&]()
+    {
+        return String("Deleting connection '%1'\n").Arg(GetName());
+    });
 }
 
 bool TcpConnection::Connect(const String& host, uint16_t port, bool async)
@@ -97,8 +96,10 @@ bool TcpConnection::Close()
 {
     if(mStatus != STATUS_NOT_CONNECTED)
     {
-        LOG_DEBUG(libcomp::String(String("Closing connection '%1'\n").Arg(
-            GetName())));
+        LogConnectionDebug([&]()
+        {
+            return String("Closing connection '%1'\n").Arg(GetName());
+        });
 
         mStatus = STATUS_NOT_CONNECTED;
         mSocket.close();
@@ -183,13 +184,14 @@ bool TcpConnection::RequestPacket(size_t size)
     // Make sure the buffer is there.
     mReceivedPacket.Allocate();
 
-#ifdef COMP_HACK_DEBUG
     if(0 < mReceivedPacket.Size())
     {
-        LOG_DEBUG(String("TcpConnection::RequestPacket() called when there is "
-            "still %1 bytes in the buffer.\n").Arg(mReceivedPacket.Size()));
+        LogConnectionDebug([&]()
+        {
+            return String("TcpConnection::RequestPacket() called when there is "
+                "still %1 bytes in the buffer.\n").Arg(mReceivedPacket.Size());
+        });
     }
-#endif // COMP_HACK_DEBUG
 
     // Get direct access to the buffer.
     char *pDestination = mReceivedPacket.Data();
@@ -209,10 +211,11 @@ bool TcpConnection::RequestPacket(size_t size)
             {
                 if(errorCode)
                 {
-#ifdef COMP_HACK_DEBUG
-                    // LOG_ERROR(String("ASIO Error: %1\n").Arg(
-                    //     errorCode.message()));
-#endif // COMP_HACK_DEBUG
+                    LogConnectionDebug([&]()
+                    {
+                        return String("ASIO Error: %1\n")
+                            .Arg(errorCode.message());
+                    });
 
                     self->SocketError();
                 }
@@ -228,14 +231,15 @@ bool TcpConnection::RequestPacket(size_t size)
                     // packet either by calling std::move() or packet.Clear().
                     self->PacketReceived(self->mReceivedPacket);
 
-#ifdef COMP_HACK_DEBUG
                     if(0 < self->mReceivedPacket.Size())
                     {
-                        LOG_DEBUG(String("TcpConnection::PacketReceived() "
-                            "was called and it left %1 bytes in the buffer.\n"
-                            ).Arg(self->mReceivedPacket.Size()));
+                        LogConnectionDebug([&]()
+                        {
+                            return String("TcpConnection::PacketReceived() was "
+                                "called and it left %1 bytes in the buffer.\n"
+                                ).Arg(self->mReceivedPacket.Size());
+                        });
                     }
-#endif // COMP_HACK_DEBUG
                 }
             });
 
@@ -350,9 +354,7 @@ void TcpConnection::FlushOutgoingInside(bool closeConnection)
         // Ignore errors and everything else, just close the connection.
         if(closeConnection && self->mOutgoing.Left() == length)
         {
-#ifdef COMP_HACK_DEBUG
-            LOG_DEBUG("Closing connection after sending packet.\n");
-#endif // COMP_HACK_DEBUG
+            LogConnectionDebugMsg("Closing connection after sending packet.\n");
 
             std::lock_guard<std::mutex> outgoingGuard(
                 self->mOutgoingMutex);
@@ -423,8 +425,11 @@ void TcpConnection::SocketError(const String& errorMessage)
 {
     if(!errorMessage.IsEmpty())
     {
-        LOG_ERROR(String("Socket error for client '%1' from %2:  %3\n").Arg(
-            GetName()).Arg(GetRemoteAddress()).Arg(errorMessage));
+        LogConnectionError([&]()
+        {
+            return String("Socket error for client '%1' from %2:  %3\n")
+                .Arg(GetName()).Arg(GetRemoteAddress()).Arg(errorMessage);
+        });
     }
 
     Close();
@@ -436,8 +441,11 @@ void TcpConnection::ConnectionFailed()
 
 void TcpConnection::ConnectionSuccess()
 {
-    LOG_DEBUG(libcomp::String(String("Connection '%1' is now connected "
-        "to remote\n").Arg(GetName())));
+    LogConnectionDebug([&]()
+    {
+        return String(String("Connection '%1' is now connected to remote\n")
+            .Arg(GetName()));
+    });
 }
 
 void TcpConnection::PacketSent(ReadOnlyPacket& packet)
@@ -507,7 +515,7 @@ void TcpConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
     // There should only be one!
     if(packets.size() != 1)
     {
-        LOG_CRITICAL("Critical packet error.\n");
+        LogConnectionCriticalMsg("Critical packet error.\n");
     }
 
     ReadOnlyPacket finalPacket(packets.front());

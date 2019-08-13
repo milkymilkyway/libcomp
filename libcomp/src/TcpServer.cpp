@@ -60,7 +60,7 @@ int TcpServer::Start(bool delayReady)
     // Check for a DH key pair.
     if(nullptr == mDiffieHellman)
     {
-        LOG_WARNING("Generating a DH key pair. "
+        LogCryptoWarningMsg("Generating a DH key pair. "
             "This could take several minutes.\n");
 
         // Generate it since we don't have one yet.
@@ -69,15 +69,16 @@ int TcpServer::Start(bool delayReady)
         // Check if the key was made.
         if(nullptr == mDiffieHellman)
         {
-            LOG_CRITICAL("Failed to generate Diffie-Hellman prime!\n");
+            LogCryptoCriticalMsg("Failed to generate Diffie-Hellman prime!\n");
         }
         else
         {
-            LOG_WARNING(String("Please add the following to your "
-                "configuration XML: <prime>%1</prime>\n").Arg(
-                    TcpConnection::GetDiffieHellmanPrime(mDiffieHellman)
-                )
-            );
+            LogCryptoWarning([&]()
+            {
+                return String("Please add the following to your "
+                    "configuration XML: <prime>%1</prime>\n")
+                    .Arg(TcpConnection::GetDiffieHellmanPrime(mDiffieHellman));
+            });
         }
     }
 
@@ -146,7 +147,7 @@ int TcpServer::Run()
 
 void TcpServer::ServerReady()
 {
-    LOG_INFO("Server ready!\n");
+    LogGeneralInfoMsg("Server ready!\n");
 
 #ifdef HAVE_SYSTEMD
     sd_notify(0, "READY=1");
@@ -172,20 +173,28 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
 {
     if(errorCode)
     {
-        LOG_ERROR(String("async_accept error: %1\n").Arg(errorCode.message()));
+        LogConnectionError([&]()
+        {
+            return String("async_accept error: %1\n").Arg(errorCode.message());
+        });
     }
     else
     {
         // Make sure the DH key pair is valid.
         if(nullptr != mDiffieHellman)
         {
-            LOG_DEBUG(String("New connection from %1\n").Arg(
-                socket.remote_endpoint().address().to_string()));
+            LogConnectionDebug([&]()
+            {
+                return String("New connection from %1\n")
+                    .Arg(socket.remote_endpoint().address().to_string());
+            });
 
             auto connection = CreateConnection(socket);
             if(nullptr == connection)
             {
-                LOG_CRITICAL("The connection could not be created\n");
+                LogConnectionCriticalMsg(
+                    "The connection could not be created\n");
+
                 return;
             }
 
@@ -208,7 +217,8 @@ void TcpServer::AcceptHandler(asio::error_code errorCode,
         }
         else
         {
-            LOG_CRITICAL("Somehow you got this far without a DH key pair!\n");
+            LogCryptoCriticalMsg(
+                "Somehow you got this far without a DH key pair!\n");
         }
     }
 }

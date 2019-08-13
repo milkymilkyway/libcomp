@@ -25,6 +25,7 @@
  */
 
 #include "Log.h"
+#include "EnumUtils.h"
 
 #include <iostream>
 #include <cassert>
@@ -46,6 +47,117 @@
 #include <zlib.h>
 
 using namespace libcomp;
+
+namespace
+{
+
+/**
+ * @internal
+ * Message to stop the log thread.
+ */
+class LogStop : public LogMessage
+{
+public:
+    /**
+     * Construct the message.
+     */
+    LogStop() : LogMessage(LogComponent_t::General,
+        Log::Level_t::LOG_LEVEL_CRITICAL)
+    {
+    }
+
+    /**
+     * Free the message.
+     */
+    ~LogStop() override
+    {
+    }
+
+    /**
+     * Override this to provide the log message.
+     * @returns Log message
+     */
+    String GetMsg() const override
+    {
+        return {};
+    }
+
+    /**
+     * Override this to tell the log thread to stop.
+     * @returns If the log thread should stop.
+     */
+    bool ShouldStop() const override
+    {
+        return true;
+    }
+};
+
+} // namespace
+
+/// Mapping of log components to their string names
+static EnumMap<LogComponent_t, String> gLogComponentMapping = {
+    {LogComponent_t::AccountManager, "AccountManager"},
+    {LogComponent_t::ActionManager, "ActionManager"},
+    {LogComponent_t::AIManager, "AIManager"},
+    {LogComponent_t::Barter, "Barter"},
+    {LogComponent_t::Bazaar, "Bazaar"},
+    {LogComponent_t::CharacterManager, "CharacterManager"},
+    {LogComponent_t::ChatManager, "ChatManager"},
+    {LogComponent_t::Clan, "Clan"},
+    {LogComponent_t::Connection, "Connection"},
+    {LogComponent_t::Crypto, "Crypto"},
+    {LogComponent_t::Database, "Database"},
+    {LogComponent_t::DataStore, "DataStore"},
+    {LogComponent_t::DataSyncManager, "DataSyncManager"},
+    {LogComponent_t::DefinitionManager, "DefinitionManager"},
+    {LogComponent_t::Demon, "Demon"},
+    {LogComponent_t::EventManager, "EventManager"},
+    {LogComponent_t::Friend, "Friend"},
+    {LogComponent_t::FusionManager, "FusionManager"},
+    {LogComponent_t::General, "General"},
+    {LogComponent_t::Item, "Item"},
+    {LogComponent_t::MatchManager, "MatchManager"},
+    {LogComponent_t::Party, "Party"},
+    {LogComponent_t::ScriptEngine, "ScriptEngine"},
+    {LogComponent_t::Server, "Server"},
+    {LogComponent_t::ServerConstants, "ServerConstants"},
+    {LogComponent_t::ServerDataManager, "ServerDataManager"},
+    {LogComponent_t::SkillManager, "SkillManager"},
+    {LogComponent_t::TokuseiManager, "TokuseiManager"},
+    {LogComponent_t::Trade, "Trade"},
+    {LogComponent_t::WebAPI, "WebAPI"},
+    {LogComponent_t::ZoneManager, "ZoneManager"},
+};
+
+LogComponent_t libcomp::StringToLogComponent(const String& comp)
+{
+    for(auto pair : gLogComponentMapping)
+    {
+        if(pair.second == comp)
+        {
+            return pair.first;
+        }
+    }
+
+    return LogComponent_t::Invalid;
+}
+
+String libcomp::LogComponentToString(LogComponent_t comp)
+{
+    if(LogComponent_t::General == comp)
+    {
+        return {};
+    }
+
+    auto match = gLogComponentMapping.find(comp);
+
+    if(gLogComponentMapping.end() != match)
+    {
+        return match->second;
+    }
+
+    return "Unknown";
+}
 
 /**
  * @internal
@@ -72,9 +184,12 @@ static Log *gLogInst = nullptr;
  * @param pUserData User defined data that was passed with the hook to
  * @ref Log::AddLogHook.
  */
-static void LogToStandardOutput(Log::Level_t level,
+static void LogToStandardOutput(LogComponent_t comp, Log::Level_t level,
     const String& msg, void *pUserData)
 {
+    // This was handled for us before the hook was called.
+    (void)comp;
+
     // Console colors for each log level.
 #ifdef _WIN32
     static const WORD gLogColors[Log::LOG_LEVEL_COUNT] = {
@@ -168,6 +283,8 @@ static void LogToStandardOutput(Log::Level_t level,
 
 Log::Log() : mLogFile(nullptr), mLastLog(-1337)
 {
+    mComponentLogLevels[LogComponent_t::General] = Level_t::LOG_LEVEL_INFO;
+
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 
@@ -186,38 +303,29 @@ Log::Log() : mLogFile(nullptr), mLastLog(-1337)
         FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 #endif // _WIN32
 
-    // Default all log levels to enabled.
-    for(int i = 0; i < LOG_LEVEL_COUNT; ++i)
-    {
-        mLogEnables[i] = true;
-    }
-
     mLogFileTimestampEnabled = false;
     mLogRotationEnabled = false;
     mLogCompression = true;
     mLogRotationCount = 3;
     mLogRotationDays = 1;
+
+    mThread = std::thread([&]()
+    {
+#if !defined(_WIN32)
+        pthread_setname_np(pthread_self(), "log");
+#endif // !defined(_WIN32)
+
+        MessageLoop();
+    });
 }
 
 Log::~Log()
 {
-    // Lock the muxtex.
-    std::lock_guard<std::mutex> lock(mLock);
+    // Issue a stop message.
+    LogMessage(new LogStop);
 
-#ifdef _WIN32
-    (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
-        mConsoleAttributes);
-#else
-    // Clear the last line before the server exits.
-    std::cout << "\e[0K\e[0m";
-#endif // _WIN32
-
-    // Close the log file.
-    delete mLogFile;
-    mLogFile = nullptr;
-
-    // Remove the singleton pointer.
-    gLogInst = nullptr;
+    // Wait for the thread to exit.
+    mThread.join();
 }
 
 Log* Log::GetSingletonPtr()
@@ -234,32 +342,44 @@ Log* Log::GetSingletonPtr()
     return gLogInst;
 }
 
-void Log::LogMessage(Log::Level_t level, const String& msg)
+void Log::LogMessage(libcomp::LogMessage *pMessage)
+{
+    mMessages.Enqueue(pMessage);
+}
+
+void Log::LogMessage(const std::chrono::time_point<
+    std::chrono::system_clock>& now, LogComponent_t comp,
+    Log::Level_t level, const String& msg)
 {
     // Prepend these to messages.
     static const String gLogMessages[Log::LOG_LEVEL_COUNT] = {
-        "DEBUG: %1",
-        "%1",
-        "WARNING: %1",
-        "ERROR: %1",
-        "CRITICAL: %1",
+        "DEBUG: %1%2",
+        "%1%2",
+        "WARNING: %1%2",
+        "ERROR: %1%2",
+        "CRITICAL: %1%2",
     };
 
     // Log a critical error message. If the configuration option is true, log
     // the message to the log file. Regardless, pass the message to all the
     // log hooks for processing. Critical messages have the text "CRITICAL: "
     // appended to them.
-    if(0 > level || LOG_LEVEL_COUNT <= level || !mLogEnables[level])
+    if(!ShouldLog(comp, level))
+    {
         return;
+    }
 
-    String final = String(gLogMessages[level]).Arg(msg);
+    String compStr = LogComponentToString(comp);
 
-    // Lock the muxtex.
-    std::lock_guard<std::mutex> lock(mLock);
+    if(!compStr.IsEmpty())
+    {
+        compStr += ": ";
+    }
+
+    String final = String(gLogMessages[level]).Arg(compStr).Arg(msg);
 
     if(nullptr != mLogFile)
     {
-        auto now = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast< std::chrono::duration<
             int64_t, std::ratio<86400>> >( now.time_since_epoch() ).count();
 
@@ -291,13 +411,13 @@ void Log::LogMessage(Log::Level_t level, const String& msg)
     // Call all hooks.
     for(auto i : mHooks)
     {
-        (*i.first)(level, final, i.second);
+        (*i.first)(comp, level, final, i.second);
     }
 
     // Call all lambda hooks.
     for(auto func : mLambdaHooks)
     {
-        func(level, final);
+        func(comp, level, final);
     }
 }
 
@@ -311,9 +431,6 @@ void Log::SetLogPath(const String& path, bool truncate)
     bool loaded = true;
 
     {
-        // Lock the muxtex.
-        std::lock_guard<std::mutex> lock(mLock);
-
         // Set the log path.
         mLogPath = path;
 
@@ -355,9 +472,9 @@ void Log::SetLogPath(const String& path, bool truncate)
 
     if(!loaded)
     {
-        LOG_CRITICAL("Failed to open the log file for writing.\n");
-        LOG_CRITICAL("The application will now close.\n");
-        LOG_INFO("Bye!\n");
+        LogGeneralCriticalMsg("Failed to open the log file for writing.\n");
+        LogGeneralCriticalMsg("The application will now close.\n");
+        LogGeneralInfoMsg("Bye!\n");
 
         exit(EXIT_FAILURE);
     }
@@ -365,15 +482,12 @@ void Log::SetLogPath(const String& path, bool truncate)
 
 void Log::AddLogHook(Log::Hook_t func, void *data)
 {
-    // Lock the muxtex.
-    std::lock_guard<std::mutex> lock(mLock);
-
     // Add the specified log hook.
     mHooks[func] = data;
 }
 
-void Log::AddLogHook(const std::function<void(Level_t level,
-    const String& msg)>& func)
+void Log::AddLogHook(const std::function<void(LogComponent_t comp,
+    Level_t level, const String& msg)>& func)
 {
     mLambdaHooks.push_back(func);
 }
@@ -386,39 +500,30 @@ void Log::AddStandardOutputHook()
 
 void Log::ClearHooks()
 {
-    // Lock the muxtex.
-    std::lock_guard<std::mutex> lock(mLock);
-
     // Remove all hooks.
     mHooks.clear();
     mLambdaHooks.clear();
 }
 
-bool Log::GetLogLevelEnabled(Level_t level) const
+Log::Level_t Log::GetLogLevel(LogComponent_t comp) const
 {
-    // Sanity check.
-    if(0 > level || LOG_LEVEL_COUNT <= level)
-    {
-        return false;
-    }
+    auto match = mComponentLogLevels.find(comp);
 
-    // Get if the level is enabled.
-    return mLogEnables[level];
+    if(mComponentLogLevels.end() != match)
+    {
+        return match->second;
+    }
+    else
+    {
+        // Log at least warning, error and critical by default.
+        return Level_t::LOG_LEVEL_WARNING;
+    }
 }
 
-void Log::SetLogLevelEnabled(Level_t level, bool enabled)
+void Log::SetLogLevel(LogComponent_t comp, Level_t level)
 {
-    // Sanity check.
-    if(0 > level || LOG_LEVEL_COUNT <= level)
-    {
-        return;
-    }
-
-    // Lock the mutex.
-    std::lock_guard<std::mutex> lock(mLock);
-
     // Set if the level is enabled.
-    mLogEnables[level] = enabled;
+    mComponentLogLevels[comp] = level;
 }
 
 bool Log::GetLogFileTimestampsEnabled() const
@@ -594,4 +699,64 @@ bool Log::FileDelete(const libcomp::String& file)
 #else
     return 0 == unlink(file.C());
 #endif
+}
+
+bool Log::ShouldLog(LogComponent_t comp, Level_t level) const
+{
+    auto match = mComponentLogLevels.find(comp);
+
+    Level_t targetLevel;
+
+    if(mComponentLogLevels.end() != match)
+    {
+        targetLevel = match->second;
+    }
+    else
+    {
+        // Log at least warning, error and critical by default.
+        targetLevel = Level_t::LOG_LEVEL_WARNING;
+    }
+
+    return to_underlying(level) >= to_underlying(targetLevel);
+}
+
+void Log::MessageLoop()
+{
+    bool running = true;
+
+    while(running)
+    {
+        std::list<libcomp::LogMessage*> messages;
+        mMessages.DequeueAll(messages);
+
+        for(auto pMessage : messages)
+        {
+            if(pMessage->ShouldStop())
+            {
+                running = false;
+            }
+            else
+            {
+                LogMessage(pMessage->GetTimestamp(), pMessage->GetComponent(),
+                    pMessage->GetLevel(), pMessage->GetMsg());
+            }
+
+            delete pMessage;
+        }
+    }
+
+#ifdef _WIN32
+    (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
+        mConsoleAttributes);
+#else
+    // Clear the last line before the server exits.
+    std::cout << "\e[0K\e[0m";
+#endif // _WIN32
+
+    // Close the log file.
+    delete mLogFile;
+    mLogFile = nullptr;
+
+    // Remove the singleton pointer.
+    gLogInst = nullptr;
 }

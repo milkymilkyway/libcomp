@@ -89,8 +89,11 @@ void EncryptedConnection::SocketError(const libcomp::String& errorMessage)
 {
     if(STATUS_NOT_CONNECTED != GetStatus())
     {
-        LOG_DEBUG(libcomp::String("%1 disconnect: %2\n").Arg(
-            ROLE_CLIENT == GetRole() ? "Server" : "Client").Arg(GetRemoteAddress()));
+        LogConnectionDebug([&]()
+        {
+            return String("%1 disconnect: %2\n").Arg(ROLE_CLIENT == GetRole() ?
+                "Server" : "Client").Arg(GetRemoteAddress());
+        });
     }
 
     TcpConnection::SocketError(errorMessage);
@@ -100,8 +103,11 @@ void EncryptedConnection::SocketError(const libcomp::String& errorMessage)
 
 void EncryptedConnection::ConnectionSuccess()
 {
-    LOG_DEBUG(libcomp::String("%1 connection: %2\n").Arg(
-        ROLE_CLIENT == GetRole() ? "Server" : "Client").Arg(GetRemoteAddress()));
+    LogConnectionDebug([&]()
+    {
+        return String("%1 connection: %2\n").Arg(ROLE_CLIENT == GetRole() ?
+            "Server" : "Client").Arg(GetRemoteAddress());
+    });
 
     if(ROLE_CLIENT == GetRole())
     {
@@ -136,7 +142,7 @@ void EncryptedConnection::ConnectionSuccess()
 
 void EncryptedConnection::ConnectionEncrypted()
 {
-    LOG_DEBUG("Connection encrypted!\n");
+    LogConnectionDebugMsg("Connection encrypted!\n");
 
     // Check if a capture file should be created.
     if(nullptr != mServerConfig.get())
@@ -166,8 +172,11 @@ void EncryptedConnection::ConnectionEncrypted()
                 delete mCaptureFile;
                 mCaptureFile = nullptr;
 
-                LOG_CRITICAL(libcomp::String("Failed to open capture "
-                    "file: %1\n").Arg(captureFilePath));
+                LogConnectionCritical([&]()
+                {
+                    return String("Failed to open capture file: %1\n")
+                        .Arg(captureFilePath);
+                });
             }
             else
             {
@@ -193,15 +202,21 @@ void EncryptedConnection::ConnectionEncrypted()
 
                 if(!mCaptureFile->good())
                 {
-                    LOG_CRITICAL(libcomp::String("Failed to write capture "
-                        "file: %1\n").Arg(captureFilePath));
+                    LogConnectionCritical([&]()
+                    {
+                        return String("Failed to write capture file: %1\n")
+                            .Arg(captureFilePath);
+                    });
 
                     delete mCaptureFile;
                     mCaptureFile = nullptr;
                 }
 
-                LOG_DEBUG(libcomp::String("Started capture: %1\n").Arg(
-                    captureFilePath));
+                LogConnectionDebug([&]()
+                {
+                    return String("Started capture: %1\n")
+                        .Arg(captureFilePath);
+                });
             }
         }
     }
@@ -618,7 +633,7 @@ void EncryptedConnection::ParsePacket(libcomp::Packet& packet,
 
         if(!mCaptureFile->good())
         {
-            LOG_CRITICAL("Failed to write capture file.\n");
+            LogConnectionCriticalMsg("Failed to write capture file.\n");
 
             delete mCaptureFile;
             mCaptureFile = nullptr;
@@ -808,7 +823,7 @@ void EncryptedConnection::PreparePackets(std::list<ReadOnlyPacket>& packets)
         // There should only be one!
         if(packets.size() != 1)
         {
-            LOG_CRITICAL("Critical packet error.\n");
+            LogConnectionCriticalMsg("Critical packet error.\n");
         }
 
         ReadOnlyPacket finalPacket(packets.front());
