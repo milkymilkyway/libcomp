@@ -450,7 +450,7 @@ private:
             objNode = objNode->NextSiblingElement("object");
         }
 
-        LogServerDataManagerWarning([&]()
+        LogServerDataManagerInfo([&]()
         {
             return String("Loaded XML file: %1\n").Arg(filePath);
         });

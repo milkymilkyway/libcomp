@@ -1097,7 +1097,7 @@ namespace libcomp
 
             if(mDisassemblyLookup.find(itemID) != mDisassemblyLookup.end())
             {
-                LogDefinitionManagerError([&]()
+                LogDefinitionManagerWarning([&]()
                 {
                     return libcomp::String("Duplicate item encountered"
                         " for disassembly mapping: %1\n").Arg(itemID);
@@ -1201,7 +1201,7 @@ namespace libcomp
             {
                 if(mEnchantDemonLookup.find(demonID) != mEnchantDemonLookup.end())
                 {
-                    LogDefinitionManagerError([&]()
+                    LogDefinitionManagerWarning([&]()
                     {
                         return libcomp::String("Duplicate demon encountered"
                             " for crystallization mapping: %1\n").Arg(demonID);
@@ -1215,7 +1215,7 @@ namespace libcomp
 
             if(mEnchantItemLookup.find(itemID) != mEnchantItemLookup.end())
             {
-                LogDefinitionManagerError([&]()
+                LogDefinitionManagerWarning([&]()
                 {
                     return libcomp::String("Duplicate item encountered"
                         " for crystallization mapping: %1\n").Arg(itemID);
@@ -1455,7 +1455,7 @@ namespace libcomp
 
             if(mModificationLookup.find(itemID) != mModificationLookup.end())
             {
-                LogDefinitionManagerError([&]()
+                LogDefinitionManagerWarning([&]()
                 {
                     return libcomp::String("Duplicate item encountered"
                         " for modification mapping: %1\n").Arg(itemID);
@@ -1508,7 +1508,7 @@ namespace libcomp
             if(mModificationExtRecipeLookup.find(itemID) !=
                 mModificationExtRecipeLookup.end())
             {
-                LogDefinitionManagerError([&]()
+                LogDefinitionManagerWarning([&]()
                 {
                     return libcomp::String("Duplicate item encountered"
                         " for modification extra mapping: %1\n").Arg(itemID);

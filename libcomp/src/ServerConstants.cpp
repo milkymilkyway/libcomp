@@ -1320,6 +1320,32 @@ bool ServerConstants::Initialize(const String& filePath)
     }
 
     //
+    // API Admin Levels
+    //
+    success &= LoadInteger(constants["API_ADMIN_LVL_CREATE_PROMO"],
+        sConstants.API_ADMIN_LVL_CREATE_PROMO);
+    success &= LoadInteger(constants["API_ADMIN_LVL_DELETE_ACCOUNT"],
+        sConstants.API_ADMIN_LVL_DELETE_ACCOUNT);
+    success &= LoadInteger(constants["API_ADMIN_LVL_DELETE_PROMO"],
+        sConstants.API_ADMIN_LVL_DELETE_PROMO);
+    success &= LoadInteger(constants["API_ADMIN_LVL_GET_ACCOUNT"],
+        sConstants.API_ADMIN_LVL_GET_ACCOUNT);
+    success &= LoadInteger(constants["API_ADMIN_LVL_GET_ACCOUNTS"],
+        sConstants.API_ADMIN_LVL_GET_ACCOUNTS);
+    success &= LoadInteger(constants["API_ADMIN_LVL_GET_PROMOS"],
+        sConstants.API_ADMIN_LVL_GET_PROMOS);
+    success &= LoadInteger(constants["API_ADMIN_LVL_KICK_PLAYER"],
+        sConstants.API_ADMIN_LVL_KICK_PLAYER);
+    success &= LoadInteger(constants["API_ADMIN_LVL_MESSAGE_WORLD"],
+        sConstants.API_ADMIN_LVL_MESSAGE_WORLD);
+    success &= LoadInteger(constants["API_ADMIN_LVL_ONLINE"],
+        sConstants.API_ADMIN_LVL_ONLINE);
+    success &= LoadInteger(constants["API_ADMIN_LVL_POST_ITEMS"],
+        sConstants.API_ADMIN_LVL_POST_ITEMS);
+    success &= LoadInteger(constants["API_ADMIN_LVL_UPDATE_ACCOUNT"],
+        sConstants.API_ADMIN_LVL_UPDATE_ACCOUNT);
+
+    //
     // GM Command Levels
     //
     success &= LoadInteger(constants["GM_CMD_LVL_ADD_CP"],

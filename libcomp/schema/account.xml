@@ -10,6 +10,7 @@
         <member type="u8" name="TicketCount"/>
         <member type="s32" name="UserLevel"/>
         <member type="bool" name="Enabled" default="true"/>
+        <member type="bool" name="APIOnly"/>
         <member type="u32" name="LastLogin"/>
 
         <member type="array" name="Characters" size="20">

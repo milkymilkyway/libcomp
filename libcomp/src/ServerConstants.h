@@ -540,6 +540,33 @@ struct Data
     std::set<uint32_t> VA_ADD_ITEMS;
 
     //
+    // API Admin Levels
+    //
+
+    /// Required user level for creating a new promo via the API.
+    uint32_t API_ADMIN_LVL_CREATE_PROMO;
+    /// Required user level for deleting an account via the API.
+    uint32_t API_ADMIN_LVL_DELETE_ACCOUNT;
+    /// Required user level for deleting a promo via the API.
+    uint32_t API_ADMIN_LVL_DELETE_PROMO;
+    /// Required user level for getting account details via the API.
+    uint32_t API_ADMIN_LVL_GET_ACCOUNT;
+    /// Required user level for getting a list of all accounts via the API.
+    uint32_t API_ADMIN_LVL_GET_ACCOUNTS;
+    /// Required user level for getting active promos via the API.
+    uint32_t API_ADMIN_LVL_GET_PROMOS;
+    /// Required user level for kicking an online player via the API.
+    uint32_t API_ADMIN_LVL_KICK_PLAYER;
+    /// Required user level for messaging all players on a world via the API.
+    uint32_t API_ADMIN_LVL_MESSAGE_WORLD;
+    /// Required user level for checking the online count or status of a player via the API.
+    uint32_t API_ADMIN_LVL_ONLINE;
+    /// Required user level for adding items to an account's post via the API.
+    uint32_t API_ADMIN_LVL_POST_ITEMS;
+    /// Required user level for updating an account via the API.
+    uint32_t API_ADMIN_LVL_UPDATE_ACCOUNT;
+
+    //
     // GM Command Levels
     //
 

@@ -835,6 +835,22 @@ enum class LogoutPacketAction_t : uint32_t
 };
 
 /**
+ * Chat type sent from and returned to the client to signify what type of chat
+ * message is being sent.
+ */
+enum ChatType_t : uint16_t
+{
+    CHAT_PARTY = 41,    //!< Sent via the party channel to party members, by default to all zones on the world.
+    CHAT_SHOUT = 44,    //!< Sent via the say/shout channel, detached from a speech bubble, by default to the current zone.
+    CHAT_SAY = 45,      //!< Sent via the say/shout channel, displayed in a speech bubble to players near the source.
+    CHAT_TELL = 46,     //!< Sent via the tell channel, targets a specific character in any zone on the world.
+    CHAT_SELF = 47,     //!< Sent to one character from the system itself. Useful for communication game information.
+    CHAT_CLAN = 48,     //!< Sent via the clan channel to online clan members, by default to all zones on the world.
+    CHAT_VERSUS = 597,  //!< Sent via the versus channel to PvP team members, by default to the same zone only.
+    CHAT_TEAM = 714,    //!< Sent via the team channel to team members, by default to all zones on the world.
+};
+
+/**
  * Request or response packet code between two internal servers.
  */
 enum class InternalPacketCode_t : uint16_t
@@ -890,6 +906,7 @@ enum class PacketRelayMode_t : uint8_t
     RELAY_PARTY,    //!< Request to relay a message to all current members of a party.
     RELAY_CLAN, //!< Request to relay a message to all online clan members.
     RELAY_TEAM, //!< Request to relay a message to all current team members.
+    RELAY_ALL,  //!< Request to relay a message to everyone on every channel connected to the world.
 };
 
 /**
