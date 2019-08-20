@@ -5,6 +5,7 @@
         <member type="CharacterLogin*" name="CharacterLogin"/>
         <member type="string" name="SessionID" size="300"/>
         <member type="u32" name="SessionKey"/>
+        <member type="string" name="MachineUUID"/>
         <member type="enum" name="State" underlying="int8_t">
             <value>OFFLINE</value><!-- This is not the account you are looking for. -->
             <value>LOBBY_WAIT</value><!-- Requested login from webauth but has not authenticated with lobby yet. -->

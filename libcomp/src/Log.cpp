@@ -344,6 +344,13 @@ Log* Log::GetSingletonPtr()
 
 void Log::LogMessage(libcomp::LogMessage *pMessage)
 {
+#ifdef _WIN32
+    if(Level_t::LOG_LEVEL_CRITICAL == pMessage->GetLevel())
+    {
+        OutputDebugStringA(pMessage->GetMsg().C());
+    }
+#endif // _WIN32
+
     mMessages.Enqueue(pMessage);
 }
 

@@ -81,6 +81,11 @@ void libcomp::Shutdown::Configure(libcomp::BaseServer *pServer)
 
     signal(SIGINT,  &ShutdownSignalHandler);
     signal(SIGTERM, &ShutdownSignalHandler);
+
+    atexit([]()
+    {
+        delete libcomp::Log::GetSingletonPtr();
+    });
 }
 
 void libcomp::Shutdown::Complete()
