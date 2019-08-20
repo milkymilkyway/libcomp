@@ -95,6 +95,9 @@ struct Data
     /// Item ID of item type: Rakutavi's Bloodstone (ラクタヴィの血石)
     uint32_t ITEM_RBLOODSTONE;
 
+    /// Menu ID for NPC bartering
+    uint32_t MENU_BARTER;
+
     /// Menu ID of a bazaar market
     uint32_t MENU_BAZAAR;
 
@@ -118,6 +121,15 @@ struct Data
 
     /// Menu ID of an item repair (kreuz) shop
     uint32_t MENU_REPAIR_KZ;
+
+    /// Menu ID for NPC shop buying
+    uint32_t MENU_SHOP_BUY;
+
+    /// Menu ID for NPC shop repair
+    uint32_t MENU_SHOP_REPAIR;
+
+    /// Menu ID for NPC shop selling
+    uint32_t MENU_SHOP_SELL;
 
     /// Menu ID of the Tri-Fusion process
     uint32_t MENU_TRIFUSION;

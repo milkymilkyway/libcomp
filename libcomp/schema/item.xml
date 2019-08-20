@@ -33,7 +33,7 @@
         </member>
         <member type="u32" name="RentalExpiration"/>
     </object>
-    <object name="ItemDrop" persistent="false">
+    <object name="ItemDrop" persistent="false" scriptenabled="true">
         <member type="u32" name="ItemType"/>
         <member type="float" name="Rate"/>
         <member type="u16" name="MinStack" default="1"/>

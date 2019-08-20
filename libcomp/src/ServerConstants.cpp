@@ -120,6 +120,8 @@ bool ServerConstants::Initialize(const String& filePath)
         sConstants.ITEM_RBLOODSTONE);
 
     // Load menu constants
+    success &= LoadInteger(constants["MENU_BARTER"],
+        sConstants.MENU_BARTER);
     success &= LoadInteger(constants["MENU_BAZAAR"],
         sConstants.MENU_BAZAAR);
     success &= LoadInteger(constants["MENU_COMP_SHOP"],
@@ -136,6 +138,12 @@ bool ServerConstants::Initialize(const String& filePath)
         sConstants.MENU_ITIME);
     success &= LoadInteger(constants["MENU_REPAIR_KZ"],
         sConstants.MENU_REPAIR_KZ);
+    success &= LoadInteger(constants["MENU_SHOP_BUY"],
+        sConstants.MENU_SHOP_BUY);
+    success &= LoadInteger(constants["MENU_SHOP_REPAIR"],
+        sConstants.MENU_SHOP_REPAIR);
+    success &= LoadInteger(constants["MENU_SHOP_SELL"],
+        sConstants.MENU_SHOP_SELL);
     success &= LoadInteger(constants["MENU_TRIFUSION"],
         sConstants.MENU_TRIFUSION);
     success &= LoadInteger(constants["MENU_TRIFUSION_KZ"],

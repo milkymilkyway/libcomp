@@ -34,7 +34,7 @@
             <element type="u32"/>
         </member>
     </object>
-    <object name="ObjectPosition" persistent="false">
+    <object name="ObjectPosition" persistent="false" scriptenabled="true">
         <member type="u32" name="SpotID"/>
         <member type="float" name="X"/>
         <member type="float" name="Y"/>
