@@ -297,7 +297,7 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
     DataStore *pDataStore, const libcomp::String& migration,
     const libcomp::String& path)
 {
-    LogDatabaseError([&]()
+    LogDatabaseInfo([&]()
     {
         return String("Applying migration %1 to database.\n").Arg(migration);
     });

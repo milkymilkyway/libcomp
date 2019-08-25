@@ -858,7 +858,7 @@ bool ServerDataManager::LoadScripts(gsl::not_null<DataStore*> pDataStore,
                 return false;
             }
 
-            LogServerDataManagerDebug([&]()
+            LogServerDataManagerInfo([&]()
             {
                 return String("Loaded script file: %1\n").Arg(path);
             });

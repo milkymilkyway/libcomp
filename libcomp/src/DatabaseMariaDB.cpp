@@ -203,12 +203,12 @@ bool DatabaseMariaDB::Setup(bool rebuild,
     if(!TableExists("Migrations"))
     {
         std::stringstream ss;
-        ss << "CREATE TABLE `Migrations` "
+        ss << "CREATE TABLE IF NOT EXISTS `Migrations` "
             << "(`Migration` varchar(128) PRIMARY KEY);";
 
         if(Execute(ss.str()))
         {
-            LogDatabaseErrorMsg("Migration table created.\n");
+            LogDatabaseInfoMsg("Migration table created.\n");
         }
         else
         {
@@ -665,7 +665,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
     auto databaseName = std::dynamic_pointer_cast<objects::DatabaseConfigMariaDB>(
         mConfig)->GetDatabaseName();
 
-    LogDatabaseDebugMsg("Verifying database table structure.\n");
+    LogDatabaseInfoMsg("Verifying database table structure.\n");
 
     DatabaseQuery q = Prepare(libcomp::String("SELECT TABLE_NAME, COLUMN_NAME, "
         "DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '%1';")
@@ -807,13 +807,13 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
         {
             if(mConfig->GetAutoSchemaUpdate())
             {
-                LogDatabaseDebug([&]()
+                LogDatabaseInfo([&]()
                 {
                     return String("Archiving table '%1'...\n")
                         .Arg(metaObject.GetName());
                 });
 
-                LogDatabaseDebug([&]()
+                LogDatabaseInfo([&]()
                 {
                     return String("Dropping table '%1'...\n")
                         .Arg(metaObject.GetName());
@@ -821,7 +821,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
                 if(Execute(String("DROP TABLE `%1`;").Arg(objName)))
                 {
-                    LogDatabaseDebugMsg("Re-creation complete\n");
+                    LogDatabaseInfoMsg("Re-creation complete\n");
                 }
                 else
                 {
@@ -846,7 +846,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
         if(creating)
         {
-            LogDatabaseDebug([&]()
+            LogDatabaseInfo([&]()
             {
                 return String("Creating table '%1'...\n")
                     .Arg(metaObject.GetName());
@@ -855,7 +855,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
             bool success = false;
 
             std::stringstream ss;
-            ss << "CREATE TABLE `" << objName
+            ss << "CREATE TABLE IF NOT EXISTS `" << objName
                 << "` (`UID` varchar(36) PRIMARY KEY";
             for(size_t i = 0; i < vars.size(); i++)
             {
@@ -870,7 +870,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
             if(success)
             {
-                LogDatabaseDebugMsg("Creation complete\n");
+                LogDatabaseInfoMsg("Creation complete\n");
             }
             else
             {
@@ -881,7 +881,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
         }
         else if(updating)
         {
-            LogDatabaseDebug([&]()
+            LogDatabaseInfo([&]()
             {
                 return String("Updating table '%1'...\n")
                     .Arg(metaObject.GetName());
@@ -912,7 +912,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
                     if(Execute(String("ALTER TABLE `%1` ADD `%2` %3;")
                         .Arg(objName).Arg(var->GetName()).Arg(type)))
                     {
-                        LogDatabaseDebug([&]()
+                        LogDatabaseInfo([&]()
                         {
                             return String("Created column '%1'\n")
                                 .Arg(var->GetName());
@@ -935,7 +935,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
                                     .Arg(col->GetColumn()));
                     if(!col->Bind(q))
                     {
-                        LogDatabaseDebug([&]()
+                        LogDatabaseWarning([&]()
                         {
                             return String("Failed to bind default value for "
                                 "column '%1'\n").Arg(col->GetColumn());
@@ -944,7 +944,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
                     if(q.Execute())
                     {
-                        LogDatabaseDebug([&]()
+                        LogDatabaseInfo([&]()
                         {
                             return String("Applied default value to column "
                                 "'%1'\n").Arg(col->GetColumn());
@@ -993,7 +993,7 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
                 if(Execute(cmd))
                 {
-                    LogDatabaseDebug([&]()
+                    LogDatabaseInfo([&]()
                     {
                         return String("Created '%1' column index.\n")
                             .Arg(indexStr);
@@ -1014,14 +1014,14 @@ bool DatabaseMariaDB::VerifyAndSetupSchema(bool recreateTables)
 
         if(!creating && !recreating && !updating && needsIndex.size() == 0)
         {
-            LogDatabaseDebug([&]()
+            LogDatabaseInfo([&]()
             {
                 return String("'%1': Verified\n").Arg(metaObject.GetName());
             });
         }
     }
 
-    LogDatabaseDebugMsg("Database verification complete.\n");
+    LogDatabaseInfoMsg("Database verification complete.\n");
 
     return true;
 }

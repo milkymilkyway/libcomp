@@ -304,6 +304,8 @@ bool ServerConstants::Initialize(const String& filePath)
         sConstants.STATUS_REUNION_XP_SAVE);
     success &= LoadInteger(constants["STATUS_SLEEP"],
         sConstants.STATUS_SLEEP);
+    success &= LoadInteger(constants["STATUS_STEALTH"],
+        sConstants.STATUS_STEALTH);
     success &= LoadInteger(constants["STATUS_SUMMON_SYNC_1"],
         sConstants.STATUS_SUMMON_SYNC_1);
     success &= LoadInteger(constants["STATUS_SUMMON_SYNC_2"],

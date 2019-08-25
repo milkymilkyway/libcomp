@@ -415,6 +415,9 @@ struct Data
     /// Status effect ID of the sleep effect
     uint32_t STATUS_SLEEP;
 
+    /// Status effect ID of total invsibility stealth effect
+    uint32_t STATUS_STEALTH;
+
     /// Status effect ID of summon sync level 1
     uint32_t STATUS_SUMMON_SYNC_1;
 
