@@ -367,6 +367,7 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/mitamadata.xml
     schema/binarydata/modificationdata.xml
     schema/binarydata/npcbarterdata.xml
+    schema/binarydata/npcinvisibledata.xml
     schema/binarydata/onpcdata.xml
     schema/binarydata/questbonusdata.xml
     schema/binarydata/questdata.xml
@@ -1016,6 +1017,10 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiNPCBarterTextData.cpp
     MiNPCBasicData.cpp
     MiNPCBasicData.h
+    MiNPCInvisibleDataEntry.cpp
+    MiNPCInvisibleDataEntry.h
+    MiNPCInvisibleData.cpp
+    MiNPCInvisibleData.h
     MiONPCData.cpp
     MiONPCData.h
     MiPossessionData.h
