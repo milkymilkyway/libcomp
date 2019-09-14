@@ -665,6 +665,12 @@ void ServerDataManager::ApplyZonePartial(
     const std::shared_ptr<objects::ServerZonePartial>& partial,
     bool positionReplace)
 {
+    // Add valid team types
+    for(int8_t teamType : partial->GetValidTeamTypes())
+    {
+        zone->InsertValidTeamTypes(teamType);
+    }
+
     // Add dropsets
     for(uint32_t dropSetID : partial->GetDropSetIDs())
     {

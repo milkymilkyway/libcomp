@@ -86,6 +86,7 @@ class MiModificationExtRecipeData;
 class MiModificationTriggerData;
 class MiModifiedEffectData;
 class MiNPCBarterData;
+class MiNPCBarterConditionData;
 class MiNPCBarterGroupData;
 class MiONPCData;
 class MiQuestBonusCodeData;
@@ -594,6 +595,15 @@ public:
      */
     const std::shared_ptr<objects::MiNPCBarterGroupData> GetNPCBarterGroupData(
         uint16_t id);
+
+    /**
+     * Get the NPC barter condition definition corresponding to an ID
+     * @param id NPC barter condition ID to retrieve
+     * @return Pointer to the matching NPC barter condition definition, null
+     *  if it does not exist
+     */
+    const std::shared_ptr<objects::MiNPCBarterConditionData>
+        GetNPCBarterConditionData(uint16_t id);
 
     /**
      * Get the server object NPC definition corresponding to an ID
@@ -1170,6 +1180,10 @@ private:
     /// Map of NPC barter definitions by ID
     std::unordered_map<uint16_t,
         std::shared_ptr<objects::MiNPCBarterData>> mNPCBarterData;
+
+    /// Map of NPC barter condition definitions by ID
+    std::unordered_map<uint16_t, std::shared_ptr<
+        objects::MiNPCBarterConditionData>> mNPCBarterConditionData;
 
     /// Map of NPC barter group definitions by ID
     std::unordered_map<uint16_t,

@@ -81,6 +81,7 @@
 #include <MiModificationTriggerData.h>
 #include <MiModifiedEffectData.h>
 #include <MiNPCBarterData.h>
+#include <MiNPCBarterConditionData.h>
 #include <MiNPCBarterGroupData.h>
 #include <MiNPCBasicData.h>
 #include <MiONPCData.h>
@@ -555,6 +556,12 @@ const std::shared_ptr<objects::MiNPCBarterData>
     DefinitionManager::GetNPCBarterData(uint16_t id)
 {
     return GetRecordByID(id, mNPCBarterData);
+}
+
+const std::shared_ptr<objects::MiNPCBarterConditionData>
+    DefinitionManager::GetNPCBarterConditionData(uint16_t id)
+{
+    return GetRecordByID(id, mNPCBarterConditionData);
 }
 
 const std::shared_ptr<objects::MiNPCBarterGroupData>
@@ -1577,6 +1584,23 @@ namespace libcomp
     }
 
     template <>
+    bool DefinitionManager::LoadData<objects::MiNPCBarterConditionData>(
+        gsl::not_null<DataStore*> pDataStore)
+    {
+        std::list<std::shared_ptr<
+            objects::MiNPCBarterConditionData>> records;
+        bool success = LoadBinaryData<objects::MiNPCBarterConditionData>(
+            pDataStore, "Shield/NPCBarterConditionData.sbin", true, 0,
+            records);
+        for(auto record : records)
+        {
+            mNPCBarterConditionData[record->GetID()] = record;
+        }
+
+        return success;
+    }
+
+    template <>
     bool DefinitionManager::LoadData<objects::MiNPCBarterGroupData>(
         gsl::not_null<DataStore*> pDataStore)
     {
@@ -1895,6 +1919,7 @@ bool DefinitionManager::LoadAllData(DataStore *pDataStore)
     success &= LoadData<objects::MiModificationTriggerData>(pDataStore);
     success &= LoadData<objects::MiModifiedEffectData>(pDataStore);
     success &= LoadData<objects::MiNPCBarterData>(pDataStore);
+    success &= LoadData<objects::MiNPCBarterConditionData>(pDataStore);
     success &= LoadData<objects::MiNPCBarterGroupData>(pDataStore);
     success &= LoadData<objects::MiONPCData>(pDataStore);
     success &= LoadData<objects::MiQuestBonusCodeData>(pDataStore);

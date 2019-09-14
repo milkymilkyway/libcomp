@@ -121,6 +121,9 @@
             <element type="u32"/>
         </member>
         <member type="bool" name="AutoApply" default="true"/>
+        <member type="set" name="ValidTeamTypes">
+            <element type="s8"/>
+        </member>
         <member type="set" name="DropSetIDs">
             <element type="u32"/>
         </member>
