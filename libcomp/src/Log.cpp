@@ -335,6 +335,11 @@ Log* Log::GetSingletonPtr()
     if(nullptr == gLogInst)
     {
         gLogInst = new Log;
+
+        atexit([]()
+        {
+            delete libcomp::Log::GetSingletonPtr();
+        });
     }
 
     assert(nullptr != gLogInst);
