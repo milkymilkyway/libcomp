@@ -16,6 +16,7 @@
         <member type="set" name="MinionIDs">
             <element type="s32"/>
         </member>
+        <member type="bool" name="CanRevive"/>
 
         <!-- Sub-sections -->
         <member type="EntityStats*" name="CoreStats"/>

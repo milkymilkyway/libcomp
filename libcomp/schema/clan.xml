@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objgen>
-    <object name="Clan" location="world">
+    <object name="Clan" location="world" scriptenabled="true">
         <member type="string" name="Name" key="true" unique="true"/>
         <member type="s8" name="Level" default="1"/>
         <member type="u32" name="BaseZoneID"/>
@@ -18,7 +18,7 @@
         <member type="u8" name="EmblemColorG2"/>
         <member type="u8" name="EmblemColorB2"/>
     </object>
-    <object name="ClanMember" location="world">
+    <object name="ClanMember" location="world" scriptenabled="true">
         <member type="pref" name="Clan" key="true" unique="false"/>
         <member type="pref" name="Character" key="true" unique="true"/>
         <member type="string" name="ClanMessage"/>
