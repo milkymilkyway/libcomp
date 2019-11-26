@@ -677,6 +677,12 @@ void ServerDataManager::ApplyZonePartial(
         zone->InsertDropSetIDs(dropSetID);
     }
 
+    // Add gift sets
+    for(uint32_t giftSetID : partial->GetGiftSetIDs())
+    {
+        zone->InsertGiftSetIDs(giftSetID);
+    }
+
     // Add whitelist skills
     for(uint32_t skillID : partial->GetSkillWhitelist())
     {
@@ -745,6 +751,12 @@ void ServerDataManager::ApplyZonePartial(
         }
     }
     zone->SetObjects(objects);
+
+    // Update plasma spawns
+    for(auto& pPair : partial->GetPlasmaSpawns())
+    {
+        zone->SetPlasmaSpawns(pPair.first, pPair.second);
+    }
 
     // Update spawns
     for(auto& sPair : partial->GetSpawns())

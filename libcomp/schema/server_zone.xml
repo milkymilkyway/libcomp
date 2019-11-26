@@ -73,6 +73,9 @@
         <member type="set" name="DropSetIDs">
             <element type="u32"/>
         </member>
+        <member type="set" name="GiftSetIDs">
+            <element type="u32"/>
+        </member>
         <member type="set" name="SkillBlacklist">
             <element type="u32"/>
         </member>
@@ -127,6 +130,9 @@
         <member type="set" name="DropSetIDs">
             <element type="u32"/>
         </member>
+        <member type="set" name="GiftSetIDs">
+            <element type="u32"/>
+        </member>
         <member type="set" name="SkillBlacklist">
             <element type="u32"/>
         </member>
@@ -138,6 +144,10 @@
         </member>
         <member type="list" name="Objects">
             <element type="ServerObject*"/>
+        </member>
+        <member type="map" name="PlasmaSpawns">
+            <key type="u32"/>
+            <value type="PlasmaSpawn*"/>
         </member>
         <member type="map" name="Spawns">
             <key type="u32"/>
