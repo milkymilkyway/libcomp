@@ -789,10 +789,10 @@ const char* ReadOnlyPacket::ConstData() const
 void ReadOnlyPacket::HexDump() const
 {
     // Generate the hex dump string and log it.
-    LogGeneralInfoMsg("==========================================="
+    LogPacketInfoMsg("==========================================="
         "==============================\n");
-    LogGeneralInfoMsg(Dump() + "\n");
-    LogGeneralInfoMsg("==========================================="
+    LogPacketInfoMsg(Dump() + "\n");
+    LogPacketInfoMsg("==========================================="
         "==============================\n");
 }
 

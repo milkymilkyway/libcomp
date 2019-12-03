@@ -69,12 +69,14 @@ enum class LogComponent_t
     Invalid,
     Item,
     MatchManager,
+    Packet,
     Party,
     ScriptEngine,
     Server,
     ServerConstants,
     ServerDataManager,
     SkillManager,
+    Team,
     TokuseiManager,
     Trade,
     WebAPI,
@@ -689,12 +691,14 @@ LOG_FUNCTIONS(FusionManager)
 LOG_FUNCTIONS(General)
 LOG_FUNCTIONS(Item)
 LOG_FUNCTIONS(MatchManager)
+LOG_FUNCTIONS(Packet)
 LOG_FUNCTIONS(Party)
 LOG_FUNCTIONS(ScriptEngine)
 LOG_FUNCTIONS(Server)
 LOG_FUNCTIONS(ServerConstants)
 LOG_FUNCTIONS(ServerDataManager)
 LOG_FUNCTIONS(SkillManager)
+LOG_FUNCTIONS(Team)
 LOG_FUNCTIONS(TokuseiManager)
 LOG_FUNCTIONS(Trade)
 LOG_FUNCTIONS(WebAPI)

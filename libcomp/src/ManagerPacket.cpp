@@ -69,7 +69,7 @@ bool ManagerPacket::ProcessMessage(const libcomp::Message::Message *pMessage)
 
         if(it == mPacketParsers.end())
         {
-            LogConnectionError([&]()
+            LogPacketError([code]()
             {
                 return String("Unknown packet with command code 0x%1.\n")
                     .Arg(code, 4, 16, '0');
@@ -79,17 +79,45 @@ bool ManagerPacket::ProcessMessage(const libcomp::Message::Message *pMessage)
         }
 
         auto connection = pPacketMessage->GetConnection();
+        LogPacketDebug([code, connection]()
+        {
+            return String("Processing packet 0x%1 from %2 (%3): started\n")
+                .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
+                .Arg(connection->GetName());
+        });
+
         if(!ValidateConnectionState(connection, code))
         {
+            LogPacketDebug([code, connection]()
+            {
+                return String("Processing packet 0x%1 from %2 (%3): invalid\n")
+                    .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
+                    .Arg(connection->GetName());
+            });
+
             connection->Close();
             return false;
         }
 
         if(!it->second->Parse(this, connection, p))
         {
+            LogPacketDebug([code, connection]()
+            {
+                return String("Processing packet 0x%1 from %2 (%3): failed\n")
+                    .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
+                    .Arg(connection->GetName());
+            });
+
             connection->Close();
             return false;
         }
+
+        LogPacketDebug([code, connection]()
+        {
+            return String("Processing packet 0x%1 from %2 (%3): complete\n")
+                .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
+                .Arg(connection->GetName());
+        });
 
         return true;
     }
