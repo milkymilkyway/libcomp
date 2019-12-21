@@ -50,6 +50,7 @@
         <member type="u32" name="ID"/>
         <member type="enum" name="Type" underlying="uint8_t">
             <value>NORMAL</value>
+            <value>REDEFINE</value>
             <value>APPEND</value>
             <value>DESTINY</value>
         </member>

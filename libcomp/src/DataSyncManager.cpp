@@ -105,11 +105,19 @@ void DataSyncManager::SyncOutgoing()
 {
     std::lock_guard<std::mutex> lock(mLock);
 
-    if(mOutboundRemoves.size() == 0 && mOutboundUpdates.size() == 0)
+    size_t updateCount = mOutboundUpdates.size();
+    size_t removeCount = mOutboundRemoves.size();
+    if(removeCount == 0 && updateCount == 0)
     {
         // Nothing to do
         return;
     }
+
+    LogDataSyncManagerDebug([updateCount, removeCount]()
+    {
+        return libcomp::String("Synchronizing %1 outbound update(s) and"
+            " %2 outbound remove(s).\n").Arg(updateCount).Arg(removeCount);
+    });
 
     for(auto pair : mConnections)
     {
@@ -220,6 +228,26 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
 
         // Read updates
         uint16_t recordsCount = p.ReadU16Little();
+        if(recordsCount > 0)
+        {
+            if(source.IsEmpty())
+            {
+                LogDataSyncManagerDebug([type, recordsCount, source]()
+                {
+                    return libcomp::String("Synchronizing %1 inbound %2"
+                        " update(s).\n").Arg(recordsCount).Arg(type);
+                });
+            }
+            else
+            {
+                LogDataSyncManagerDebug([type, recordsCount, source]()
+                {
+                    return libcomp::String("Synchronizing %1 inbound %2"
+                        " update(s) from source: %3\n").Arg(recordsCount)
+                        .Arg(type).Arg(source);
+                });
+            }
+        }
 
         std::list<std::shared_ptr<libcomp::Object>> records;
         if(isPersistent)
@@ -238,6 +266,12 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
                     if(obj)
                     {
                         records.push_back(obj);
+
+                        LogDataSyncManagerDebug([type, uid]()
+                        {
+                            return libcomp::String("Reloaded %1 record: %2\n")
+                                .Arg(type).Arg(uid.ToString());
+                        });
                     }
                 }
                 else
@@ -318,6 +352,26 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
 
         // Read removes
         recordsCount = p.ReadU16Little();
+        if(recordsCount > 0)
+        {
+            if(source.IsEmpty())
+            {
+                LogDataSyncManagerDebug([type, recordsCount, source]()
+                {
+                    return libcomp::String("Synchronizing %1 inbound %2"
+                        " remove(s).\n").Arg(recordsCount).Arg(type);
+                });
+            }
+            else
+            {
+                LogDataSyncManagerDebug([type, recordsCount, source]()
+                {
+                    return libcomp::String("Synchronizing %1 inbound %2"
+                        " remove(s) from source: %3\n").Arg(recordsCount)
+                        .Arg(type).Arg(source);
+                });
+            }
+        }
 
         records.clear();
         if(isPersistent)
@@ -345,6 +399,12 @@ bool DataSyncManager::SyncIncoming(libcomp::ReadOnlyPacket& p,
 
                         records.push_back(obj);
                     }
+
+                    LogDataSyncManagerDebug([type, uid]()
+                    {
+                        return libcomp::String("Removed %1 record: %2\n")
+                            .Arg(type).Arg(uid.ToString());
+                    });
                 }
                 else
                 {

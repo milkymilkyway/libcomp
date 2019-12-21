@@ -1653,7 +1653,28 @@ namespace libcomp
 
         uint32_t id = dropSet->GetID();
 
-        if(dropSet->GetType() == objects::DropSet::Type_t::APPEND)
+        if(dropSet->GetType() == objects::DropSet::Type_t::REDEFINE)
+        {
+            auto it = mDropSetData.find(id);
+            if(it == mDropSetData.end())
+            {
+                LogServerDataManagerWarning([id]()
+                {
+                    return String("Skipping redefined drop set for an ID that"
+                        " has not yet loaded: %1\n").Arg(id);
+                });
+
+                return true;
+            }
+
+            LogServerDataManagerDebug([id]()
+            {
+                return String("Redefining drops on drop set: %1\n").Arg(id);
+            });
+
+            it->second->SetDrops(dropSet->GetDrops());
+        }
+        else if(dropSet->GetType() == objects::DropSet::Type_t::APPEND)
         {
             // Hold onto the drops until the actual dropset loads
             for(auto drop : dropSet->GetDrops())
@@ -1666,7 +1687,7 @@ namespace libcomp
             uint32_t giftBoxID = dropSet->GetGiftBoxID();
             if(mDropSetData.find(id) != mDropSetData.end())
             {
-                LogServerDataManagerError([&]()
+                LogServerDataManagerError([id]()
                 {
                     return String("Duplicate drop set encountered: %1\n")
                         .Arg(id);
@@ -1680,7 +1701,7 @@ namespace libcomp
                 if(mGiftDropSetLookup.find(giftBoxID) !=
                     mGiftDropSetLookup.end())
                 {
-                    LogServerDataManagerError([&]()
+                    LogServerDataManagerError([giftBoxID]()
                     {
                         return String("Duplicate drop set gift box ID"
                             " encountered: %1\n").Arg(giftBoxID);
