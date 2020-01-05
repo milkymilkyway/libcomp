@@ -44,6 +44,8 @@
         <member type="bool" name="AutoCompressCurrency"/>
         <member type="bool" name="NRAStatusNull" default="true"/>
         <member type="bool" name="DeathPenaltyDisabled"/>
+        <member type="bool" name="DeadTokuseiDisabled"/>
+        <member type="float" name="DropLuckScalingCap" default="-1.0"/>
         <member type="float" name="XPBonus"/>
         <member type="float" name="ExpertiseBonus"/>
         <member type="float" name="DropRateBonus"/>
@@ -67,7 +69,13 @@
             <key type="u32"/>
             <value type="u8"/>
         </member>
-        <member type="bool" name="AggroLimit" default="true"/>
+        <member type="enum" name="AIAggroLimit">
+            <value>PLAYER_SHARED</value>
+            <value>INDEPENDENT</value>
+            <value>NONE</value>
+        </member>
+        <member type="bool" name="AICombatStagger" default="true"/>
+        <member type="bool" name="AILazyPathing" default="true"/>
         <member type="bool" name="IFramesEnabled" default="true"/>
     </object>
 </objgen>
