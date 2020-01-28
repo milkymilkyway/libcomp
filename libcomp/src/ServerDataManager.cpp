@@ -2097,6 +2097,7 @@ bool ServerDataManager::TriggerIsAutoContext(
     case objects::ServerZoneTrigger::Trigger_t::ON_DEATH:
     case objects::ServerZoneTrigger::Trigger_t::ON_DIASPORA_BASE_CAPTURE:
     case objects::ServerZoneTrigger::Trigger_t::ON_FLAG_SET:
+    case objects::ServerZoneTrigger::Trigger_t::ON_LOGIN:
     case objects::ServerZoneTrigger::Trigger_t::ON_PVP_BASE_CAPTURE:
     case objects::ServerZoneTrigger::Trigger_t::ON_PVP_COMPLETE:
     case objects::ServerZoneTrigger::Trigger_t::ON_REVIVAL:

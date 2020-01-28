@@ -59,6 +59,9 @@ private:
  */
 struct Data
 {
+    /// Starting stat rates for digitalize novice and artisan modes
+    std::array<uint8_t, 2> DIGITALIZE_STAT_RATES;
+
     /// Demon ID of elemental type: Flaemis (フレイミーズ)
     uint32_t ELEMENTAL_1_FLAEMIS;
 

@@ -341,7 +341,9 @@ bool ServerConstants::Initialize(const String& filePath)
     success &= LoadInteger(constants["ZONE_DEFAULT"],
         sConstants.ZONE_DEFAULT);
 
-    String listStr;
+    String listStr; 
+    success &= LoadString(constants["DIGITALIZE_STAT_RATES"], listStr) &&
+        ToIntegerArray(sConstants.DIGITALIZE_STAT_RATES, listStr.Split(","));
     success &= LoadString(constants["SKILL_TRAESTO_ARCADIA"], listStr) &&
         ToIntegerArray(sConstants.SKILL_TRAESTO_ARCADIA, listStr.Split(","));
     success &= LoadString(constants["SKILL_TRAESTO_DSHINJUKU"], listStr) &&
