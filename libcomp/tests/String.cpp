@@ -411,6 +411,13 @@ TEST(String, ToInteger)
     EXPECT_TRUE(ok);
     EXPECT_EQ(-28, String("-0x1c").ToInteger<int8_t>(&ok));
     EXPECT_TRUE(ok);
+
+    EXPECT_EQ(0, String("20N2659").ToInteger<int32_t>(&ok));
+    EXPECT_FALSE(ok);
+    EXPECT_EQ(0, String("N").ToInteger<int32_t>(&ok));
+    EXPECT_FALSE(ok);
+    EXPECT_EQ(0, String("").ToInteger<int32_t>(&ok));
+    EXPECT_FALSE(ok);
 }
 
 TEST(String, ArgUnderscoreBug)

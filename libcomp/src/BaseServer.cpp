@@ -537,6 +537,20 @@ void BaseServer::CreateWorkers()
         }
     }
 
+    if(numberOfWorkers > 1)
+    {
+        LogServerDebug([numberOfWorkers]()
+        {
+            return String("Processing will be distributed between %1"
+                " workers.\n").Arg(numberOfWorkers);
+        });
+    }
+    else
+    {
+        LogServerWarningMsg("Processing will be handled by a single"
+            " worker.\n");
+    }
+
     for(unsigned int i = 0; i < numberOfWorkers; i++)
     {
         auto worker = std::shared_ptr<Worker>(new Worker);

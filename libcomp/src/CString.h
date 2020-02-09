@@ -506,7 +506,8 @@ public:
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= static_cast<int64_t>(
+                if(ss && -1 == ss.tellg() &&
+                    +temp >= static_cast<int64_t>(
                     std::numeric_limits<T>::lowest()) &&
                     temp <= static_cast<int64_t>(
                     std::numeric_limits<T>::max()))
@@ -525,7 +526,8 @@ public:
                 std::stringstream ss(s);
                 ss >> std::setbase(base) >> temp;
 
-                if(ss && temp >= static_cast<uint64_t>(
+                if(ss && -1 == ss.tellg() &&
+                    +temp >= static_cast<uint64_t>(
                     std::numeric_limits<T>::lowest()) &&
                     temp <= static_cast<uint64_t>(
                     std::numeric_limits<T>::max()) &&
@@ -565,7 +567,7 @@ public:
 
         if(nullptr != pOK)
         {
-            if(ss)
+            if(ss && -1 == ss.tellg())
             {
                 *pOK = true;
             }
