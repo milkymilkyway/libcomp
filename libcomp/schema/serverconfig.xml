@@ -75,6 +75,9 @@
             <value>NONE</value>
         </member>
         <member type="bool" name="AICombatStagger" default="true"/>
+        <member type="bool" name="AIEstomaBossIgnore" default="false"/>
+        <member type="bool" name="AIEstomaChargeIgnore" default="false"/>
+        <member type="u16" name="AIEstomaDuration" default="30"/>
         <member type="bool" name="AILazyPathing" default="true"/>
         <member type="bool" name="IFramesEnabled" default="true"/>
     </object>
