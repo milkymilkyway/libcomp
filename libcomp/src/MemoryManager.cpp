@@ -178,8 +178,15 @@ void MemoryAllocation::LogBacktrace(FILE *out)
 
     if(TRUE != symInit)
     {
+        uint16_t emptyBacktrace = 0;
+
+        fwrite(&emptyBacktrace, sizeof(emptyBacktrace), 1, out);
+
         return;
     }
+
+    // Record the depth of the backtrace.
+    fwrite(&allocBacktraceCount, sizeof(allocBacktraceCount), 1, out);
 
     for(USHORT i = 0; i < allocBacktraceCount; ++i)
     {
@@ -268,6 +275,11 @@ void MemoryAllocation::LogBacktrace(FILE *out)
         pInfoBuffer = nullptr;
     }
 #else // _WIN32
+    uint16_t fixedBacktraceDepth = (uint16_t)(allocBacktraceCount - 1);
+
+    // Record the depth of the backtrace.
+    fwrite(&fixedBacktraceDepth, sizeof(fixedBacktraceDepth), 1, out);
+
     // If we have a valid array of backtraces, parse them.
     if(allocBacktraceCount > 0)
     {
@@ -371,38 +383,41 @@ void MemoryManager::Snapshot()
         std::unordered_map<uint32_t, std::list<MemoryAllocation*>> allocMap;
         CollectAllocation(allocMap, mAllocations->root);
 
+        uint64_t heapSize = (uint64_t)mHeapSize;
         uint64_t collectionCount = (uint64_t)allocMap.size();
 
         fwrite("MEMD", 4, 1, out);
         fwrite(&mAllocationCount, sizeof(mAllocationCount), 1, out);
-        fwrite(&mHeapSize, sizeof(mHeapSize), 1, out);
+        fwrite(&heapSize, sizeof(heapSize), 1, out);
         fwrite(&collectionCount, sizeof(collectionCount), 1, out);
 
         for(auto it = allocMap.begin(); it != allocMap.end(); ++it)
         {
-            size_t total = 0;
+            uint64_t total = 0;
 
             for(auto pAllocation : it->second)
             {
-                total += pAllocation->size;
+                total += (uint64_t)pAllocation->size;
             }
 
             uint32_t checksum = it->first;
+            uint64_t allocCount = (uint64_t)it->second.size();
 
             fwrite(&total, sizeof(total), 1, out);
             fwrite(&checksum, sizeof(checksum), 1, out);
+            fwrite(&allocCount, sizeof(allocCount), 1, out);
 
             it->second.front()->LogBacktrace(out);
 
             for(auto pAllocation : it->second)
             {
                 uint64_t addr = (uint64_t)pAllocation->pAddress;
+                uint64_t size = (uint64_t)pAllocation->size;
+                uint64_t stamp = (uint64_t)pAllocation->stamp;
 
                 fwrite(&addr, sizeof(addr), 1, out);
-                fwrite(&pAllocation->size,
-                    sizeof(pAllocation->size), 1, out);
-                fwrite(&pAllocation->stamp,
-                    sizeof(pAllocation->stamp), 1, out);
+                fwrite(&size, sizeof(size), 1, out);
+                fwrite(&stamp, sizeof(stamp), 1, out);
             }
         }
     }
