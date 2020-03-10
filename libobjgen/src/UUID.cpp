@@ -57,8 +57,8 @@ libobjgen::UUID::UUID(const std::string& other)
 
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
-    std::regex re("^([0-9A-Fa-f]{8})-([0-9A-Fa-f]{4})-([0-9A-Fa-f]{4})-"
-        "([0-9A-Fa-f]{4})-([0-9A-Fa-f]{12})$");
+    static const std::regex re("^([0-9A-Fa-f]{8})-([0-9A-Fa-f]{4})-"
+        "([0-9A-Fa-f]{4})-([0-9A-Fa-f]{4})-([0-9A-Fa-f]{12})$");
 
     std::smatch match;
 

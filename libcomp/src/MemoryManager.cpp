@@ -334,9 +334,9 @@ void MemoryAllocation::LogBacktrace(FILE *out)
                 };
 
 #if 1 == EXCEPTION_STRIP_MODULE
-                std::regex re("^(.*)\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
+                static const std::regex re("^(.*)\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
 #else // 1 != EXCEPTION_STRIP_MODULE
-                std::regex re("\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
+                static const std::regex re("\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
 #endif // 1 == EXCEPTION_STRIP_MODULE
 
                 demangled = std::regex_replace(symbol.cbegin(), symbol.cend(),

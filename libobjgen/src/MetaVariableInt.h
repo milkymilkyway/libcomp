@@ -138,24 +138,25 @@ public:
         std::smatch match;
         std::string s = str;
 
+        static const std::regex hexExpr("^([+-])?0x([0-9a-fA-F]+)$");
+        static const std::regex octExpr("^([+-])?0([0-7]+)$");
+        static const std::regex intExpr("^[+-]?(([1-9][0-9]*)|0)$");
+
         if(!std::numeric_limits<T>::is_integer)
         {
             s = str;
         }
-        else if(std::regex_match(s, match, std::regex(
-            "^([+-])?0x([0-9a-fA-F]+)$")))
+        else if(std::regex_match(s, match, hexExpr))
         {
             base = 16;
             s = std::string(match[1]) + std::string(match[2]);
         }
-        else if(std::regex_match(s, match, std::regex(
-            "^([+-])?0([0-7]+)$")))
+        else if(std::regex_match(s, match, octExpr))
         {
             base = 8;
             s = std::string(match[1]) + std::string(match[2]);
         }
-        else if(!std::regex_match(s, match, std::regex(
-            "^[+-]?(([1-9][0-9]*)|0)$")))
+        else if(!std::regex_match(s, match, intExpr))
         {
             ok = false;
         }

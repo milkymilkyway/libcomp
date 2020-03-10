@@ -255,7 +255,9 @@ int main(int argc, char *argv[])
             {
                 std::smatch match;
 
-                if(std::regex_match(opt, match, std::regex("^[-]I(.*)$")))
+                static const std::regex incExpr("^[-]I(.*)$");
+
+                if(std::regex_match(opt, match, incExpr))
                 {
                     std::string include = match[1];
 
@@ -310,8 +312,10 @@ int main(int argc, char *argv[])
         std::string extension;
         std::string object;
 
-        if(std::regex_match(outputFile, match, std::regex(
-            "^(.*\\/)?([^\\/]+)[.]([^.=]+)(?:[=](.+))?$")))
+        static const std::regex outputExpr(
+            "^(.*\\/)?([^\\/]+)[.]([^.=]+)(?:[=](.+))?$");
+
+        if(std::regex_match(outputFile, match, outputExpr))
         {
             object = match[4];
 

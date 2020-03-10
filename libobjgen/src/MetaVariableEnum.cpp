@@ -172,8 +172,9 @@ bool MetaVariableEnum::IsValid() const
 
     std::smatch match;
 
-    if(!std::regex_match(mUnderlyingType, match, std::regex(
-        "^u{0,1}int(8|16|32|64)_t$")))
+    static const std::regex typeExpr("^u{0,1}int(8|16|32|64)_t$");
+
+    if(!std::regex_match(mUnderlyingType, match, typeExpr))
     {
         return false;
     }

@@ -84,7 +84,7 @@ bool DatabaseQueryMariaDB::Prepare(const String& query)
     // we will replace here in case the query needs access to the
     // named parameter binding functionality
     std::string transformed(query.C());
-    std::regex namedParam(":(?:[a-zA-Z0-9_]+)");
+    static const std::regex namedParam(":(?:[a-zA-Z0-9_]+)");
 
     mParamNames.clear();
     std::smatch match;

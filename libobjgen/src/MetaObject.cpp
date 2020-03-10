@@ -265,8 +265,9 @@ bool MetaObject::IsValidIdentifier(const std::string& ident)
         result = false;
     }
 
-    if(!std::regex_match(ident, std::regex(
-        "^[a-zA-Z_](?:[a-zA-Z0-9][a-zA-Z0-9_]*)?$")))
+    static const std::regex identExpr("^[a-zA-Z_](?:[a-zA-Z0-9][a-zA-Z0-9_]*)?$");
+
+    if(!std::regex_match(ident, identExpr))
     {
         result = false;
     }
