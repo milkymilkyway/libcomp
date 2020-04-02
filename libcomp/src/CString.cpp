@@ -680,6 +680,13 @@ String String::Arg(uint64_t a, int fieldWidth, int base, char fillChar)
     return Arg(String(ss.str()));
 }
 
+#ifdef __APPLE__
+String String::Arg(size_t a, int fieldWidth, int base, char fillChar)
+{
+    return Arg((int64_t)a, fieldWidth, base, fillChar);
+}
+#endif // __APPLE__
+
 String String::Arg(float a, int fieldWidth, int base, char fillChar)
 {
     std::stringstream ss;

@@ -73,7 +73,7 @@ bool TcpConnection::Connect(const String& host, uint16_t port, bool async)
     bool result = false;
 
     // Modified from: http://stackoverflow.com/questions/5486113/
-    asio::ip::tcp::resolver resolver(mSocket.get_io_service());
+    asio::ip::tcp::resolver resolver(mSocket.get_executor());
 
     // Setup the query with the given port (if any).
     asio::ip::tcp::resolver::query query(host.ToUtf8(),

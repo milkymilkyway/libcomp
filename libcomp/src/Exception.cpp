@@ -166,6 +166,10 @@ Exception::Exception(const String& msg, const String& f, int l) :
     // Array to store each backtrace address.
     void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
+#ifdef __APPLE__
+#define backtrace_size_t int32_t
+#endif // __APPLE__
+
     // Populate the array of backtrace addresses and get how many were added.
     backtrace_size_t backtraceSize = ::backtrace(backtraceAddresses, MAX_BACKTRACE_DEPTH);
 

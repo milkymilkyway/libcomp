@@ -19,7 +19,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT(libcomp)
 
-FIND_PACKAGE(Threads REQUIRED)
+# Assume built-in pthreads on MacOS
+# https://stackoverflow.com/questions/54587052/
+IF(APPLE)
+    SET(CMAKE_THREAD_LIBS_INIT "-lpthread")
+    SET(CMAKE_HAVE_THREADS_LIBRARY 1)
+    SET(CMAKE_USE_WIN32_THREADS_INIT 0)
+    SET(CMAKE_USE_PTHREADS_INIT 1)
+    SET(THREADS_PREFER_PTHREAD_FLAG ON)
+ELSE()
+    FIND_PACKAGE(Threads REQUIRED)
+ENDIF()
 
 MESSAGE("** Configuring ${PROJECT_NAME} **")
 
@@ -112,7 +122,7 @@ SET(${PROJECT_NAME}_SRCS
     src/rbtree.c
 )
 
-IF(NOT WIN32)
+IF(NOT WIN32 AND NOT APPLE)
     SET(${PROJECT_NAME}_SRCS
         ${${PROJECT_NAME}_SRCS}
         # for comp_manager and testing.
@@ -121,7 +131,7 @@ IF(NOT WIN32)
         src/SpawnThread.cpp
         src/WatchThread.cpp
     )
-ENDIF(NOT WIN32)
+ENDIF(NOT WIN32 AND NOT APPLE)
 
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ConfigCustom.cpp)
     SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} src/ConfigCustom.cpp)

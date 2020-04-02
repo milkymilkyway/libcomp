@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 
 // Unix and Linux systems have these functions so just use the system version.
 #ifdef __FreeBSD__
@@ -38,7 +38,7 @@
 #include <endian.h>
 #endif // Q_OS_UNIX
 
-#else // _WIN32
+#else // _WIN32 || __APPLE__
 
 /// Swap the bytes of a 16-bit integer @em d.
 #define swap16 (((d & 0xFF00) >> 8) | \
@@ -68,7 +68,7 @@
 static inline uint16_t htobe16(uint16_t d)
 {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap16;
+    return (uint16_t)swap16;
 #else // LIBCOMP_BIGENDIAN
     return d;
 #endif // LIBCOMP_LITTLEENDIAN
@@ -96,7 +96,7 @@ static inline uint16_t htole16(uint16_t d)
 static inline uint16_t be16toh(uint16_t d)
 {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap16;
+    return (uint16_t)swap16;
 #else // LIBCOMP_BIGENDIAN
     return d;
 #endif // LIBCOMP_LITTLEENDIAN
@@ -228,6 +228,6 @@ static inline uint64_t le64toh(uint64_t d)
 #endif // LIBCOMP_LITTLEENDIAN
 }
 
-#endif // _WIN32
+#endif // _WIN32 || __APPLE__
 
 #endif // LIBCOMP_SRC_ENDIAN_H

@@ -313,9 +313,9 @@ Log::Log() : mLogFile(nullptr), mLastLog(-1337)
 
     mThread = std::thread([&]()
     {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(__APPLE__)
         pthread_setname_np(pthread_self(), "log");
-#endif // !defined(_WIN32)
+#endif // !defined(_WIN32) && !defined(__APPLE__)
 
         MessageLoop();
     });

@@ -53,7 +53,7 @@ bool LoadObjectTypeInformation(const std::list<std::string>& searchPath,
 {
     tinyxml2::XMLDocument doc;
 
-    bool loaded = tinyxml2::XML_NO_ERROR == doc.LoadFile(xmlFile.c_str());
+    bool loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(xmlFile.c_str());
 
     if(!loaded)
     {
@@ -61,7 +61,7 @@ bool LoadObjectTypeInformation(const std::list<std::string>& searchPath,
         {
             std::string nextPath = path + std::string("/") + xmlFile;
 
-            loaded = tinyxml2::XML_NO_ERROR == doc.LoadFile(nextPath.c_str());
+            loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(nextPath.c_str());
 
             if(loaded)
             {

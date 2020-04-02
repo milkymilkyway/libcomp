@@ -67,9 +67,9 @@ TimerManager::TimerManager() : mRunning(true), mProcessingEvents(false)
 {
     mRunThread = std::thread([&]()
     {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(__APPLE__)
         pthread_setname_np(pthread_self(), "timer");
-#endif // !defined(_WIN32)
+#endif // !defined(_WIN32) && !defined(__APPLE__)
 
         while(mRunning)
         {

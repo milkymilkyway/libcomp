@@ -285,7 +285,7 @@ bool MetaObjectXmlParser::FinalizeObjectAndReferences(const std::string& object)
             tinyxml2::XMLDocument doc;
             auto xml = mObjectXml[objectName];
             auto err = doc.Parse(xml.c_str(), xml.length());
-            if(err != tinyxml2::XML_NO_ERROR)
+            if(err != tinyxml2::XML_SUCCESS)
             {
                 std::stringstream ss;
                 ss << "Object '" << objectName
