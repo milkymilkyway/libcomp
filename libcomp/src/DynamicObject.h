@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DYNAMICOBJECT_H
 #define LIBCOMP_SRC_DYNAMICOBJECT_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include <DynamicVariable.h>
 #include <Object.h>
@@ -80,5 +82,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DYNAMICOBJECT_H

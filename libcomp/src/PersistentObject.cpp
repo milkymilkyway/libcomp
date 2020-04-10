@@ -26,6 +26,8 @@
 
 #include "PersistentObject.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Database.h"
 #include "DatabaseBind.h"
@@ -537,3 +539,5 @@ bool PersistentObject::Initialize()
 
     return !sInitializationFailed;
 }
+
+#endif // !EXOTIC_PLATFORM

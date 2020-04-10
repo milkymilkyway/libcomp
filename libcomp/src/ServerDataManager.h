@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_SERVERDATAMANAGER_H
 #define LIBCOMP_SRC_SERVERDATAMANAGER_H
 
+#ifndef EXOTIC_PLATFORM
+
 // Standard C++14 Includes
 #include <PushIgnore.h>
 #include <gsl/gsl>
@@ -584,5 +586,7 @@ private:
 };
 
 } // namspace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_SERVERDATAMANAGER_H

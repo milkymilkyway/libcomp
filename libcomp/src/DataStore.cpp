@@ -29,7 +29,10 @@
 #include "DataFile.h"
 #include "Crypto.h"
 #include "Log.h"
+
+#ifndef EXOTIC_PLATFORM
 #include "ScriptEngine.h"
+#endif // !EXOTIC_PLATFORM
 
 // Standard C++11 Includes
 #include <limits>
@@ -423,6 +426,7 @@ libcomp::String DataStore::GetHash(const libcomp::String& path)
     return {};
 }
 
+#ifndef EXOTIC_PLATFORM
 namespace libcomp
 {
     template<>
@@ -443,3 +447,4 @@ namespace libcomp
         return *this;
     }
 }
+#endif // !EXOTIC_PLATFORM

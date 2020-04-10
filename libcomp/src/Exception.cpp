@@ -31,6 +31,7 @@
 #include "MemoryManager.h"
 #include "PlatformWindows.h"
 
+#ifndef EXOTIC_PLATFORM
 #ifdef _WIN32
 #include <windows.h>
 #include <dbghelp.h>
@@ -48,6 +49,7 @@
 #include <sstream>
 
 #include <signal.h>
+#endif // !EXOTIC_PLATFORM
 
 using namespace libcomp;
 
@@ -56,7 +58,8 @@ using namespace libcomp;
  * paths. Calculate the length of the path to the project so we may remove that
  * portion of the path from the exception.
  */
-static size_t baseLen = strlen(__FILE__) - strlen("libcomp/src/Exception.cpp");
+static size_t baseLen = strlen(__FILE__) -
+    strlen("libcomp/libcomp/src/Exception.cpp");
 
 Exception::Exception(const String& msg, const String& f, int l) :
     mLine(l), mFile(f), mMessage(msg)
@@ -162,7 +165,7 @@ Exception::Exception(const String& msg, const String& f, int l) :
         delete[] pInfoBuffer;
         pInfoBuffer = nullptr;
     }
-#else // _WIN32
+#elif !defined(EXOTIC_PLATFORM) // !EXOTIC_PLATFORM
     // Array to store each backtrace address.
     void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
@@ -388,6 +391,7 @@ void Exception::Log() const
     });
 }
 
+#ifndef EXOTIC_PLATFORM
 static void SignalHandler(int sig)
 {
     (void)sig;
@@ -406,9 +410,11 @@ static void SignalHandler(int sig)
 
     exit(EXIT_FAILURE);
 }
+#endif // !EXOTIC_PLATFORM
 
 void Exception::RegisterSignalHandler()
 {
+#ifndef EXOTIC_PLATFORM
 #ifdef _WIN32
     SetUnhandledExceptionFilter(TopLevelExceptionHandler);
 #else
@@ -431,4 +437,5 @@ void Exception::RegisterSignalHandler()
 
         exit(EXIT_FAILURE);
     });
+#endif // !EXOTIC_PLATFORM
 }

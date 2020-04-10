@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
 
 // Unix and Linux systems have these functions so just use the system version.
 #ifdef __FreeBSD__
@@ -38,7 +38,7 @@
 #include <endian.h>
 #endif // Q_OS_UNIX
 
-#else // _WIN32 || __APPLE__
+#else // EXOTIC_PLATFORM || _WIN32 || __APPLE__
 
 /// Swap the bytes of a 16-bit integer @em d.
 #define swap16 (((d & 0xFF00) >> 8) | \
@@ -228,6 +228,6 @@ static inline uint64_t le64toh(uint64_t d)
 #endif // LIBCOMP_LITTLEENDIAN
 }
 
-#endif // _WIN32 || __APPLE__
+#endif // EXOTIC_PLATFORM || _WIN32 || __APPLE__
 
 #endif // LIBCOMP_SRC_ENDIAN_H

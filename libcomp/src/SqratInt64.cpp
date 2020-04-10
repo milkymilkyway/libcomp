@@ -26,6 +26,8 @@
 
 #include "SqratInt64.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "ScriptEngine.h"
 
@@ -739,3 +741,5 @@ namespace libcomp
         return *this;
     }
 }
+
+#endif // !EXOTIC_PLATFORM

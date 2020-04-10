@@ -120,9 +120,12 @@ SET(${PROJECT_NAME}_SRCS
 
     # Red-black tree for memory manager.
     src/rbtree.c
+
+    # ASIO sources for exotic platforms.
+    ${ASIO_SRCS}
 )
 
-IF(NOT WIN32 AND NOT APPLE)
+IF(NOT WIN32 AND NOT APPLE AND NOT BUILD_EXOTIC)
     SET(${PROJECT_NAME}_SRCS
         ${${PROJECT_NAME}_SRCS}
         # for comp_manager and testing.
@@ -131,7 +134,7 @@ IF(NOT WIN32 AND NOT APPLE)
         src/SpawnThread.cpp
         src/WatchThread.cpp
     )
-ENDIF(NOT WIN32 AND NOT APPLE)
+ENDIF(NOT WIN32 AND NOT APPLE AND NOT BUILD_EXOTIC)
 
 IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/ConfigCustom.cpp)
     SET(${PROJECT_NAME}_SRCS ${${PROJECT_NAME}_SRCS} src/ConfigCustom.cpp)
@@ -238,7 +241,7 @@ SET(${PROJECT_NAME}_HDRS
     src/rbtree.h
 )
 
-IF(NOT WIN32)
+IF(NOT WIN32 AND NOT APPLE AND NOT BUILD_EXOTIC)
     SET(${PROJECT_NAME}_HDRS
         ${${PROJECT_NAME}_HDRS}
         # for comp_manager and testing.
@@ -247,7 +250,7 @@ IF(NOT WIN32)
         src/SpawnThread.h
         src/WatchThread.h
     )
-ENDIF(NOT WIN32)
+ENDIF(NOT WIN32 AND NOT APPLE AND NOT BUILD_EXOTIC)
 
 SET(${PROJECT_NAME}_SCHEMA
     schema/account.xml
@@ -1153,8 +1156,24 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
 
 COVERALLS_SOURCES(${${PROJECT_NAME}_SRCS})
 
+# Don't try to build the headers.
+IF(BUILD_EXOTIC)
+    SET(${PROJECT_NAME}_HDRS "")
+ENDIF(BUILD_EXOTIC)
+
 ADD_LIBRARY(comp STATIC ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
     ${${PROJECT_NAME}_MOC_SRCS} ${${PROJECT_NAME}_STRUCTS})
+
+IF(BUILD_EXOTIC)
+    SET_SOURCE_FILES_PROPERTIES(${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
+        ${${PROJECT_NAME}_MOC_SRCS} ${${PROJECT_NAME}_STRUCTS}
+        PROPERTIES LANGUAGE ${EXOTIC_LANGUAGE})
+
+    TARGET_COMPILE_DEFINITIONS(comp PUBLIC
+        "EXOTIC_HEADER=${EXOTIC_HEADER}"
+        "EXOTIC_RANDOM_FUNC=${EXOTIC_RANDOM_FUNC}"
+    )
+ENDIF(BUILD_EXOTIC)
 
 TARGET_COMPILE_DEFINITIONS(comp PUBLIC ${SQRAT_DEFINES})
 
@@ -1180,20 +1199,41 @@ IF(SYSTEMD_FOUND)
     SET(SYSTEMD_LIBS ${SYSTEMD_LIBRARIES})
 ENDIF(SYSTEMD_FOUND)
 
-IF(USE_MBED_TLS)
-    # We still need to link to OpenSSL for the MariaDB library
-    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient mbedcrypto
-        ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        objgen sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
-        ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
-ELSE(USE_MBED_TLS)
-    TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient
-        ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        objgen sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2 physfs
-        ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
-ENDIF(USE_MBED_TLS)
+IF(BUILD_EXOTIC)
+    SET(OBJGEN_LIB objgen_exotic)
+ELSE(BUILD_EXOTIC)
+    SET(OBJGEN_LIB objgen)
+ENDIF(BUILD_EXOTIC)
 
-ADD_DEPENDENCIES(comp asio gsl)
+IF(BUILD_EXOTIC)
+    IF(USE_MBED_TLS)
+        TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} exotic_mbedcrypto
+            ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+            ${OBJGEN_LIB} exotic_tinyxml2 physfs ${EXOTIC_ZLIB_LIBRARIES}
+        )
+    ELSE(USE_MBED_TLS)
+        TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} ${EXOTIC_OPENSSL_LIBRARIES}
+            ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+            ${OBJGEN_LIB} exotic_tinyxml2 physfs ${EXOTIC_ZLIB_LIBRARIES})
+    ENDIF(USE_MBED_TLS)
+ELSE(BUILD_EXOTIC)
+    IF(USE_MBED_TLS)
+        # We still need to link to OpenSSL for the MariaDB library
+        TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient mbedcrypto
+            ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+            ${OBJGEN_LIB} sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2
+            physfs ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
+    ELSE(USE_MBED_TLS)
+        TARGET_LINK_LIBRARIES(comp ${LIBOBJECTS_LIB} mariadbclient
+            ${OPENSSL_LIBRARIES} ${SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
+            ${OBJGEN_LIB} sqlite3 squirrel sqstdlib ttvfs ttvfs_zip tinyxml2
+            physfs ${ZLIB_LIBRARIES} ${SYSTEMD_LIBS})
+    ENDIF(USE_MBED_TLS)
+ENDIF(BUILD_EXOTIC)
+
+IF(NOT BUILD_EXOTIC)
+    ADD_DEPENDENCIES(comp asio gsl)
+ENDIF(NOT BUILD_EXOTIC)
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(comp shlwapi advapi32 iphlpapi psapi shell32
@@ -1204,38 +1244,40 @@ IF(USE_COTIRE)
     cotire(comp)
 ENDIF(USE_COTIRE)
 
-# List of unit tests to add to CTest.
-SET(${PROJECT_NAME}_TEST_SRCS
-    Convert
-    Crypto
+IF(NOT BUILD_EXOTIC)
+    # List of unit tests to add to CTest.
+    SET(${PROJECT_NAME}_TEST_SRCS
+        Convert
+        Crypto
 
-    # This test can take too long so disable it for now.
-    DiffieHellman
+        # This test can take too long so disable it for now.
+        DiffieHellman
 
-    GeneratedObjects
-    MariaDB
-    Packet
-    ScriptEngine
-    String
-    VectorStream
-    #XmlUtils
-)
+        GeneratedObjects
+        MariaDB
+        Packet
+        ScriptEngine
+        String
+        VectorStream
+        #XmlUtils
+    )
 
-IF(NOT BSD)
-    # Add the unit tests.
-    CREATE_GTESTS(LIBS ${LIBOBJECTS_LIB} comp
-        SRCS ${${PROJECT_NAME}_TEST_SRCS})
-ENDIF(NOT BSD)
+    IF(NOT BSD)
+        # Add the unit tests.
+        CREATE_GTESTS(LIBS ${LIBOBJECTS_LIB} comp
+            SRCS ${${PROJECT_NAME}_TEST_SRCS})
+    ENDIF(NOT BSD)
 
-IF(LIBCOMP_STANDALONE)
-    INSTALL(TARGETS comp DESTINATION lib)
-    INSTALL(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/objgen/"
-        DESTINATION include PATTERN *.h)
-    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/api/"
-        DESTINATION api)
+    IF(LIBCOMP_STANDALONE)
+        INSTALL(TARGETS comp DESTINATION lib)
+        INSTALL(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/objgen/"
+            DESTINATION include PATTERN *.h)
+        INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/api/"
+            DESTINATION api)
 
-    # Include the PDB file if on Windows
-    IF(WIN32)
-        INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/comp.pdb DESTINATION lib)
-    ENDIF(WIN32)
-ENDIF(LIBCOMP_STANDALONE)
+        # Include the PDB file if on Windows
+        IF(WIN32)
+            INSTALL(FILES ${CMAKE_BINARY_DIR}/bin/$<CONFIG>/comp.pdb DESTINATION lib)
+        ENDIF(WIN32)
+    ENDIF(LIBCOMP_STANDALONE)
+ENDIF(NOT BUILD_EXOTIC)

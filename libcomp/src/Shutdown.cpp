@@ -26,6 +26,8 @@
 
 #include "Shutdown.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "BaseServer.h"
 #include "Log.h"
@@ -96,3 +98,5 @@ void libcomp::Shutdown::Complete()
         delete thread;
     }
 }
+
+#endif // !EXOTIC_PLATFORM

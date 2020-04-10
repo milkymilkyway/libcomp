@@ -26,6 +26,8 @@
 
 #include "DatabaseMariaDB.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "BaseServer.h"
 #include "DatabaseBind.h"
@@ -1562,3 +1564,5 @@ bool DatabaseMariaDB::TableExists(const libcomp::String& table)
 
     return 0 != tableExists;
 }
+
+#endif // !EXOTIC_PLATFORM

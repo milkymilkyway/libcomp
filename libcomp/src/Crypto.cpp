@@ -26,6 +26,7 @@
 
 #include "Crypto.h"
 #include "Config.h"
+#include "Endian.h"
 #include "Exception.h"
 #include "Log.h"
 #include "Packet.h"
@@ -64,6 +65,10 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+
+#ifdef EXOTIC_PLATFORM
+#include EXOTIC_HEADER
+#endif // EXOTIC_PLATFORM
 
 namespace libcomp
 {
@@ -290,7 +295,7 @@ std::vector<char> Crypto::LoadFile(const std::string &path, int requestedSize)
                     data.assign(std::istreambuf_iterator<char>(file),
                         std::istreambuf_iterator<char>());
                 }
-                catch(std::bad_alloc)
+                catch(const std::bad_alloc&)
                 {
                     data.clear();
                 }
@@ -825,6 +830,8 @@ static int DiffieHellmanRandom(
     {
         return -1;
     }
+#elif defined(EXOTIC_PLATFORM)
+    return EXOTIC_RANDOM_FUNC(output, len);
 #else  // WIN32
     // On Linux, use /dev/urandom.
     std::vector<char> data = Crypto::LoadFile("/dev/urandom", (int)len);
@@ -961,6 +968,7 @@ std::vector<char> Crypto::DiffieHellman::GenerateSecret(
     std::vector<char> result;
 
     uint8_t pSecretBinary[DH_KEY_BIT_SIZE / 8];
+    memset(pSecretBinary, 0, sizeof(pSecretBinary));
 
     std::vector<uint8_t> otherPublicBinary = HexStringToBuffer(otherPublic);
 

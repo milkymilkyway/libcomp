@@ -81,10 +81,16 @@ bool MetaVariable::IsLookupKey() const
 
 void MetaVariable::SetLookupKey(const bool lookupKey)
 {
+#ifdef EXOTIC_BUILD
+    (void)lookupKey;
+
+    mLookupKey = false;
+#else // !EXOTIC_BUILD
     mLookupKey = lookupKey;
 
     //Always default to the same value when set
     mUniqueKey = mLookupKey;
+#endif // !EXOTIC_BUILD
 }
 
 bool MetaVariable::IsUniqueKey() const
@@ -94,6 +100,14 @@ bool MetaVariable::IsUniqueKey() const
 
 bool MetaVariable::SetUniqueKey(const bool uniqueKey)
 {
+#ifdef EXOTIC_BUILD
+    (void)uniqueKey;
+
+    mUniqueKey = false;
+
+    return true;
+#else // !EXOTIC_BUILD
+
     if(!mLookupKey)
     {
         return false;
@@ -101,6 +115,7 @@ bool MetaVariable::SetUniqueKey(const bool uniqueKey)
 
     mUniqueKey = uniqueKey;
     return true;
+#endif // !EXOTIC_BUILD
 }
 
 unsigned char MetaVariable::GetPadding() const
@@ -147,6 +162,11 @@ bool MetaVariable::Load(std::istream& stream)
         sizeof(mUniqueKey));
     stream.read(reinterpret_cast<char*>(&mPadding),
         sizeof(mPadding));
+
+#ifdef EXOTIC_BUILD
+    mLookupKey = false;
+    mUniqueKey = false;
+#endif // EXOTIC_BUILD
 
     return stream.good();
 }
@@ -231,7 +251,7 @@ bool MetaVariable::SaveVariableList(std::ostream& stream,
     size_t varCount = vars.size();
     stream.write(reinterpret_cast<const char*>(&varCount),
         sizeof(varCount));
-    
+
     if(stream.good())
     {
         for(auto var : vars)
@@ -608,7 +628,7 @@ std::string MetaVariable::GetAccessDeclarations(const Generator& generator,
         std::map<std::string, std::string> replacements;
         replacements["@LOOKUP_TYPE@"] = generator.GetCapitalName(*this);
         replacements["@ARGUMENT@"] = GetArgument(GetName());
-        
+
         if(IsUniqueKey())
         {
             std::stringstream ss2;
@@ -764,7 +784,7 @@ std::string MetaVariable::GetAccessScriptBindings(const Generator& generator,
             << objName << "::" << f.str() << "By"
             << generator.GetCapitalName(*this) << ")" << std::endl;
     }
-    
+
     return ss.str();
 }
 
@@ -791,7 +811,7 @@ std::string MetaVariable::GetConstructorCode(const Generator& generator,
             ss << generator.Tab(tabLevel) << "Set"
                 << generator.GetCapitalName(*this) << "(" << code << ")"
                 << ";" << std::endl;
-            
+
         }
         else
         {

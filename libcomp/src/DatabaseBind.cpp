@@ -26,6 +26,8 @@
 
 #include "DatabaseBind.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Database.h"
 
@@ -240,3 +242,5 @@ bool DatabaseBindBool::GetValue() const
 {
     return mValue;
 }
+
+#endif // !EXOTIC_PLATFORM

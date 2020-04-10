@@ -28,7 +28,9 @@
 #include "DatabaseMariaDB.h"
 #include "Log.h"
 
- // config-win.h and my_global.h redefine bool unless explicitly defined
+#ifndef EXOTIC_PLATFORM
+
+// config-win.h and my_global.h redefine bool unless explicitly defined
 #define bool bool
 
 // MariaDB Includes
@@ -948,3 +950,5 @@ MYSQL_BIND* DatabaseQueryMariaDB::PrepareBinding(size_t index, int type)
     result->buffer_type = (enum_field_types)type;
     return result;
 }
+
+#endif // !EXOTIC_PLATFORM

@@ -28,13 +28,17 @@
 
 // libcomp Includes
 #include "Crypto.h"
+
+#ifndef EXOTIC_PLATFORM
 #include "ScriptEngine.h"
+#endif // !EXOTIC_PLATFORM
 
 using namespace libcomp;
 
 thread_local std::mt19937 Randomizer::sGen;
 thread_local std::mt19937_64 Randomizer::sGen64;
 
+#ifndef EXOTIC_PLATFORM
 namespace libcomp
 {
     template<>
@@ -53,6 +57,7 @@ namespace libcomp
         return *this;
     }
 }
+#endif // !EXOTIC_PLATFORM
 
 void Randomizer::SeedRNG()
 {

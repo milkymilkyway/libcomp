@@ -38,6 +38,8 @@
 // Standard C++ 11 Includes
 #include <typeindex>
 
+#ifndef EXOTIC_PLATFORM
+
 namespace libcomp
 {
 
@@ -427,5 +429,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_PERSISTENTOBJECT_H

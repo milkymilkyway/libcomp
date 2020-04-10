@@ -27,10 +27,7 @@
 #ifndef LIBCOMP_SRC_BASESERVER_H
 #define LIBCOMP_SRC_BASESERVER_H
 
-// Standard C++14 Includes
-#include <PushIgnore.h>
-#include <gsl/gsl>
-#include <PopIgnore.h>
+#ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
 #include "Database.h"
@@ -143,7 +140,7 @@ public:
      * Get the timer manager for the server.
      * @returns Pointer to the timer manager. This shold never be deleted.
      */
-    gsl::not_null<TimerManager*> GetTimerManager();
+    TimerManager* GetTimerManager();
 
     /**
      * Call the Shutdown function on each worker.  This should be called
@@ -309,5 +306,7 @@ protected:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_BASESERVER_H

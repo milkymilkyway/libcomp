@@ -76,7 +76,13 @@ bool MetaObject::IsPersistent() const
 
 void MetaObject::SetPersistent(bool persistent)
 {
+#ifdef EXOTIC_BUILD
+    (void)mPersistent;
+
+    mPersistent = false;
+#else // !EXOTIC_BUILD
     mPersistent = persistent;
+#endif // !EXOTIC_BUILD
 }
 
 bool MetaObject::IsInheritedConstruction() const
@@ -306,6 +312,10 @@ bool MetaObject::Load(std::istream& stream)
     stream.read(reinterpret_cast<char*>(&mInheritedConstruction),
         sizeof(mInheritedConstruction));
     result &= Generator::LoadString(stream, mSourceLocation);
+
+#ifdef EXOTIC_BUILD
+    mPersistent = false;
+#endif // EXOTIC_BUILD
 
     VariableList vars;
     if(MetaVariable::LoadVariableList(stream, vars))

@@ -26,6 +26,15 @@
 
 #include "MemoryManager.h"
 
+#ifdef EXOTIC_PLATFORM
+
+bool libcomp::IsMemoryManagerEnabled()
+{
+    return false;
+}
+
+#else // !EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Constants.h"
 #include "Exception.h"
@@ -559,3 +568,5 @@ void operator delete(void *pData, size_t) noexcept
         free(pData);
     }
 }
+
+#endif // !EXOTIC_PLATFORM

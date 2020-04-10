@@ -28,7 +28,10 @@
 
 // libcomp Includes
 #include "Log.h"
+
+#ifndef EXOTIC_PLATFORM
 #include "ScriptEngine.h"
+#endif // !EXOTIC_PLATFORM
 
 // object Includes
 #include <EnchantSetData.h>
@@ -814,7 +817,7 @@ namespace libcomp
 {
     template <>
     bool DefinitionManager::LoadData<objects::MiAIData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiAIData>> records;
         bool success = LoadBinaryData<objects::MiAIData>(pDataStore,
@@ -829,7 +832,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiBlendData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiBlendData>> records;
         bool success = LoadBinaryData<objects::MiBlendData>(pDataStore,
@@ -844,7 +847,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiBlendExtData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiBlendExtData>> records;
         bool success = LoadBinaryData<objects::MiBlendExtData>(pDataStore,
@@ -859,7 +862,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiCHouraiData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiCHouraiData>> records;
         bool success = LoadBinaryData<objects::MiCHouraiData>(pDataStore,
@@ -874,7 +877,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiCItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiCItemData>> records;
         bool success = LoadBinaryData<objects::MiCItemData>(pDataStore,
@@ -894,7 +897,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiCultureItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiCultureItemData>> records;
         bool success = LoadBinaryData<objects::MiCultureItemData>(pDataStore,
@@ -909,7 +912,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilBookData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilBookData>> records;
         bool success = LoadBinaryData<objects::MiDevilBookData>(pDataStore,
@@ -924,7 +927,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilBoostData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilBoostData>> records;
         bool success = LoadBinaryData<objects::MiDevilBoostData>(pDataStore,
@@ -939,7 +942,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilBoostExtraData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilBoostExtraData>> records;
         bool success = LoadBinaryData<objects::MiDevilBoostExtraData>(pDataStore,
@@ -954,7 +957,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilBoostItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilBoostItemData>> records;
         bool success = LoadBinaryData<objects::MiDevilBoostItemData>(pDataStore,
@@ -969,7 +972,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilBoostLotData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilBoostLotData>> records;
         bool success = LoadBinaryData<objects::MiDevilBoostLotData>(pDataStore,
@@ -985,7 +988,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilData>> records;
         bool success = LoadBinaryData<objects::MiDevilData>(pDataStore,
@@ -1028,7 +1031,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilEquipmentData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilEquipmentData>> records;
         bool success = LoadBinaryData<objects::MiDevilEquipmentData>(
@@ -1043,7 +1046,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilEquipmentItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilEquipmentItemData>> records;
         bool success = LoadBinaryData<objects::MiDevilEquipmentItemData>(
@@ -1058,7 +1061,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilFusionData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilFusionData>> records;
         bool success = LoadBinaryData<objects::MiDevilFusionData>(
@@ -1082,7 +1085,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDevilLVUpRateData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDevilLVUpRateData>> records;
         bool success = LoadBinaryData<objects::MiDevilLVUpRateData>(pDataStore,
@@ -1097,7 +1100,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDisassemblyData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDisassemblyData>> records;
         bool success = LoadBinaryData<objects::MiDisassemblyData>(pDataStore,
@@ -1128,7 +1131,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDisassemblyTriggerData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDisassemblyTriggerData>> records;
         bool success = LoadBinaryData<objects::MiDisassemblyTriggerData>(
@@ -1145,7 +1148,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiDynamicMapData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiDynamicMapData>> records;
         bool success = LoadBinaryData<objects::MiDynamicMapData>(pDataStore,
@@ -1198,7 +1201,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiEnchantData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiEnchantData>> records;
         bool success = LoadBinaryData<objects::MiEnchantData>(pDataStore,
@@ -1246,7 +1249,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiEquipmentSetData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiEquipmentSetData>> records;
         bool success = LoadBinaryData<objects::MiEquipmentSetData>(pDataStore,
@@ -1275,7 +1278,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiExchangeData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiExchangeData>> records;
         bool success = LoadBinaryData<objects::MiExchangeData>(pDataStore,
@@ -1290,7 +1293,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiExpertData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiExpertData>> records;
         bool success = LoadBinaryData<objects::MiExpertData>(pDataStore,
@@ -1305,7 +1308,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiGuardianAssistData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiGuardianAssistData>> records;
         bool success = LoadBinaryData<objects::MiGuardianAssistData>(
@@ -1320,7 +1323,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiGuardianLevelData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiGuardianLevelData>> records;
         bool success = LoadBinaryData<objects::MiGuardianLevelData>(pDataStore,
@@ -1335,7 +1338,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiGuardianSpecialData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiGuardianSpecialData>> records;
         bool success = LoadBinaryData<objects::MiGuardianSpecialData>(
@@ -1350,7 +1353,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiGuardianUnlockData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiGuardianUnlockData>> records;
         bool success = LoadBinaryData<objects::MiGuardianUnlockData>(
@@ -1365,7 +1368,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiHNPCData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiHNPCData>> records;
         bool success = LoadBinaryData<objects::MiHNPCData>(pDataStore,
@@ -1380,7 +1383,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiItemData>> records;
         bool success = LoadBinaryData<objects::MiItemData>(pDataStore,
@@ -1395,7 +1398,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiMissionData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiMissionData>> records;
         bool success = LoadBinaryData<objects::MiMissionData>(pDataStore,
@@ -1410,7 +1413,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiMitamaReunionBonusData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiMitamaReunionBonusData>> records;
         bool success = LoadBinaryData<objects::MiMitamaReunionBonusData>(
@@ -1425,7 +1428,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiMitamaReunionSetBonusData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiMitamaReunionSetBonusData>> records;
         bool success = LoadBinaryData<objects::MiMitamaReunionSetBonusData>(
@@ -1440,7 +1443,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiMitamaUnionBonusData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiMitamaUnionBonusData>> records;
         bool success = LoadBinaryData<objects::MiMitamaUnionBonusData>(
@@ -1455,7 +1458,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiModificationData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiModificationData>> records;
         bool success = LoadBinaryData<objects::MiModificationData>(pDataStore,
@@ -1486,7 +1489,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiModificationExtEffectData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<
             objects::MiModificationExtEffectData>> records;
@@ -1504,7 +1507,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiModificationExtRecipeData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<
             objects::MiModificationExtRecipeData>> records;
@@ -1539,7 +1542,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiModificationTriggerData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiModificationTriggerData>> records;
         bool success = LoadBinaryData<objects::MiModificationTriggerData>(
@@ -1555,7 +1558,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiModifiedEffectData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiModifiedEffectData>> records;
         bool success = LoadBinaryData<objects::MiModifiedEffectData>(
@@ -1570,7 +1573,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiNPCBarterData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiNPCBarterData>> records;
         bool success = LoadBinaryData<objects::MiNPCBarterData>(pDataStore,
@@ -1585,7 +1588,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiNPCBarterConditionData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<
             objects::MiNPCBarterConditionData>> records;
@@ -1602,7 +1605,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiNPCBarterGroupData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiNPCBarterGroupData>> records;
         bool success = LoadBinaryData<objects::MiNPCBarterGroupData>(
@@ -1617,7 +1620,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiONPCData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiONPCData>> records;
         bool success = LoadBinaryData<objects::MiONPCData>(pDataStore,
@@ -1632,7 +1635,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiQuestBonusCodeData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiQuestBonusCodeData>> records;
         bool success = LoadBinaryData<objects::MiQuestBonusCodeData>(pDataStore,
@@ -1647,7 +1650,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiQuestData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiQuestData>> records;
         bool success = LoadBinaryData<objects::MiQuestData>(pDataStore,
@@ -1662,7 +1665,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiShopProductData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiShopProductData>> records;
         bool success = LoadBinaryData<objects::MiShopProductData>(pDataStore,
@@ -1677,7 +1680,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiSItemData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiSItemData>> records;
         bool success = LoadBinaryData<objects::MiSItemData>(pDataStore,
@@ -1699,7 +1702,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiSkillData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiSkillData>> records;
         bool success = LoadBinaryData<objects::MiSkillData>(pDataStore,
@@ -1722,7 +1725,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiStatusData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiStatusData>> records;
         bool success = LoadBinaryData<objects::MiStatusData>(pDataStore,
@@ -1737,7 +1740,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiSynthesisData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiSynthesisData>> records;
         bool success = LoadBinaryData<objects::MiSynthesisData>(pDataStore,
@@ -1752,7 +1755,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiTankData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiTankData>> records;
         bool success = LoadBinaryData<objects::MiTankData>(pDataStore,
@@ -1767,7 +1770,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiTimeLimitData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiTimeLimitData>> records;
         bool success = LoadBinaryData<objects::MiTimeLimitData>(pDataStore,
@@ -1782,7 +1785,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiTitleData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiTitleData>> records;
         bool success = LoadBinaryData<objects::MiTitleData>(pDataStore,
@@ -1806,7 +1809,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiTriUnionSpecialData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiTriUnionSpecialData>> records;
         bool success = LoadBinaryData<objects::MiTriUnionSpecialData>(
@@ -1831,7 +1834,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiUraFieldTowerData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiUraFieldTowerData>> records;
         bool success = LoadBinaryData<objects::MiUraFieldTowerData>(pDataStore,
@@ -1846,7 +1849,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiWarpPointData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiWarpPointData>> records;
         bool success = LoadBinaryData<objects::MiWarpPointData>(pDataStore,
@@ -1861,7 +1864,7 @@ namespace libcomp
 
     template <>
     bool DefinitionManager::LoadData<objects::MiZoneData>(
-        gsl::not_null<DataStore*> pDataStore)
+        DataStore *pDataStore)
     {
         std::list<std::shared_ptr<objects::MiZoneData>> records;
         bool success = LoadBinaryData<objects::MiZoneData>(pDataStore,
@@ -2062,7 +2065,7 @@ namespace libcomp
 }
 
 std::shared_ptr<objects::QmpFile> DefinitionManager::LoadQmpFile(
-    const libcomp::String& fileName, gsl::not_null<DataStore*> pDataStore)
+    const libcomp::String& fileName, DataStore *pDataStore)
 {
     auto path = libcomp::String("/Map/Zone/Model/") + fileName;
 
@@ -2142,6 +2145,7 @@ void DefinitionManager::PrintLoadResult(const libcomp::String& binaryFile,
     }
 }
 
+#ifndef EXOTIC_PLATFORM
 namespace libcomp
 {
     template<>
@@ -2167,3 +2171,4 @@ namespace libcomp
         return *this;
     }
 }
+#endif // !EXOTIC_PLATFORM

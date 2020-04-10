@@ -26,6 +26,8 @@
 
 #include "BaseServer.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // Standard C++11 Includes
 #include <algorithm>
 
@@ -328,7 +330,7 @@ DataStore* BaseServer::GetDataStore()
     return &mDataStore;
 }
 
-gsl::not_null<TimerManager*> BaseServer::GetTimerManager()
+TimerManager* BaseServer::GetTimerManager()
 {
     return &mTimerManager;
 }
@@ -795,3 +797,5 @@ namespace libcomp
         return *this;
     }
 }
+
+#endif // !EXOTIC_PLATFORM

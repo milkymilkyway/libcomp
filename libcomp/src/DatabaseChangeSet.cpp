@@ -27,6 +27,8 @@
 
 #include "DatabaseChangeSet.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DatabaseBind.h"
 
@@ -501,3 +503,5 @@ bool DBExplicitUpdate::Set<libobjgen::UUID>(const libcomp::String& column, libob
 }
 
 }
+
+#endif // !EXOTIC_PLATFORM

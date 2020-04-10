@@ -90,6 +90,7 @@ bool MetaObjectXmlParser::LoadTypeInformation(const tinyxml2::XMLDocument& doc,
                 mObject->mNamespace = szNamespace;
             }
 
+#ifndef EXOTIC_BUILD
             if(nullptr != szPersistent)
             {
                 mObject->mPersistent = Generator::GetXmlAttributeBoolean(
@@ -99,6 +100,7 @@ bool MetaObjectXmlParser::LoadTypeInformation(const tinyxml2::XMLDocument& doc,
             {
                 mObject->mPersistent = nullptr == szBaseObject;
             }
+#endif // !EXOTIC_BUILD
 
             if(nullptr != szInheritedConstruction)
             {
@@ -106,11 +108,13 @@ bool MetaObjectXmlParser::LoadTypeInformation(const tinyxml2::XMLDocument& doc,
                     szInheritedConstruction);
             }
 
+#ifndef EXOTIC_BUILD
             const char *szLocation = root.Attribute("location");
             if(nullptr != szLocation)
             {
                 mObject->SetSourceLocation(szLocation);
             }
+#endif // !EXOTIC_BUILD
 
             if(nullptr != szBaseObject)
             {

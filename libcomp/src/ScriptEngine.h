@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_SCRIPTENGINE_H
 #define LIBCOMP_SRC_SCRIPTENGINE_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "CString.h"
 
@@ -173,5 +175,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_SCRIPTENGINE_H

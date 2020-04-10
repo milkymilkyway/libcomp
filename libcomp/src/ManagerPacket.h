@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_MANAGERPACKET_H
 #define LIBCOMP_SRC_MANAGERPACKET_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include <BaseServer.h>
 #include <Manager.h>
@@ -106,5 +108,7 @@ protected:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_MANAGERPACKET_H

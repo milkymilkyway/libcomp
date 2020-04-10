@@ -59,7 +59,11 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
     ss << "#include <Log.h>" << std::endl;
     ss << "#include <VectorStream.h>" << std::endl;
 
+#ifdef EXOTIC_BUILD
+    bool scriptEnabled = false;
+#else // !EXOTIC_BUILD
     bool scriptEnabled = obj.IsScriptEnabled();
+#endif // !EXOTIC_BUILD
     if(scriptEnabled)
     {
         ss << "#include <ScriptEngine.h>" << std::endl;
@@ -744,7 +748,10 @@ bool GeneratorSource::GeneratePersistentObjectFunctions(const MetaObject& obj,
 
     replacements["@BYTES@"] = outBytes.str();
 
-    ss << ParseTemplate(0, "VariablePersistentFunctions", replacements);
+    if(obj.IsPersistent())
+    {
+        ss << ParseTemplate(0, "VariablePersistentFunctions", replacements);
+    }
 
     return true;
 }

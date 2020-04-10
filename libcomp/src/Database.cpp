@@ -26,6 +26,8 @@
 
 #include "Database.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "BaseServer.h"
 #include "DataStore.h"
@@ -386,3 +388,5 @@ namespace libcomp
         return *this;
     }
 }
+
+#endif // !EXOTIC_PLATFORM

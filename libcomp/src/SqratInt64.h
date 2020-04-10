@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_SQRATINT64_H
 #define LIBCOMP_SRC_SQRATINT64_H
 
+#ifndef EXOTIC_PLATFORM
+
 // squirrel Includes
 #include <squirrel.h>
 
@@ -89,5 +91,7 @@ public:
 };
 
 } // namespace Sqrat
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_SQRATINT64_H

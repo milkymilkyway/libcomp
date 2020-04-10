@@ -26,6 +26,8 @@
 
 #include "ManagerPacket.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Log.h"
 #include "MessagePacket.h"
@@ -154,3 +156,5 @@ bool Parsers::Placeholder::Parse(ManagerPacket *pPacketManager,
 
     return false;
 }
+
+#endif // !EXOTIC_PLATFORM

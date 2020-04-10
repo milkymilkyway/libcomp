@@ -219,9 +219,11 @@ std::string GeneratorHeader::Generate(const MetaObject& obj)
     {
         ss << "#include <PersistentObject.h>" << std::endl;
 
+#ifndef EXOTIC_BUILD
         ss << std::endl;
         ss << "// libobjgen Includes" << std::endl;
         ss << "#include <MetaObject.h>" << std::endl;
+#endif // EXOTIC_BUILD
     }
     else
     {

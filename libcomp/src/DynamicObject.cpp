@@ -26,6 +26,8 @@
 
 #include "DynamicObject.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DynamicVariableFactory.h"
 
@@ -85,3 +87,5 @@ uint16_t DynamicObject::GetDynamicSizeCount() const
 {
     return mMetaData->GetDynamicSizeCount();
 }
+
+#endif // !EXOTIC_PLATFORM

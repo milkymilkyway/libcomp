@@ -26,6 +26,8 @@
 
 #include "DynamicVariableFactory.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DynamicVariableArray.h"
 #include "DynamicVariableInt.h"
@@ -142,3 +144,5 @@ std::shared_ptr<DynamicVariable> DynamicVariableFactory::Create(
 
     return {};
 }
+
+#endif // !EXOTIC_PLATFORM

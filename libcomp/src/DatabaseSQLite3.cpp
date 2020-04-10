@@ -26,6 +26,8 @@
 
 #include "DatabaseSQLite3.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Database.h"
 #include "DatabaseBind.h"
@@ -1307,3 +1309,5 @@ bool DatabaseSQLite3::TableExists(const libcomp::String& table)
 
     return name == table;
 }
+
+#endif // !EXOTIC_PLATFORM

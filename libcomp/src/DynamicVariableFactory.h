@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DYNAMICVARIABLEFACTORY_H
 #define LIBCOMP_SRC_DYNAMICVARIABLEFACTORY_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DynamicVariable.h"
 #include "EnumMap.h"
@@ -52,7 +54,7 @@ public:
     /**
      * Create a @ref DynamicVariable from a MetaVariable definition.
      * @param metaVariable Pointer to a MetaVariable definition
-     * @return 
+     * @return
      */
     std::shared_ptr<DynamicVariable> Create(const std::shared_ptr<
         libobjgen::MetaVariable>& metaVariable) const;
@@ -65,5 +67,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DYNAMICVARIABLEFACTORY_H

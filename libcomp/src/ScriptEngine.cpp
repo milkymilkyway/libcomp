@@ -26,6 +26,8 @@
 
 #include "ScriptEngine.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "BaseServer.h"
 #include "Constants.h"
@@ -457,3 +459,5 @@ void ScriptEngine::InitializeBuiltins()
         return true;
     });
 }
+
+#endif // !EXOTIC_PLATFORM

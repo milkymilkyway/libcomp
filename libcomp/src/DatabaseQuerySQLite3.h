@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DATABASEQUERYSQLITE3_H
 #define LIBCOMP_SRC_DATABASEQUERYSQLITE3_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DatabaseQuery.h"
 
@@ -167,5 +169,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASEQUERYSQLITE3_H

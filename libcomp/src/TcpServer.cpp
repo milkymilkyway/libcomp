@@ -109,9 +109,9 @@ int TcpServer::Start(bool delayReady)
 
     mServiceThread = std::thread([this]()
     {
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
         pthread_setname_np(pthread_self(), "asio");
-#endif // !defined(_WIN32) && !defined(__APPLE__)
+#endif // !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
 
         mService.run();
     });

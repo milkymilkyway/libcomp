@@ -88,7 +88,7 @@ public:
     {
         mQueueLock.lock();
 
-        if(mQueue.empty())
+        while(mQueue.empty())
         {
             std::unique_lock<std::mutex> uniqueLock(mEmptyConditionLock);
             mQueueLock.unlock();
@@ -113,7 +113,7 @@ public:
 
         mQueueLock.lock();
 
-        if(mQueue.empty())
+        while(mQueue.empty())
         {
             std::unique_lock<std::mutex> uniqueLock(mEmptyConditionLock);
             mQueueLock.unlock();

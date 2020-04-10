@@ -27,7 +27,9 @@
 #ifndef LIBCOMP_SRC_DATABASEMARIADB_H
 #define LIBCOMP_SRC_DATABASEMARIADB_H
 
- // libcomp Includes
+#ifndef EXOTIC_PLATFORM
+
+// libcomp Includes
 #include "Database.h"
 #include "DatabaseConfigMariaDB.h"
 
@@ -178,5 +180,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASEMARIADB_H

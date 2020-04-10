@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DATABASEQUERYMARIADB_H
 #define LIBCOMP_SRC_DATABASEQUERYMARIADB_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DatabaseQuery.h"
 
@@ -187,5 +189,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASEQUERYMARIADB_H

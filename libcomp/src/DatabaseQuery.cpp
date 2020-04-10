@@ -26,6 +26,8 @@
 
 #include "DatabaseQuery.h"
 
+#ifndef EXOTIC_PLATFORM
+
 using namespace libcomp;
 
 DatabaseQueryImpl::DatabaseQueryImpl() : mAffectedRowCount(0)
@@ -580,3 +582,5 @@ DatabaseQuery& DatabaseQuery::operator=(DatabaseQuery&& other)
 
     return *this;
 }
+
+#endif // !EXOTIC_PLATFORM

@@ -147,7 +147,11 @@ void EncryptedConnection::ConnectionEncrypted()
     // Check if a capture file should be created.
     if(nullptr != mServerConfig.get())
     {
+#ifdef EXOTIC_PLATFORM
+        auto capturePath = libcomp::String();
+#else // !EXOTIC_PLATFORM
         auto capturePath = mServerConfig->GetCapturePath();
+#endif // !EXOTIC_PLATFORM
 
         if(!capturePath.IsEmpty())
         {

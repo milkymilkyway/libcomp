@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DATABASEBIND_H
 #define LIBCOMP_SRC_DATABASEBIND_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libobjgen Includes
 #include "UUID.h"
 
@@ -356,5 +358,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASEBIND_H

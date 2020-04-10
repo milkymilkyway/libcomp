@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DATABASE_H
 #define LIBCOMP_SRC_DATABASE_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "CString.h"
 #include "DatabaseConfig.h"
@@ -321,5 +323,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASE_H

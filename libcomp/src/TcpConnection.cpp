@@ -80,7 +80,7 @@ bool TcpConnection::Connect(const String& host, uint16_t port, bool async)
         0 < port ? String("%1").Arg(port).ToUtf8() : std::string());
 
     // Resolve the hostname.
-    asio::ip::tcp::resolver::iterator it = resolver.resolve(query);
+    auto it = resolver.resolve(query);
 
     // If the hostname resolved, connect to it.
     if(asio::ip::tcp::resolver::iterator() != it)

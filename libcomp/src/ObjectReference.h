@@ -31,6 +31,8 @@
 #include "Database.h"
 #include "PersistentObject.h"
 
+#ifndef EXOTIC_PLATFORM
+
 namespace libcomp
 {
 
@@ -324,7 +326,7 @@ protected:
 
         return IsNull() || nullptr != GetReference();
     }
-    
+
     /**
      * Update the data associated to this reference.  The values
      * set can be just a UUID, just the reference or both.
@@ -421,12 +423,14 @@ std::unordered_map<std::string, std::shared_ptr<ObjectReferenceData>>
     ObjectReference<T>::sData;
 
 template<class T>
-std::shared_ptr<ObjectReferenceData> ObjectReference<T>::sNull = 
+std::shared_ptr<ObjectReferenceData> ObjectReference<T>::sNull =
     std::shared_ptr<ObjectReferenceData>(new ObjectReferenceData);
 
 template<class T>
 std::mutex ObjectReference<T>::mReferenceLock;
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_OBJECTREFERENCE_H

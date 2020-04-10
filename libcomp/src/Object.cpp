@@ -30,7 +30,10 @@
 #include <Packet.h>
 #include <PacketStream.h>
 #include <ReadOnlyPacket.h>
+
+#ifndef EXOTIC_PLATFORM
 #include <ScriptEngine.h>
+#endif // !EXOTIC_PLATFORM
 
 using namespace libcomp;
 
@@ -333,6 +336,7 @@ bool Object::WritePadding(std::ostream& stream, uint8_t count) const
     return stream.good();
 }
 
+#ifndef EXOTIC_PLATFORM
 namespace libcomp
 {
     template<>
@@ -352,3 +356,4 @@ namespace libcomp
         return *this;
     }
 }
+#endif // !EXOTIC_PLATFORM

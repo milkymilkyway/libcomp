@@ -26,6 +26,8 @@
 
 #include "DataSyncManager.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "Log.h"
 #include "Packet.h"
@@ -645,3 +647,5 @@ void DataSyncManager::WriteOutgoingRecords(libcomp::Packet& p,
         }
     }
 }
+
+#endif // !EXOTIC_PLATFORM

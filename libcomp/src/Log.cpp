@@ -243,6 +243,8 @@ static void LogToStandardOutput(LogComponent_t comp, Log::Level_t level,
             FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
         std::cout << std::endl;
+#elif defined(EXOTIC_PLATFORM)
+        printf("%s\n", m.C());
 #else
         if(isatty(fileno(stdout)))
         {
@@ -267,6 +269,8 @@ static void LogToStandardOutput(LogComponent_t comp, Log::Level_t level,
 
         (void)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),
             FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#elif defined(EXOTIC_PLATFORM)
+        printf("%s", last.C());
 #else
         if(isatty(fileno(stdout)))
         {
@@ -313,9 +317,9 @@ Log::Log() : mLogFile(nullptr), mLastLog(-1337)
 
     mThread = std::thread([&]()
     {
-#if !defined(_WIN32) && !defined(__APPLE__)
+#if !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
         pthread_setname_np(pthread_self(), "log");
-#endif // !defined(_WIN32) && !defined(__APPLE__)
+#endif // !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
 
         MessageLoop();
     });
@@ -338,10 +342,12 @@ Log* Log::GetSingletonPtr()
     {
         gLogInst = new Log;
 
+#ifndef EXOTIC_PLATFORM
         atexit([]()
         {
             delete libcomp::Log::GetSingletonPtr();
         });
+#endif // !EXOTIC_PLATFORM
     }
 
     assert(nullptr != gLogInst);

@@ -27,11 +27,6 @@
 #ifndef LIBCOMP_SRC_DEFINITIONMANAGER_H
 #define LIBCOMP_SRC_DEFINITIONMANAGER_H
 
-// Standard C++14 Includes
-#include <PushIgnore.h>
-#include <gsl/gsl>
-#include <PopIgnore.h>
-
 // libcomp Includes
 #include "CString.h"
 #include "DataStore.h"
@@ -832,7 +827,7 @@ public:
      * @return true on success, false on failure
      */
     template <class T>
-    bool LoadData(gsl::not_null<DataStore*> pDataStore);
+    bool LoadData(DataStore *pDataStore);
 
     /**
      * Load the QMP file with the specified filename from the supplied datastore.
@@ -843,7 +838,7 @@ public:
      *  null on failure
      */
     std::shared_ptr<objects::QmpFile> LoadQmpFile(const libcomp::String& fileName,
-        gsl::not_null<DataStore*> pDataStore);
+        DataStore *pDataStore);
 
     /**
      * Register a server side definition into the manager from an external
@@ -871,7 +866,7 @@ private:
      * @return true if the file was loaded, false if it was not
      */
     template <class T>
-    bool LoadBinaryData(gsl::not_null<DataStore*> pDataStore,
+    bool LoadBinaryData(DataStore *pDataStore,
         const libcomp::String& binaryFile, bool decrypt,
         uint16_t tablesExpected, std::list<std::shared_ptr<T>>& records,
         bool printResults = true)

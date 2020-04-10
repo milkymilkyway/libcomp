@@ -26,6 +26,8 @@
 
 #include "ServerDataManager.h"
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "DefinitionManager.h"
 #include "Log.h"
@@ -2131,3 +2133,5 @@ namespace libcomp
         return *this;
     }
 }
+
+#endif // !EXOTIC_PLATFORM

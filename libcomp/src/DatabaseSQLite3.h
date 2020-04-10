@@ -27,7 +27,9 @@
 #ifndef LIBCOMP_SRC_DATABASESQLITE3_H
 #define LIBCOMP_SRC_DATABASESQLITE3_H
 
- // libcomp Includes
+#ifndef EXOTIC_PLATFORM
+
+// libcomp Includes
 #include "Database.h"
 #include "DatabaseConfigSQLite3.h"
 
@@ -146,5 +148,7 @@ private:
 };
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATABASESQLITE3_H

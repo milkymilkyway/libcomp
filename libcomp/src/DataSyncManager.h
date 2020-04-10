@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_DATASYNCMANAGER_H
 #define LIBCOMP_SRC_DATASYNCMANAGER_H
 
+#ifndef EXOTIC_PLATFORM
+
 // libcomp Includes
 #include "CString.h"
 #include "InternalConnection.h"
@@ -339,5 +341,7 @@ private:
 };
 
 } // namspace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_DATASYNCMANAGER_H

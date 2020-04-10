@@ -29,7 +29,10 @@
 #include "Endian.h"
 #include "Log.h"
 #include "PacketException.h"
+
+#ifndef EXOTIC_PLATFORM
 #include "ScriptEngine.h"
+#endif // !EXOTIC_PLATFORM
 
 #include <array>
 
@@ -930,6 +933,7 @@ ReadOnlyPacket& ReadOnlyPacket::operator=(ReadOnlyPacket& other)
     return *this;
 }
 
+#ifndef EXOTIC_PLATFORM
 namespace libcomp
 {
     template<>
@@ -955,3 +959,4 @@ namespace libcomp
         return *this;
     }
 }
+#endif // !EXOTIC_PLATFORM

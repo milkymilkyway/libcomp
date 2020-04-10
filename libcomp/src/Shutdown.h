@@ -27,6 +27,8 @@
 #ifndef LIBCOMP_SRC_SHUTDOWN_H
 #define LIBCOMP_SRC_SHUTDOWN_H
 
+#ifndef EXOTIC_PLATFORM
+
 void ShutdownSignalHandler(int sig);
 
 namespace libcomp
@@ -53,5 +55,7 @@ void Complete();
 } // namespace Shutdown
 
 } // namespace libcomp
+
+#endif // !EXOTIC_PLATFORM
 
 #endif // LIBCOMP_SRC_SHUTDOWN_H

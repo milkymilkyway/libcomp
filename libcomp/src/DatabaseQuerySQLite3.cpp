@@ -27,7 +27,9 @@
 #include "DatabaseQuerySQLite3.h"
 #include "DatabaseSQLite3.h"
 
- // SQLite3 Includes
+#ifndef EXOTIC_PLATFORM
+
+// SQLite3 Includes
 #include <sqlite3.h>
 
 // Standard C++11 Includes
@@ -83,7 +85,7 @@ bool DatabaseQuerySQLite3::Execute()
     } while(mStatus == SQLITE_BUSY && attempts < mMaxRetryCount);
 
     mDidJustExecute = true;
-    
+
     int colCount = sqlite3_column_count(mStatement);
 
     if(colCount > 0)
@@ -620,3 +622,5 @@ bool DatabaseQuerySQLite3::GetResultColumnIndex(const String& name, size_t& inde
     index = (size_t)(iter - mResultColumnNames.begin());
     return true;
 }
+
+#endif // !EXOTIC_PLATFORM
