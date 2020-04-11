@@ -78,7 +78,6 @@ bool MetaObjectXmlParser::LoadTypeInformation(const tinyxml2::XMLDocument& doc,
         const char *szName = root.Attribute("name");
         const char *szNamespace = root.Attribute("namespace");
         const char *szBaseObject = root.Attribute("baseobject");
-        const char *szPersistent = root.Attribute("persistent");
         const char *szInheritedConstruction = root.Attribute(
             "inherited-construction");
         const char *szScriptEnabled = root.Attribute("scriptenabled");
@@ -91,6 +90,8 @@ bool MetaObjectXmlParser::LoadTypeInformation(const tinyxml2::XMLDocument& doc,
             }
 
 #ifndef EXOTIC_BUILD
+            const char *szPersistent = root.Attribute("persistent");
+
             if(nullptr != szPersistent)
             {
                 mObject->mPersistent = Generator::GetXmlAttributeBoolean(

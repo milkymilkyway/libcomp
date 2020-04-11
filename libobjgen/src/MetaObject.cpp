@@ -77,7 +77,7 @@ bool MetaObject::IsPersistent() const
 void MetaObject::SetPersistent(bool persistent)
 {
 #ifdef EXOTIC_BUILD
-    (void)mPersistent;
+    (void)persistent;
 
     mPersistent = false;
 #else // !EXOTIC_BUILD
