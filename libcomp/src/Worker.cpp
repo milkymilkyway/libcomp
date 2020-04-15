@@ -54,6 +54,11 @@ void Worker::AddManager(const std::shared_ptr<Manager>& manager)
     }
 }
 
+void Worker::RemoveAllManagers()
+{
+    mManagers.clear();
+}
+
 void Worker::Start(const libcomp::String& name, bool blocking)
 {
     mWorkerName = name;
@@ -223,7 +228,7 @@ String Worker::GetWorkerName() const
     return mWorkerName;
 }
 
-void Worker::SetNetWorker(const std::weak_ptr<Worker>& nextWorker)
+void Worker::SetNextWorker(const std::weak_ptr<Worker>& nextWorker)
 {
     mNextWorker = nextWorker;
 }

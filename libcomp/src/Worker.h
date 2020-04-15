@@ -69,6 +69,11 @@ public:
     void AddManager(const std::shared_ptr<Manager>& manager);
 
     /**
+     * Remove all managers from the worker.
+     */
+    void RemoveAllManagers();
+
+    /**
      * Loop until stopped, making a call to @ref Worker::Run.
      * @param blocking If false a new thread will be started
      *  to run this function asynchronously
@@ -110,7 +115,7 @@ public:
     /**
      * Set the next worker to forward messages to.
      */
-    void SetNetWorker(const std::weak_ptr<Worker>& nextWorker);
+    void SetNextWorker(const std::weak_ptr<Worker>& nextWorker);
 
     /**
      * Get the message queue assinged to the worker.
