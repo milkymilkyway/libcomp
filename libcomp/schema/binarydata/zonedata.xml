@@ -3,7 +3,14 @@
     <object name="MiZoneBasicData" persistent="false" scriptenabled="true">
         <member type="u32" name="id" caps="true"/>
         <member type="string" name="name" encoding="cp932" length="36"/>
-        <member type="u8" name="type" pad="1"/>
+        <member type="enum" name="type" underlying="uint8_t" pad="1">
+            <value num="0">TOWN</value>
+            <value num="2">FIELD</value>
+            <value num="3">PUBLIC</value>
+            <value num="4">DUNGEON</value>
+            <value num="5">SHOP</value>
+            <value num="7">PVP</value>
+        </member>
         <member type="u16" name="flags"/>
         <member type="u32" name="parentID"/>
         <member type="u32" name="startingSpot" pad="4"/>

@@ -336,6 +336,10 @@ bool ServerConstants::Initialize(const String& filePath)
         sConstants.VALUABLE_MATERIAL_TANK);
 
     // Load other constants
+    success &= LoadInteger(constants["DIGITALIZE_COOLDOWN"],
+        sConstants.DIGITALIZE_COOLDOWN);
+    success &= LoadInteger(constants["MAX_MOVE_INCREASE_SUM"],
+        sConstants.MAX_MOVE_INCREASE_SUM);
     success &= LoadInteger(constants["MITAMA_SET_BOOST"],
         sConstants.MITAMA_SET_BOOST);
     success &= LoadInteger(constants["ZONE_DEFAULT"],

@@ -48,6 +48,9 @@ namespace libcomp
 /// HACK format magic.
 #define HACK_FORMAT_MAGIC (0x4B434148)
 
+/// QMP file format magic.
+#define QMP_FORMAT_MAGIC (0x3F800000)
+
 /// Major, Minor, Patch (1.0.0).
 #define HACK_FORMAT_VER1 (0x00010000)
 
@@ -93,6 +96,12 @@ namespace libcomp
 /// Size of the channel packet header.
 #define CHANNEL_HEADER_SIZE (6 * sizeof(uint32_t))
 
+/// Pi. How many digits can you list?
+#define PI 3.14159265358979323846
+
+/// Number of seconds in a day.
+#define DAY_SEC (86400)
+
 /// Maximum number of bytes in a packet minus the channel header size.
 #define MAX_CHANNEL_PACKET_SIZE (MAX_PACKET_SIZE - CHANNEL_HEADER_SIZE)
 
@@ -117,6 +126,9 @@ namespace libcomp
 /// First calculable new moon start time.
 /// (Adjusted from NEW MOON 00:00 on Sep 9, 2012 12:47:40 GMT)
 #define BASE_WORLD_TIME (46060)
+
+/// Minimum expertise max points allowed at level 1.
+#define MIN_EXPERTISE_POINTS (1700000)
 
 /// Number of expertise (includes unused).
 #define EXPERTISE_COUNT (39)
@@ -227,6 +239,11 @@ namespace libcomp
 /// Number of title entries that can be used to build a custom title.
 #define MAX_TITLE_PARTS (13)
 
+/// The first 1024 MiTitleData entries are special titles which also match
+/// the size of the corresponding CharacterProgress array. Everything
+/// starting at that value (zero indexed) is a normal "random" title.
+#define MAX_SPECIAL_TITLE (1024)
+
 /// Number of items allowed in the post before it starts to display wrong.
 /// Essentially the number of items cannot exceed 10000 but the "pages" in
 /// the Post are 21 items each.
@@ -251,10 +268,11 @@ namespace libcomp
 /// The skill activation contains a target entity ID.
 #define ACTIVATION_TARGET   (1)
 
-/// The skill activation contains a demon object ID.
-#define ACTIVATION_DEMON    (2)
+/// The skill activation contains a player contextual object ID.
+#define ACTIVATION_OBJECT    (2)
 
-/// The skill activation contains an item object ID.
+/// The skill activation contains an item object ID, typically as part of an
+/// item use skill.
 #define ACTIVATION_ITEM     (3)
 
 /// The skill activation contains fusion skill parameters.
@@ -291,6 +309,15 @@ namespace libcomp
 /// Mode specifier for affinity absorption in the correct table
 #define NRA_ABSORB (3)
 
+/// Applicable gender is male
+#define GENDER_MALE (0)
+
+/// Applicable gender is female
+#define GENDER_FEMALE (1)
+
+/// No gender applies
+#define GENDER_NA (2)
+
 /// LNC alignment: Law
 #define LNC_LAW (0)
 
@@ -299,6 +326,48 @@ namespace libcomp
 
 /// LNC alignment: Chaos
 #define LNC_CHAOS (4)
+
+/// Item Main Category: Active
+#define ITEM_CATEGORY_ACTIVE (1)
+
+/// Item Sub Category: Generic
+#define ITEM_SUBCATEGORY_GENERIC (60)
+
+/// Item Sub Category: Element
+#define ITEM_SUBCATEGORY_ELEMENT (64)
+
+/// Item Sub Category: Exchange Item
+#define ITEM_SUBCATEGORY_EXCHANGE_ITEM (67)
+
+/// Item Sub Category: Exchange Demon
+#define ITEM_SUBCATEGORY_EXCHANGE_DEMON (68)
+
+/// Item Sub Category: Demon Solo
+#define ITEM_SUBCATEGORY_DEMON_SOLO (81)
+
+/// Skill Main Category: Passive
+#define SKILL_CATEGORY_PASSIVE (0)
+
+/// Skill Main Category: Active
+#define SKILL_CATEGORY_ACTIVE (1)
+
+/// Skill Main Category: Switch
+#define SKILL_CATEGORY_SWITCH (2)
+
+/// Status Main Category: Bad
+#define STATUS_CATEGORY_BAD (0)
+
+/// Status Main Category: Good
+#define STATUS_CATEGORY_GOOD (1)
+
+/// Status Main Category: Stun
+#define STATUS_CATEGORY_STUN (2)
+
+/// Status Sub Category: Buff
+#define STATUS_SUBCATEGORY_BUFF (3)
+
+/// Status Sub Category: Debuff
+#define STATUS_SUBCATEGORY_DEBUFF (4)
 
 /// Client selected revival mode to return to the homepoint
 #define REVIVE_HOMEPOINT (104)
@@ -446,6 +515,103 @@ namespace libcomp
 
 /// Ultimate Battle max phase count
 #define UB_PHASE_MAX (5)
+
+/// Item flag indicating it can be traded.
+#define ITEM_FLAG_TRADE (0x0001)
+
+/// Item flag indicating it can be placed in a bazaar.
+#define ITEM_FLAG_BAZAAR (0x0002)
+
+/// Item flag indicating it can be sold.
+#define ITEM_FLAG_SELL (0x0004)
+
+/// Item flag indicating it can be discarded.
+#define ITEM_FLAG_DISCARD (0x0008)
+
+/// Item flag indicating it can be stored.
+#define ITEM_FLAG_STORE (0x0010)
+
+/// Item flag indicating it is a CP item.
+#define ITEM_FLAG_CP (0x0040)
+
+/// Item flag indicating it can be repaired.
+#define ITEM_FLAG_REPAIR (0x0080)
+
+/// Item flag indicating it can be tarot fused by default.
+#define ITEM_FLAG_TAROT (0x0100)
+
+/// Item flag indicating it can be soul fused by default.
+#define ITEM_FLAG_SOUL (0x0200)
+
+/// Item flag indicating it can be used for spirit fusion.
+#define ITEM_FLAG_FUSE (0x0800)
+
+/// Item flag indicating it can be used as a synth crystal.
+#define ITEM_FLAG_CRYSTAL (0x1000)
+
+/// Skill flag indicating the stack count cannot change.
+#define SKILL_FIXED_STACK (0x01)
+
+/// Skill flag indicating the cooldown cannot change.
+#define SKILL_FIXED_COOLDOWN (0x02)
+
+/// Skill flag indicating the charge time change.
+#define SKILL_FIXED_CHARGE (0x04)
+
+/// Indicates that a spawned entity can join the player as the result of a
+/// talk skill.
+#define SPAWN_TALK_RESULT_JOIN (0x01)
+
+/// Indicates that a spawned entity can gift items to the player as the result
+/// of a talk skill.
+#define SPAWN_TALK_RESULT_GIFT (0x02)
+
+/// AI despawn timeout in microseconds.
+#define AI_DESPAWN_TIMEOUT (300000000)
+
+/// AI skill type flag for close ranged attacks.
+#define AI_SKILL_TYPE_CLSR (0x01)
+
+/// AI skill type flag for long ranged attacks.
+#define AI_SKILL_TYPE_LNGR (0x02)
+
+/// AI skill type flag for defensive skills.
+#define AI_SKILL_TYPE_DEF (0x04)
+
+/// AI skill type flag for healing skills.
+#define AI_SKILL_TYPE_HEAL (0x08)
+
+/// AI skill type flag for support skills.
+#define AI_SKILL_TYPE_SUPPORT (0x10)
+
+/// Maximum amount of time in microseconds the default AI logic will hold a
+/// skill charge before deciding to do something else.
+#define AI_MAX_CHARGE_WAIT (15000000)
+
+/// Minimum amount of time in microseconds a revived entity will be ignored
+/// by AI entities when combat has not started yet.
+#define AI_REVIVE_IGNORE (5000000)
+
+/// Minimum amount of time in microseconds a zoning in entity will be
+/// ignored by AI entities when combat has not started yet.
+#define AI_ZONE_IN_IGNORE (20000000)
+
+/// Fusion option flag indicating the demon results from 2-way level range
+/// based fusion logic.
+#define FUSION_OPTION_2WAY_RANGE (0x02)
+
+/// Fusion option flag indicating the demon is a mitama type from mitama fusion.
+#define FUSION_OPTION_MITAMA (0x08)
+
+/// Human NPC state indicating the entity is currently being shown.
+#define HNPC_STATE_SHOW (1)
+
+/// Object NPC state indicating the entity is currently being hidden.
+#define ONPC_STATE_HIDE (255)
+
+/// Number of points required for a demon force value to increase a stat by
+/// 1 point (ex: 300000 points equals 3 stat points).
+#define DEMON_FORCE_PRECISION (100000)
 
 /// Experience required to proceed from the indexed level to the next
 const unsigned long long LEVEL_XP_REQUIREMENTS[] = {

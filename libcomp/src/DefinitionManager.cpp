@@ -27,6 +27,7 @@
 #include "DefinitionManager.h"
 
 // libcomp Includes
+#include "Constants.h"
 #include "Log.h"
 
 #ifndef EXOTIC_PLATFORM
@@ -1007,7 +1008,7 @@ namespace libcomp
             // If the fusion options contain 2-way fusion result, add to
             // the fusion range map
             auto fusionOptions = record->GetUnionData()->GetFusionOptions();
-            if(fusionOptions & 2)
+            if(fusionOptions & FUSION_OPTION_2WAY_RANGE)
             {
                 mFusionRanges[(uint8_t)record->GetCategory()->GetRace()].
                     push_back(std::pair<uint8_t, uint32_t>(
@@ -1796,9 +1797,7 @@ namespace libcomp
 
             mTitleData[id] = record;
 
-            // The first 1023 messages are special titles (matching the
-            // size of CharacterProgress array)
-            if(id >= 1024 && !record->GetTitle().IsEmpty())
+            if(id >= MAX_SPECIAL_TITLE && !record->GetTitle().IsEmpty())
             {
                 mTitleIDs.insert(id);
             }
@@ -2080,7 +2079,7 @@ std::shared_ptr<objects::QmpFile> DefinitionManager::LoadQmpFile(
     uint32_t magic;
     ss.read(reinterpret_cast<char*>(&magic), sizeof(magic));
 
-    if(magic != 0x3F800000)
+    if(magic != QMP_FORMAT_MAGIC)
     {
         return nullptr;
     }

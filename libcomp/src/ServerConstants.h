@@ -59,6 +59,9 @@ private:
  */
 struct Data
 {
+    /// Demon cooldown in seconds from being digitalized
+    uint32_t DIGITALIZE_COOLDOWN;
+
     /// Starting stat rates for digitalize novice and artisan modes
     std::array<uint8_t, 2> DIGITALIZE_STAT_RATES;
 
@@ -97,6 +100,9 @@ struct Data
 
     /// Item ID of item type: Rakutavi's Bloodstone (ラクタヴィの血石)
     uint32_t ITEM_RBLOODSTONE;
+
+    /// Maximum movement speed increase percent from multiple sources
+    uint16_t MAX_MOVE_INCREASE_SUM;
 
     /// Menu ID for NPC bartering
     uint32_t MENU_BARTER;

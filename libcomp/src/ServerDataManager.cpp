@@ -319,7 +319,8 @@ bool ServerDataManager::VerifyPvPInstance(uint32_t instanceID,
         for(uint32_t zoneID : instanceDef->GetZoneIDs())
         {
             auto zoneDef = definitionManager->GetZoneData(zoneID);
-            if(!zoneDef || zoneDef->GetBasic()->GetType() != 7)
+            if(!zoneDef || zoneDef->GetBasic()->GetType() !=
+                objects::MiZoneBasicData::Type_t::PVP)
             {
                 LogServerDataManagerError([&]()
                 {
@@ -936,7 +937,8 @@ namespace libcomp
                 return true;
             }
 
-            isField = def->GetBasic()->GetType() == 2;
+            isField = def->GetBasic()->GetType() ==
+                objects::MiZoneBasicData::Type_t::FIELD;
         }
 
         if(mZoneData.find(id) != mZoneData.end() &&

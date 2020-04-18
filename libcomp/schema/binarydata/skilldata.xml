@@ -3,7 +3,21 @@
     <include path="binarydata/shared.xml"/>
     
     <object name="MiSkillBasicData" persistent="false" scriptenabled="true">
-        <member type="u8" name="dependencyType"/>
+        <member type="enum" name="dependencyType" underlying="uint8_t">
+            <value num="0">CLSR</value>
+            <value num="1">LNGR</value>
+            <value num="2">SPELL</value>
+            <value num="3">SUPPORT</value>
+            <value num="4">WEAPON</value>
+            <value num="5">NONE</value>
+            <value num="6">LNGR_SPELL</value>
+            <value num="7">SPELL_CLSR</value>
+            <value num="8">SPELL_LNGR</value>
+            <value num="9">CLSR_LNGR_SPELL</value>
+            <value num="10">LNGR_CLSR_SPELL</value>
+            <value num="11">SPELL_CLSR_LNGR</value>
+            <value num="12">CLSR_SPELL</value>
+        </member>
         <member type="enum" name="actionType" underlying="uint8_t">
             <value num="0">ATTACK</value>
             <value num="1">SPIN</value>
@@ -20,8 +34,25 @@
         </member>
         <member type="bool" name="combatSkill"/>
         <member type="u8" name="defensible"/>
-        <member type="u8" name="family"/>
-        <member type="u8" name="activationType"/>
+        <member type="enum" name="family" underlying="uint8_t">
+            <value num="0">NORMAL</value>
+            <value num="1">MAGIC</value>
+            <value num="2">ITEM</value>
+            <value num="3">SPECIAL</value>
+            <value num="4">DEMON_TRAIT</value>
+            <value num="5">FUSION</value>
+            <value num="6">DEMON_SOLO</value>
+            <value num="7">DEBUG</value>
+        </member>
+        <member type="enum" name="activationType" underlying="uint8_t">
+            <value num="0">NONE</value>
+            <value num="1">ON_USE</value>
+            <value num="2">ON_TARGET</value>
+            <value num="3">SPECIAL</value>
+            <value num="4">ON_TOGGLE</value>
+            <value num="5">ON_HIT</value>
+            <value num="6">INSTANT</value>
+        </member>
         <member type="u8" name="basic7" pad="1"/>
         <member type="u32" name="cooldownID"/>
     </object>
@@ -54,7 +85,7 @@
             <value>MP</value>
             <value>ITEM</value>
             <value>BULLET</value>
-            <value>UNKNOWN</value>
+            <value>DEMON_PARTNER</value>
         </member>
         <member type="enum" name="numType" underlying="uint8_t">
             <value>NUMERIC</value>
