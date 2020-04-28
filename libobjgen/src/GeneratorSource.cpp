@@ -421,9 +421,9 @@ std::string GeneratorSource::Generate(const MetaObject& obj)
             ss << code;
             ss << Tab(2) << "if(!status)" << std::endl;
             ss << Tab(2) << "{" << std::endl;
-            ss << Tab(3) << "LogGeneralErrorMsg(\"Failed to load member '"
+            ss << Tab(3) << "LogGeneralErrorMsg(libcomp::String(\"Failed to load member '"
             << var->GetName() << "' for object '" << obj.GetName()
-                << "'\\n\");" << std::endl;
+                << "' at line %1\\n\").Arg(root.GetLineNum()));" << std::endl;
             ss << Tab(2) << "}" << std::endl;
         }
     }
