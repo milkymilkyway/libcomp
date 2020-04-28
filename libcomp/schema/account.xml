@@ -12,6 +12,7 @@
         <member type="bool" name="Enabled" default="true"/>
         <member type="bool" name="APIOnly"/>
         <member type="u32" name="LastLogin"/>
+        <member type="u32" name="LastLogout"/>
 
         <member type="array" name="Characters" size="20">
             <element type="Character*"/>

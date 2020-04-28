@@ -435,6 +435,9 @@ void Exception::RegisterSignalHandler()
             });
         }
 
+        // Stop the logger
+        delete libcomp::Log::GetSingletonPtr();
+
         exit(EXIT_FAILURE);
     });
 #endif // !EXOTIC_PLATFORM

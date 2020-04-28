@@ -341,13 +341,6 @@ Log* Log::GetSingletonPtr()
     if(nullptr == gLogInst)
     {
         gLogInst = new Log;
-
-#ifndef EXOTIC_PLATFORM
-        atexit([]()
-        {
-            delete libcomp::Log::GetSingletonPtr();
-        });
-#endif // !EXOTIC_PLATFORM
     }
 
     assert(nullptr != gLogInst);
