@@ -56,9 +56,9 @@
         <member type="u8" name="level"/>
         <member type="enum" name="alignment" underlying="uint8_t">
             <value>ALL</value>
-            <value>CHAOS</value>
-            <value>NEUTRAL</value>
             <value>LAW</value>
+            <value>NEUTRAL</value>
+            <value>CHAOS</value>
         </member>
         <member type="u8" name="restriction1"/>
         <member type="list" name="skillTbl">
