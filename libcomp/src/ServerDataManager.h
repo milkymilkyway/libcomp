@@ -277,6 +277,32 @@ public:
         DefinitionManager* definitionManager);
 
     /**
+     * Verify all loaded server data definitions for non-critical errors.
+     * Checks include invalid event ID and item/shop product type references.
+     * @param definitionManager Pointer to the definition manager which
+     *  must be loaded with any server side definitions. Checking these
+     *  definitions will be skipped if this is null.
+     * @return true if no issues are found, false if issues are found
+     */
+    bool VerifyDataIntegrity(DefinitionManager* definitionManager);
+
+    /**
+     * Verify all loaded events and event references for non-critical errors.
+     * @return true if no issues are found, false if issues are found
+     */
+    bool VerifyEventIntegrity();
+
+    /**
+     * Verify all direct item and product references in drops and shops.
+     * Invalid dropsets will be warned about but will not be considered an
+     * error.
+     * @param definitionManager Pointer to the definition manager which
+     *  must be loaded with any server side definitions
+     * @return true if no issues are found, false if issues are found
+     */
+    bool VerifyItemReferences(DefinitionManager* definitionManager);
+
+    /**
      * Load all script files in the specified datastore and return them in
      * a list
      * @param pDataStore Pointer to the datastore to use
@@ -320,11 +346,41 @@ public:
         bool positionReplace);
 
     /**
-     * Merges all pending drops from APPEND drop sets into the the actual
-     * drop set and clears the set. This should only be called once per
-     * server load.
+     * Utility function to gather an action list including all of its nested
+     * actions and return them in a single list.
+     * @param actions List of actions in the base collection
+     * @param actionType Optional action type to filter on, represented as a
+     *  number. If non-negative only actions of that type will be returned.
+     * @return List of all actions
      */
-    void AppendPendingDrops();
+    static std::list<std::shared_ptr<objects::Action>> GetAllActions(
+        std::list<std::shared_ptr<objects::Action>> actions,
+        int8_t actionType = -1);
+
+    /**
+     * Utility function to gather all actions on sub-sections of a zone
+     * definition.
+     * @param zone Zone definition to gather the actions from
+     * @param includeNested If true, nested actions will be returned in the
+     *  returned list as well. If false, the nested actions need to be accessed
+     *  through the parent action.
+     * @return List of all actions
+     */
+    static std::list<std::shared_ptr<objects::Action>> GetAllZoneActions(
+        const std::shared_ptr<objects::ServerZone>& zone, bool includeNested);
+
+    /**
+     * Utility function to gather all actions on sub-sections of a zone partial
+     * definition.
+     * @param zone Zone definition to gather the actions from
+     * @param includeNested If true, nested actions will be returned in the
+     *  returned list as well. If false, the nested actions need to be accessed
+     *  through the parent action.
+     * @return List of all actions
+     */
+    static std::list<std::shared_ptr<objects::Action>>
+        GetAllZonePartialActions(const std::shared_ptr<
+            objects::ServerZonePartial>& partial, bool includeNested);
 
 private:
     /**
@@ -493,7 +549,16 @@ private:
     bool LoadScript(const libcomp::String& path, const libcomp::String& source);
 
     /**
-     * Check for any issues in an action set and report any found in the logs
+     * Merges all pending drops from REDEFINE and APPEND drop sets into the
+     * actual drop set and clears the sets. This should only be called once per
+     * server load.
+     */
+    void ApplyPendingDrops();
+
+    /**
+     * Check for any issues in an action set that would cause the server to
+     * function incorrectly and report any found in the logs. Additional
+     * verification for non-critical issues are checked via VerifyData.
      * @param actions List of actions to validate
      * @param source Text descriptor of where the action is from
      * @param autoContext If true, player only actions should be handled
@@ -505,6 +570,15 @@ private:
     bool ValidateActions(const std::list<
         std::shared_ptr<objects::Action>>& actions,
         const libcomp::String& source, bool autoContext, bool inEvent = false);
+
+    /**
+     * Gather all invalid event IDs within a list of actions. Nested actions
+     * are not checked.
+     * @param actions List of actions to validate
+     * @return List of invalid event IDs
+     */
+    std::list<libcomp::String> GetInvalidEventIDs(const std::list<
+        std::shared_ptr<objects::Action>>& actions) const;
 
     /**
      * Check if the supplied trigger starts in an auto-only context for actions
@@ -569,6 +643,11 @@ private:
     /// Map of drop sets by definition ID
     std::unordered_map<uint32_t,
         std::shared_ptr<objects::DropSet>> mDropSetData;
+
+    /// Map of drop set redefinitions by definition ID. Records are staged here
+    /// and applied after all dropsets have been loaded.
+    std::unordered_map<uint32_t,
+        std::shared_ptr<objects::DropSet>> mRedefineDropSetData;
 
     /// Map of drop set definition IDs to drops loaded from APPEND drop sets.
     /// These are loaded into the actual dropset by

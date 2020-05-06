@@ -35,8 +35,10 @@
 
 // object Includes
 #include <Action.h>
+#include <ActionCreateLoot.h>
 #include <ActionDelay.h>
 #include <ActionSpawn.h>
+#include <ActionStartEvent.h>
 #include <ActionZoneChange.h>
 #include <ActionZoneInstance.h>
 #include <AILogicGroup.h>
@@ -47,7 +49,11 @@
 #include <EnchantSetData.h>
 #include <EnchantSpecialData.h>
 #include <Event.h>
+#include <EventChoice.h>
+#include <EventITime.h>
 #include <EventPerformActions.h>
+#include <EventPrompt.h>
+#include <ItemDrop.h>
 #include <MiSItemData.h>
 #include <MiSStatusData.h>
 #include <MiZoneBasicData.h>
@@ -467,7 +473,7 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
                 true);
             if(!failure)
             {
-                AppendPendingDrops();
+                ApplyPendingDrops();
             }
         }
 
@@ -584,6 +590,553 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
     }
 
     return !failure;
+}
+
+bool ServerDataManager::VerifyDataIntegrity(
+    DefinitionManager* definitionManager)
+{
+    bool valid = VerifyEventIntegrity();;
+
+    if(definitionManager && !VerifyItemReferences(definitionManager))
+    {
+        valid = false;
+    }
+
+    return valid;
+}
+
+bool ServerDataManager::VerifyEventIntegrity()
+{
+    bool valid = true;
+
+    // Gather all sources of actions
+    for(auto ePair : mEventData)
+    {
+        // Check all direct event references, ignoring invalid types here
+        // as those need to be explicitly defined to differ anyway
+        std::set<libcomp::String> refIDs;
+        std::set<libcomp::String> invalidEventIDs;
+
+        // Keep track of where "next" IDs can be
+        std::list<std::shared_ptr<objects::EventSequence>> seqList;
+        if(!ePair.second->GetSkipInvalid())
+        {
+            seqList.push_back(ePair.second);
+        }
+
+        bool hasITimeGifts = false;
+        switch(ePair.second->GetEventType())
+        {
+        case objects::Event::EventType_t::ITIME:
+        case objects::Event::EventType_t::PROMPT:
+            {
+                auto e = std::dynamic_pointer_cast<objects::EventPrompt>(
+                    ePair.second);
+                if(e)
+                {
+                    if(ePair.second->GetEventType() ==
+                        objects::Event::EventType_t::PROMPT)
+                    {
+                        // Prompt base paths are never taken
+                        if(!e->GetNext().IsEmpty())
+                        {
+                            LogServerDataManagerWarning([e]()
+                            {
+                                return String("'next' property set on event"
+                                    " that will never be used %1\n")
+                                    .Arg(e->GetID());
+                            });
+                        }
+
+                        if(!e->GetQueueNext().IsEmpty())
+                        {
+                            LogServerDataManagerWarning([e]()
+                            {
+                                return String("'queueNext' property set on"
+                                    " event that will never be used %1\n")
+                                    .Arg(e->GetID());
+                            });
+                        }
+
+                        if(e->BranchesCount() > 0)
+                        {
+                            LogServerDataManagerWarning([e]()
+                            {
+                                return String("'branches' property set on"
+                                    " event that will never be used %1\n")
+                                    .Arg(e->GetID());
+                            });
+                        }
+
+                        seqList.clear();
+                    }
+                    else
+                    {
+                        // Get "start actions" event
+                        auto iTime = std::dynamic_pointer_cast<
+                            objects::EventITime>(e);
+                        if(iTime)
+                        {
+                            if(!iTime->GetStartActions().IsEmpty())
+                            {
+                                refIDs.insert(iTime->GetStartActions());
+                            }
+
+                            hasITimeGifts = iTime->GiftIDsCount() > 0;
+                        }
+                    }
+
+                    for(auto& choice : e->GetChoices())
+                    {
+                        if(choice->GetSkipInvalid()) continue;
+
+                        seqList.push_back(choice);
+                    }
+                }
+            }
+            break;
+        case objects::Event::EventType_t::PERFORM_ACTIONS:
+            {
+                auto e = std::dynamic_pointer_cast<
+                    objects::EventPerformActions>(ePair.second);
+                if(e)
+                {
+                    auto actions = GetAllActions(e->GetActions());
+                    for(auto eventID : GetInvalidEventIDs(actions))
+                    {
+                        invalidEventIDs.insert(eventID);
+                    }
+                }
+            }
+            break;
+        default:
+            break;
+        }
+
+        for(auto& seq : seqList)
+        {
+            if(!seq->GetNext().IsEmpty())
+            {
+                refIDs.insert(seq->GetNext());
+            }
+
+            if(!seq->GetQueueNext().IsEmpty())
+            {
+                refIDs.insert(seq->GetQueueNext());
+            }
+
+            bool noConditionBranch = false;
+            for(auto branch : seq->GetBranches())
+            {
+                if(!branch->GetNext().IsEmpty())
+                {
+                    refIDs.insert(branch->GetNext());
+                }
+
+                if(!branch->GetQueueNext().IsEmpty())
+                {
+                    refIDs.insert(branch->GetQueueNext());
+                }
+
+                noConditionBranch |= branch->ConditionsCount() == 0;
+            }
+
+            if(noConditionBranch && !hasITimeGifts &&
+                seq->GetBranchScriptID().IsEmpty())
+            {
+                auto eventID = ePair.first;
+                LogServerDataManagerError([eventID]()
+                {
+                    return String("Event encountered with one or more"
+                        " inaccessible branches: %1\n").Arg(eventID);
+                });
+
+                valid = false;
+            }
+        }
+
+        for(auto refID : refIDs)
+        {
+            if(mEventData.find(refID.C()) == mEventData.end())
+            {
+                invalidEventIDs.insert(refID.C());
+            }
+        }
+
+        for(auto eventID : invalidEventIDs)
+        {
+            LogServerDataManagerError([ePair, eventID]()
+            {
+                return String("Invalid event ID reference encountered on"
+                    " event %1: %2\n").Arg(ePair.first).Arg(eventID);
+            });
+        }
+
+        valid &= invalidEventIDs.size() == 0;
+    }
+
+    // Gather zone/partial objects
+    for(auto& zdPair : mZoneData)
+    {
+        for(auto& zPair : zdPair.second)
+        {
+            auto actions = GetAllZoneActions(zPair.second, true);
+            for(auto eventID : GetInvalidEventIDs(actions))
+            {
+                LogServerDataManagerError([zPair, eventID]()
+                {
+                    return String("Invalid event ID reference encountered"
+                        " on zone %1: %2\n").Arg(zPair.first).Arg(eventID);
+                });
+            }
+        }
+    }
+
+    for(auto& zPair : mZonePartialData)
+    {
+        auto parent = std::dynamic_pointer_cast<libcomp::Object>(zPair.second);
+        for(auto action : GetAllZonePartialActions(zPair.second, true))
+        {
+            auto actions = GetAllZonePartialActions(zPair.second, true);
+            for(auto eventID : GetInvalidEventIDs(actions))
+            {
+                LogServerDataManagerError([zPair, eventID]()
+                {
+                    return String("Invalid event ID reference encountered on"
+                        " zone partial %1: %2\n").Arg(zPair.first)
+                        .Arg(eventID);
+                });
+            }
+        }
+    }
+
+    // Check instance variant expiration timers
+    for(auto& varPair : mZoneInstanceVariantData)
+    {
+        auto variant = varPair.second;
+        auto eventID = variant->GetTimerExpirationEventID();
+        if(!eventID.IsEmpty() &&
+            mEventData.find(eventID.C()) == mEventData.end())
+        {
+            LogServerDataManagerError([variant, eventID]()
+            {
+                return String("Invalid event ID reference encountered on"
+                    " zone instance variant %1: %2\n").Arg(variant->GetID())
+                    .Arg(eventID);
+            });
+
+            valid = false;
+        }
+    }
+
+    return valid;
+}
+
+bool ServerDataManager::VerifyItemReferences(
+    DefinitionManager* definitionManager)
+{
+    if(!definitionManager)
+    {
+        // No issues found, not checked either
+        return true;
+    }
+
+    bool valid = true;
+
+    // Verify shop products
+    for(auto& shopPair : mShopData)
+    {
+        for(auto& tab : shopPair.second->GetTabs())
+        {
+            for(auto prod : tab->GetProducts())
+            {
+                if(!definitionManager->GetShopProductData(
+                    prod->GetProductID()))
+                {
+                    auto shop = shopPair.second;
+                    LogServerDataManagerError([shop, prod]()
+                    {
+                        return String("Invalid shop product ID encountered"
+                            " in shop %1: %2\n").Arg(shop->GetShopID())
+                            .Arg(prod->GetProductID());
+                    });
+
+                    valid = false;
+                }
+            }
+        }
+    }
+
+    // Verify dropsets
+    for(auto& dropsetPair : mDropSetData)
+    {
+        for(auto drop : dropsetPair.second->GetDrops())
+        {
+            if(!definitionManager->GetItemData(drop->GetItemType()))
+            {
+                auto dropset = dropsetPair.second;
+                LogServerDataManagerError([dropset, drop]()
+                {
+                    return String("Invalid item ID encountered"
+                        " in dropset %1: %2\n").Arg(dropset->GetID())
+                        .Arg(drop->GetItemType());
+                });
+
+                valid = false;
+            }
+        }
+    }
+
+    // Verify direct drops (warn of invalid dropset uses)
+    for(auto& ePair : mEventData)
+    {
+        if(ePair.second->GetEventType() ==
+            objects::Event::EventType_t::PERFORM_ACTIONS)
+        {
+            auto e = std::dynamic_pointer_cast<
+                objects::EventPerformActions>(ePair.second);
+            if(e)
+            {
+                for(auto& action : GetAllActions(e->GetActions(),
+                    (int8_t)objects::Action::ActionType_t::CREATE_LOOT))
+                {
+                    auto act = std::dynamic_pointer_cast<
+                        objects::ActionCreateLoot>(action);
+                    if(!act) continue;
+
+                    for(auto& drop : act->GetDrops())
+                    {
+                        if(!definitionManager->GetItemData(
+                            drop->GetItemType()))
+                        {
+                            LogServerDataManagerError([ePair, drop]()
+                            {
+                                return String("Invalid item ID encountered"
+                                    " on drop within event %1: %2\n")
+                                    .Arg(ePair.first).Arg(drop->GetItemType());
+                            });
+
+                            valid = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for(auto& zdPair : mZoneData)
+    {
+        for(auto& zPair : zdPair.second)
+        {
+            std::set<uint32_t> dropTypes;
+
+            auto dropSetIDs = zPair.second->GetDropSetIDs();
+            for(auto& sPair : zPair.second->GetSpawns())
+            {
+                for(auto& drop : sPair.second->GetDrops())
+                {
+                    dropTypes.insert(drop->GetItemType());
+                }
+
+                for(auto& gift : sPair.second->GetGifts())
+                {
+                    dropTypes.insert(gift->GetItemType());
+                }
+
+                for(uint32_t dropsetID : sPair.second->GetDropSetIDs())
+                {
+                    dropSetIDs.insert(dropsetID);
+                }
+
+                for(uint32_t giftSetID : sPair.second->GetGiftSetIDs())
+                {
+                    dropSetIDs.insert(giftSetID);
+                }
+            }
+
+            for(auto& pPair : zPair.second->GetPlasmaSpawns())
+            {
+                dropSetIDs.insert(pPair.second->GetDropSetID());
+            }
+
+            for(auto& action : GetAllActions(GetAllZoneActions(zPair.second,
+                false), (int8_t)objects::Action::ActionType_t::CREATE_LOOT))
+            {
+                auto act = std::dynamic_pointer_cast<
+                    objects::ActionCreateLoot>(action);
+                if(!act) continue;
+
+                for(auto& drop : act->GetDrops())
+                {
+                    dropTypes.insert(drop->GetItemType());
+                }
+            }
+
+            for(uint32_t itemType : dropTypes)
+            {
+                if(!definitionManager->GetItemData(itemType))
+                {
+                    LogServerDataManagerError([zPair, itemType]()
+                    {
+                        return String("Invalid item ID encountered on drop in"
+                            " zone %1: %2\n").Arg(zPair.first).Arg(itemType);
+                    });
+
+                    valid = false;
+                }
+            }
+
+            for(uint32_t dropSetID : dropSetIDs)
+            {
+                if(mDropSetData.find(dropSetID) == mDropSetData.end())
+                {
+                    LogServerDataManagerWarning([zPair, dropSetID]()
+                    {
+                        return String("Invalid dropset ID encountered in"
+                            " zone %1: %2\n").Arg(zPair.first).Arg(dropSetID);
+                    });
+                }
+            }
+        }
+    }
+
+    for(auto& zPair : mZonePartialData)
+    {
+        std::set<uint32_t> dropTypes;
+
+        auto dropSetIDs = zPair.second->GetDropSetIDs();
+        for(auto& sPair : zPair.second->GetSpawns())
+        {
+            for(auto& drop : sPair.second->GetDrops())
+            {
+                dropTypes.insert(drop->GetItemType());
+            }
+
+            for(auto& gift : sPair.second->GetGifts())
+            {
+                dropTypes.insert(gift->GetItemType());
+            }
+
+            for(uint32_t dropsetID : sPair.second->GetDropSetIDs())
+            {
+                dropSetIDs.insert(dropsetID);
+            }
+
+            for(uint32_t giftSetID : sPair.second->GetGiftSetIDs())
+            {
+                dropSetIDs.insert(giftSetID);
+            }
+        }
+
+        for(auto& pPair : zPair.second->GetPlasmaSpawns())
+        {
+            dropSetIDs.insert(pPair.second->GetDropSetID());
+        }
+
+        for(auto& action : GetAllActions(GetAllZonePartialActions(zPair.second,
+            false), (int8_t)objects::Action::ActionType_t::CREATE_LOOT))
+        {
+            auto act = std::dynamic_pointer_cast<
+                objects::ActionCreateLoot>(action);
+            if(!act) continue;
+
+            for(auto& drop : act->GetDrops())
+            {
+                dropTypes.insert(drop->GetItemType());
+            }
+        }
+
+        for(uint32_t itemType : dropTypes)
+        {
+            if(!definitionManager->GetItemData(itemType))
+            {
+                LogServerDataManagerError([zPair, itemType]()
+                {
+                    return String("Invalid item ID encountered on drop in zone"
+                        " partial %1: %2\n").Arg(zPair.first).Arg(itemType);
+                });
+
+                valid = false;
+            }
+        }
+
+        for(uint32_t dropSetID : dropSetIDs)
+        {
+            if(mDropSetData.find(dropSetID) == mDropSetData.end())
+            {
+                LogServerDataManagerWarning([zPair, dropSetID]()
+                {
+                    return String("Invalid dropset ID encountered in zone"
+                        " partial %1: %2\n").Arg(zPair.first).Arg(dropSetID);
+                });
+            }
+        }
+    }
+
+    for(auto& pPair : mDemonPresentData)
+    {
+        std::set<uint32_t> dropSetIDs;
+        for(uint32_t dropSetID : pPair.second->GetCommonItems())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : pPair.second->GetUncommonItems())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : pPair.second->GetRareItems())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : dropSetIDs)
+        {
+            if(mDropSetData.find(dropSetID) == mDropSetData.end())
+            {
+                LogServerDataManagerWarning([pPair, dropSetID]()
+                {
+                    return String("Invalid dropset ID encountered in demon"
+                        " present %1: %2\n").Arg(pPair.first).Arg(dropSetID);
+                });
+            }
+        }
+    }
+
+    for(auto& rPair : mDemonQuestRewardData)
+    {
+        std::set<uint32_t> dropSetIDs;
+        for(uint32_t dropSetID : rPair.second->GetNormalDropSets())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : rPair.second->GetBonusDropSets())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : rPair.second->GetChanceDropSets())
+        {
+            dropSetIDs.insert(dropSetID);
+        }
+
+        for(uint32_t dropSetID : dropSetIDs)
+        {
+            if(mDropSetData.find(dropSetID) == mDropSetData.end())
+            {
+                LogServerDataManagerWarning([rPair, dropSetID]()
+                {
+                    return String("Invalid dropset ID encountered in demon"
+                        " quest reward %1: %2\n")
+                        .Arg(rPair.first).Arg(dropSetID);
+                });
+            }
+        }
+    }
+
+    return valid;
 }
 
 std::list<std::shared_ptr<ServerScript>> ServerDataManager::LoadScripts(
@@ -821,35 +1374,166 @@ void ServerDataManager::ApplyZonePartial(
     }
 }
 
-void ServerDataManager::AppendPendingDrops()
+std::list<std::shared_ptr<objects::Action>> ServerDataManager::GetAllActions(
+    std::list<std::shared_ptr<objects::Action>> actions, int8_t actionType)
 {
-    for(auto& pair : mPendingMergeDrops)
-    {
-        auto it = mDropSetData.find(pair.first);
-        if(it != mDropSetData.end())
-        {
-            LogServerDataManagerDebug([&]()
-            {
-                return String("Appending %1 drop(s) to drop set %2\n")
-                    .Arg(pair.second.size()).Arg(pair.first);
-            });
+    std::list<std::shared_ptr<objects::Action>> allActions;
 
-            for(auto drop : pair.second)
+    auto currentActions = actions;
+
+    std::list<std::shared_ptr<objects::Action>> newActions;
+    while(currentActions.size() > 0)
+    {
+        // Actions can't nest forever so loop until we're done
+        for(auto action : currentActions)
+        {
+            allActions.push_back(action);
+
+            switch(action->GetActionType())
             {
-                it->second->AppendDrops(drop);
+            case objects::Action::ActionType_t::DELAY:
+                {
+                    auto act = std::dynamic_pointer_cast<
+                        objects::ActionDelay>(action);
+                    for(auto act2 : act->GetActions())
+                    {
+                        newActions.push_back(act2);
+                    }
+                }
+                break;
+            case objects::Action::ActionType_t::SPAWN:
+                {
+                    auto act = std::dynamic_pointer_cast<
+                        objects::ActionSpawn>(action);
+                    for(auto act2 : act->GetDefeatActions())
+                    {
+                        newActions.push_back(act2);
+                    }
+                }
+                break;
+            default:
+                break;
             }
         }
-        else
-        {
-            LogServerDataManagerWarning([&]()
+
+        currentActions = newActions;
+        newActions.clear();
+    }
+
+    if(actionType >= 0)
+    {
+        allActions.remove_if([actionType](
+            const std::shared_ptr<objects::Action>& action)
             {
-                return String("Failed to append drops to unknown"
-                " drop set %1\n").Arg(pair.first);
+                return (int8_t)action->GetActionType() != actionType;
             });
+    }
+
+    return allActions;
+}
+
+std::list<std::shared_ptr<objects::Action>>
+    ServerDataManager::GetAllZoneActions(const std::shared_ptr<
+        objects::ServerZone>& zone, bool includeNested)
+{
+    std::list<std::list<std::shared_ptr<objects::Action>>> actionLists;
+
+    for(auto npc : zone->GetNPCs())
+    {
+        actionLists.push_back(npc->GetActions());
+    }
+
+    for(auto obj : zone->GetObjects())
+    {
+        actionLists.push_back(obj->GetActions());
+    }
+
+    for(auto sgPair : zone->GetSpawnGroups())
+    {
+        actionLists.push_back(sgPair.second->GetSpawnActions());
+        actionLists.push_back(sgPair.second->GetDefeatActions());
+    }
+
+    for(auto pPair : zone->GetPlasmaSpawns())
+    {
+        actionLists.push_back(pPair.second->GetSuccessActions());
+        actionLists.push_back(pPair.second->GetFailActions());
+    }
+
+    for(auto spotPair : zone->GetSpots())
+    {
+        actionLists.push_back(spotPair.second->GetActions());
+        actionLists.push_back(spotPair.second->GetLeaveActions());
+    }
+
+    for(auto trigger : zone->GetTriggers())
+    {
+        actionLists.push_back(trigger->GetActions());
+    }
+
+    std::list<std::shared_ptr<objects::Action>> allActions;
+    for(auto& actionList : actionLists)
+    {
+        for(auto action :
+            includeNested ? GetAllActions(actionList) : actionList)
+        {
+            allActions.push_back(action);
         }
     }
 
-    mPendingMergeDrops.clear();
+    return allActions;
+}
+
+std::list<std::shared_ptr<objects::Action>>
+    ServerDataManager::GetAllZonePartialActions(const std::shared_ptr<
+        objects::ServerZonePartial>& partial, bool includeNested)
+{
+    std::list<std::list<std::shared_ptr<objects::Action>>> actionLists;
+
+    for(auto npc : partial->GetNPCs())
+    {
+        actionLists.push_back(npc->GetActions());
+    }
+
+    for(auto obj : partial->GetObjects())
+    {
+        actionLists.push_back(obj->GetActions());
+    }
+
+    for(auto sgPair : partial->GetSpawnGroups())
+    {
+        actionLists.push_back(sgPair.second->GetSpawnActions());
+        actionLists.push_back(sgPair.second->GetDefeatActions());
+    }
+
+    for(auto pPair : partial->GetPlasmaSpawns())
+    {
+        actionLists.push_back(pPair.second->GetSuccessActions());
+        actionLists.push_back(pPair.second->GetFailActions());
+    }
+
+    for(auto spotPair : partial->GetSpots())
+    {
+        actionLists.push_back(spotPair.second->GetActions());
+        actionLists.push_back(spotPair.second->GetLeaveActions());
+    }
+
+    for(auto trigger : partial->GetTriggers())
+    {
+        actionLists.push_back(trigger->GetActions());
+    }
+
+    std::list<std::shared_ptr<objects::Action>> allActions;
+    for(auto& actionList : actionLists)
+    {
+        for(auto action :
+            includeNested ? GetAllActions(actionList) : actionList)
+        {
+            allActions.push_back(action);
+        }
+    }
+
+    return allActions;
 }
 
 bool ServerDataManager::LoadScripts(gsl::not_null<DataStore*> pDataStore,
@@ -1659,24 +2343,8 @@ namespace libcomp
 
         if(dropSet->GetType() == objects::DropSet::Type_t::REDEFINE)
         {
-            auto it = mDropSetData.find(id);
-            if(it == mDropSetData.end())
-            {
-                LogServerDataManagerWarning([id]()
-                {
-                    return String("Skipping redefined drop set for an ID that"
-                        " has not yet loaded: %1\n").Arg(id);
-                });
-
-                return true;
-            }
-
-            LogServerDataManagerDebug([id]()
-            {
-                return String("Redefining drops on drop set: %1\n").Arg(id);
-            });
-
-            it->second->SetDrops(dropSet->GetDrops());
+            // hold onto redefinitions until the actual dropset loads
+            mRedefineDropSetData[id] = dropSet;
         }
         else if(dropSet->GetType() == objects::DropSet::Type_t::APPEND)
         {
@@ -1962,6 +2630,64 @@ bool ServerDataManager::LoadScript(const libcomp::String& path,
     return true;
 }
 
+void ServerDataManager::ApplyPendingDrops()
+{
+    // Redefine dropsets first
+    for(auto& pair : mRedefineDropSetData)
+    {
+        auto id = pair.first;
+
+        auto it = mDropSetData.find(id);
+        if(it == mDropSetData.end())
+        {
+            LogServerDataManagerWarning([id]()
+            {
+                return String("Skipping redefined drop set for an ID that"
+                    " has not been loaded: %1\n").Arg(id);
+            });
+        }
+        else
+        {
+            LogServerDataManagerDebug([id]()
+            {
+                return String("Redefining drops on drop set: %1\n").Arg(id);
+            });
+
+            it->second->SetDrops(pair.second->GetDrops());
+        }
+    }
+
+    // Now append new drops
+    for(auto& pair : mPendingMergeDrops)
+    {
+        auto it = mDropSetData.find(pair.first);
+        if(it != mDropSetData.end())
+        {
+            LogServerDataManagerDebug([pair]()
+            {
+                return String("Appending %1 drop(s) to drop set %2\n")
+                    .Arg(pair.second.size()).Arg(pair.first);
+            });
+
+            for(auto drop : pair.second)
+            {
+                it->second->AppendDrops(drop);
+            }
+        }
+        else
+        {
+            LogServerDataManagerWarning([pair]()
+            {
+                return String("Failed to append drops to unknown"
+                " drop set %1\n").Arg(pair.first);
+            });
+        }
+    }
+
+    mRedefineDropSetData.clear();
+    mPendingMergeDrops.clear();
+}
+
 bool ServerDataManager::ValidateActions(const std::list<std::shared_ptr<
     objects::Action>>& actions, const libcomp::String& source,
     bool autoContext, bool inEvent)
@@ -2090,6 +2816,51 @@ bool ServerDataManager::ValidateActions(const std::list<std::shared_ptr<
     }
 
     return true;
+}
+
+std::list<libcomp::String> ServerDataManager::GetInvalidEventIDs(
+    const std::list<std::shared_ptr<objects::Action>>& actions) const
+{
+    std::list<libcomp::String> invalidRefs;
+    for(auto& action : actions)
+    {
+        switch(action->GetActionType())
+        {
+        case objects::Action::ActionType_t::START_EVENT:
+            {
+                auto act = std::dynamic_pointer_cast<
+                    objects::ActionStartEvent>(action);
+                if(act && !act->GetEventID().IsEmpty() &&
+                    mEventData.find(act->GetEventID().C()) == mEventData.end())
+                {
+                    invalidRefs.push_back(act->GetEventID());
+                }
+            }
+            break;
+        case objects::Action::ActionType_t::ZONE_INSTANCE:
+            {
+                auto act = std::dynamic_pointer_cast<
+                    objects::ActionZoneInstance>(action);
+                if(act && !act->GetTimerExpirationEventID().IsEmpty() &&
+                    mEventData.find(act->GetTimerExpirationEventID().C()) ==
+                    mEventData.end())
+                {
+                    invalidRefs.push_back(act->GetTimerExpirationEventID());
+                }
+            }
+            break;
+        default:
+            break;
+        }
+
+        if(!action->GetOnFailureEvent().IsEmpty() && mEventData.find(
+            action->GetOnFailureEvent().C()) == mEventData.end())
+        {
+            invalidRefs.push_back(action->GetOnFailureEvent());
+        }
+    }
+
+    return invalidRefs;
 }
 
 bool ServerDataManager::TriggerIsAutoContext(
