@@ -175,6 +175,7 @@
         <member type="u32" name="GroupID"/>
         <member type="s32" name="CreateMessageID"/>
         <member type="string" name="CreateEventID"/>
+        <member type="string" name="ToLobbyEventID"/>
         <member type="s32" name="JoinMessageID"/>
         <member type="list" name="ZoneIDs">
             <element type="u32"/>

@@ -28,6 +28,7 @@
         <member type="u32" name="HomepointZone"/>
         <member type="u32" name="HomepointSpotID"/>
         <member type="u32" name="LogoutZone"/>
+        <member type="u32" name="LogoutInstance"/>
         <member type="float" name="LogoutX"/>
         <member type="float" name="LogoutY"/>
         <member type="float" name="LogoutRotation"/>
