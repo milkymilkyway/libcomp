@@ -20,6 +20,7 @@
     <include path="clan.xml"/>
     <include path="demon.xml"/>
     <include path="enemy.xml"/>
+    <include path="fusion.xml"/>
     <include path="item.xml"/>
     <include path="match.xml"/>
     <include path="party.xml"/>

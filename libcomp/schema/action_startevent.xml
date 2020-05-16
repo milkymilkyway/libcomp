@@ -10,5 +10,8 @@
             <value>NO</value>
         </member>
         <member type="bool" name="autoOnly"/>
+        <member type="list" name="eventTransformScriptParams">
+            <element type="string"/>
+        </member>
     </object>
 </objgen>

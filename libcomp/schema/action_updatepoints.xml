@@ -17,6 +17,9 @@
             <value>BETHEL</value>
             <value>ZIOTITE</value>
             <value>REUNION_POINTS</value>
+            <value>FAMILIARITY</value>
+            <value>DURABILITY</value>
+            <value>FUSION_GAUGE</value>
         </member>
         <member type="s64" name="value"/>
         <member type="s8" name="modifier"/>

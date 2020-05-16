@@ -6,6 +6,6 @@
         <member type="bool" name="isStop"/>
         <member type="s32" name="musicID"/>
         <member type="s32" name="fadeInDelay"/>
-        <member type="s32" name="unknown"/>
+        <member type="s32" name="fadeOutDelay"/>
     </object>
 </objgen>

@@ -1164,12 +1164,27 @@ namespace libcomp
             if(filename.length() > 0 &&
                 mSpotData.find(filename) == mSpotData.end())
             {
-                spotLoadCount++;
+                auto path = libcomp::String("Client/%1").Arg(filename);
 
                 std::list<std::shared_ptr<objects::MiSpotData>> spotRecords;
                 bool spotSuccess = LoadBinaryData<objects::MiSpotData>(
-                    pDataStore, libcomp::String("Client/%1").Arg(filename),
-                    false, 0, spotRecords, false);
+                    pDataStore, path, false, 0, spotRecords, false);
+
+                // Dynamic map reference to an invalid file only becomes a
+                // problem if a zone actually uses it
+                if(!spotSuccess && !pDataStore->Open(path))
+                {
+                    LogDefinitionManagerWarning([filename]()
+                    {
+                        return libcomp::String("Invalid spot file listed in"
+                            " DynamicMapData: %1\n").Arg(filename);
+                    });
+
+                    continue;
+                }
+
+                spotLoadCount++;
+
                 if(spotSuccess)
                 {
                     for(auto spotRecord : spotRecords)

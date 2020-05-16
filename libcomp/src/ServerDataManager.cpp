@@ -54,6 +54,7 @@
 #include <EventOpenMenu.h>
 #include <EventPerformActions.h>
 #include <EventPrompt.h>
+#include <FusionMistake.h>
 #include <ItemDrop.h>
 #include <MiSItemData.h>
 #include <MiSStatusData.h>
@@ -399,6 +400,12 @@ const std::shared_ptr<objects::DropSet> ServerDataManager::GetDropSetData(uint32
     return GetObjectByID<uint32_t, objects::DropSet>(id, mDropSetData);
 }
 
+std::unordered_map<uint32_t, std::shared_ptr<
+    objects::FusionMistake>> ServerDataManager::GetFusionMistakeData()
+{
+    return mFusionMistakeData;
+}
+
 const std::shared_ptr<objects::DropSet> ServerDataManager::GetGiftDropSetData(
     uint32_t giftBoxID)
 {
@@ -495,6 +502,16 @@ bool ServerDataManager::LoadData(DataStore *pDataStore,
 
             failure = !LoadObjects<objects::EnchantSpecialData>(
                 pDataStore, "/data/enchantspecial", definitionManager, true,
+                true);
+        }
+
+        if(!failure)
+        {
+            LogServerDataManagerDebugMsg(
+                "Loading fusion mistake server definitions...\n");
+
+            failure = !LoadObjects<objects::FusionMistake>(
+                pDataStore, "/data/fusionmistake", definitionManager, true,
                 true);
         }
 
@@ -2458,6 +2475,73 @@ namespace libcomp
         }
 
         return definitionManager && definitionManager->RegisterServerSideDefinition(eSpecial);
+    }
+
+    template<>
+    bool ServerDataManager::LoadObject<objects::FusionMistake>(const tinyxml2::XMLDocument& doc,
+        const tinyxml2::XMLElement *objNode, DefinitionManager* definitionManager)
+    {
+        auto mistake = std::shared_ptr<objects::FusionMistake>(new objects::FusionMistake);
+        if(!mistake->Load(doc, *objNode))
+        {
+            return false;
+        }
+
+        uint32_t id = mistake->GetID();
+        if(mFusionMistakeData.find(id) != mFusionMistakeData.end())
+        {
+            LogServerDataManagerError([id]()
+            {
+                return String("Duplicate fusion mistake entry"
+                    " encountered: %1\n").Arg(id);
+            });
+
+            return false;
+        }
+        else if(mistake->ResultRaceIDsCount() == 0 &&
+            mistake->ResultTypesCount() == 0)
+        {
+            LogServerDataManagerError([id]()
+            {
+                return String("Fusion mistake entry with no result"
+                    " encountered: %1\n").Arg(id);
+            });
+
+            return false;
+        }
+
+        if(definitionManager)
+        {
+            for(auto type : mistake->GetResultTypes())
+            {
+                if(!definitionManager->GetDevilData(type))
+                {
+                    LogServerDataManagerError([type, id]()
+                    {
+                        return String("Invalid result type %1 encountered"
+                            " on fusion mistake: %2\n").Arg(type).Arg(id);
+                    });
+
+                    return false;
+                }
+            }
+        }
+
+        if((!mistake->GetOnFailure() && !mistake->GetOnMaxSuccess() &&
+            !mistake->GetOnSuccess() && !mistake->GetOnZeroFailure()) ||
+            (!mistake->GetSourceAny() && mistake->SourceRaceIDsCount() > 3) ||
+            (!mistake->GetSourceAny() && mistake->SourceTypesCount() > 3))
+        {
+            LogServerDataManagerWarning([id]()
+            {
+                return String("Inaccssible fusion mistake definition"
+                    " encountered: %1\n").Arg(id);
+            });
+        }
+
+        mFusionMistakeData[id] = mistake;
+
+        return true;
     }
 
     template<>

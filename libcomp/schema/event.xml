@@ -6,8 +6,6 @@
         <member type="list" name="conditions">
             <element type="EventCondition*"/>
         </member>
-        <member type="bool" name="pop"/>
-        <member type="bool" name="popNext"/>
     </object>
     <object name="EventSequence" baseobject="EventBase" persistent="false"
         scriptenabled="true">

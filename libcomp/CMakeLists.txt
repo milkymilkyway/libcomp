@@ -294,6 +294,7 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/event_performactions.xml
     schema/event_playscene.xml
     schema/event_prompt.xml
+    schema/fusion.xml
     schema/item.xml
     schema/match.xml
     schema/packet_login.xml
@@ -565,6 +566,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     Expertise.cpp
     FriendSettings.h
     FriendSettings.cpp
+    FusionMistake.h
+    FusionMistake.cpp
     Hotbar.h
     Hotbar.cpp
     InheritedSkill.h

@@ -57,6 +57,7 @@ class DemonPresent;
 class DemonQuestReward;
 class DropSet;
 class Event;
+class FusionMistake;
 class ItemDrop;
 class ServerShop;
 class ServerZone;
@@ -242,6 +243,13 @@ public:
      * @return Pointer to the drop set matching the specified id
      */
     const std::shared_ptr<objects::DropSet> GetDropSetData(uint32_t id);
+
+    /**
+     * Get all fusion mistake definitions
+     * @return Map of all fusion mistake definitions by ID
+     */
+    std::unordered_map<uint32_t,
+        std::shared_ptr<objects::FusionMistake>> GetFusionMistakeData();
 
     /**
      * Get a drop set by gift box ID
@@ -643,6 +651,10 @@ private:
     /// Map of drop sets by definition ID
     std::unordered_map<uint32_t,
         std::shared_ptr<objects::DropSet>> mDropSetData;
+
+    /// Map of fusion mistake entries by definition ID
+    std::unordered_map<uint32_t,
+        std::shared_ptr<objects::FusionMistake>> mFusionMistakeData;
 
     /// Map of drop set redefinitions by definition ID. Records are staged here
     /// and applied after all dropsets have been loaded.
