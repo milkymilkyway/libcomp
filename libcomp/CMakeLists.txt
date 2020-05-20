@@ -522,6 +522,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     DemonQuestReward.cpp
     DropSet.h
     DropSet.cpp
+    EnemyExtension.h
+    EnemyExtension.cpp
     EnemyBase.h
     EnemyBase.cpp
     Enemy.h

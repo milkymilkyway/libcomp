@@ -34,13 +34,13 @@
             <value>ON_TIME</value>
             <value>ON_SYSTEMTIME</value>
             <value>ON_MOONPHASE</value>
-            <value>ON_ACTION_DELAY</value>
             <value>ON_PHASE</value>
             <value>ON_PVP_START</value>
             <value>ON_PVP_BASE_CAPTURE</value>
             <value>ON_PVP_COMPLETE</value>
             <value>ON_DIASPORA_BASE_CAPTURE</value>
             <value>ON_DIASPORA_BASE_RESET</value>
+            <value>ON_TOKUSEI_EXPIRED</value>
             <value>ON_UB_TICK</value>
             <value>ON_UB_GAUGE_OVER</value>
             <value>ON_UB_GAUGE_UNDER</value>

@@ -56,6 +56,7 @@
             <value>ENEMY_FACTION</value>
             <value>ENEMY_GENDER</value>
             <value>ENEMY_LNC</value>
+            <value>ENEMY_STATUS_ACTIVE</value>
             <value>ENEMY_TOKUSEI</value>
         </member>
     </object>
@@ -115,6 +116,7 @@
             <value>PURSUIT_AFFINITY_OVERRIDE</value>
             <value>SKILL_STACK_ADJUST</value>
             <value>SKILL_ITEM_STACK_ADJUST</value>
+            <value>STATUS_ADD</value>
             <value>STATUS_INFLICT_ADJUST</value>
             <value>WEAPON_AFFINITY_OVERRIDE</value>
 
@@ -148,6 +150,7 @@
             <value>SKILL_LOCK</value>
             <value>SUMMON_STATUS</value>
             <value>SUMMON_SYNC_EXTEND</value>
+            <value>TRIGGER_EXPIRED</value>
             <value>ZONE_INSTANCE_POISON</value>
         </member>
         <member type="s32" name="Value"/>

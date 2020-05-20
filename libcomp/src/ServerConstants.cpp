@@ -1418,8 +1418,6 @@ bool ServerConstants::Initialize(const String& filePath)
         sConstants.GM_CMD_LVL_ITEM);
     success &= LoadInteger(constants["GM_CMD_LVL_KICK"],
         sConstants.GM_CMD_LVL_KICK);
-    success &= LoadInteger(constants["GM_CMD_LVL_KILL"],
-        sConstants.GM_CMD_LVL_KILL);
     success &= LoadInteger(constants["GM_CMD_LVL_LEVEL_UP"],
         sConstants.GM_CMD_LVL_LEVEL_UP);
     success &= LoadInteger(constants["GM_CMD_LVL_LNC"],

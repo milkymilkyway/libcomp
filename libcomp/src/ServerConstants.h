@@ -648,8 +648,6 @@ struct Data
     uint32_t GM_CMD_LVL_ITEM;
     /// Required user level for the @kick GM command.
     uint32_t GM_CMD_LVL_KICK;
-    /// Required user level for the @kill GM command.
-    uint32_t GM_CMD_LVL_KILL;
     /// Required user level for the @levelup GM command.
     uint32_t GM_CMD_LVL_LEVEL_UP;
     /// Required user level for the @lnc GM command.

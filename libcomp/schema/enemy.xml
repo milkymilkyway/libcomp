@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objgen>
+    <object name="EnemyExtension" persistent="false" scriptenabled="true">
+        <member type="bool" name="OverrideStats"/>
+        <member type="array" name="CorrectTbl" size="126">
+            <element type="s16"/>
+        </member>
+        <member type="list" name="StatBoosts">
+            <element type="MiCorrectTbl*"/>
+        </member>
+        <member type="bool" name="NoDefaultSkills"/>
+        <member type="set" name="AddedSkills">
+            <element type="u32"/>
+        </member>
+    </object>
     <object name="EnemyBase" persistent="false" scriptenabled="true">
         <member type="u32" name="Type"/>
         <member type="u32" name="VariantType"/>
@@ -20,6 +33,7 @@
 
         <!-- Sub-sections -->
         <member type="EntityStats*" name="CoreStats"/>
+        <member type="EnemyExtension*" name="Extension" nulldefault="true"/>
     </object>
     <object name="Enemy" persistent="false" baseobject="EnemyBase"
         scriptenabled="true">
