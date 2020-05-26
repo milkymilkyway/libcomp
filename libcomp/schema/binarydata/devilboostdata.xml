@@ -4,19 +4,22 @@
         <member type="enum" name="type" underlying="uint8_t" pad="3">
             <value num="0">NONE</value>
             <value num="1">LNC</value>
+            <value num="2">REUNION</value>
+            <value num="3">FAMILY</value>
+            <value num="4">RACE</value>
             <value num="7">FAMILIARITY</value>
         </member>
         <member type="s32" name="value1"/>
         <member type="s32" name="value2"/>
-        <member type="s32" name="unk1"/>
-        <member type="s32" name="unk2"/>
+        <member type="s32" name="value3"/>
+        <member type="s32" name="value4"/>
     </object>
     <object name="MiDevilBoostResultData" persistent="false">
         <member type="s8" name="type" pad="3"/>
         <member type="s32" name="minPoints"/>
         <member type="s32" name="maxPoints"/>
-        <member type="s16" name="unk1"/>
-        <member type="s16" name="unk2"/>
+        <member type="s16" name="unused1"/>
+        <member type="s16" name="unused2"/>
         <member type="s32" name="points"/>
     </object>
     <object name="MiDevilBoostData" persistent="false">
@@ -25,7 +28,7 @@
         <member type="s8" name="maxLevel"/>
         <member type="s8" name="growthType"/>
         <member type="s8" name="growthRank"/>
-        <member type="s8" name="unk1" pad="3"/>
+        <member type="s8" name="benefitGauge" pad="3"/>
         <member type="array" size="3" name="requirements">
             <element type="MiDevilBoostRequirementData*"/>
         </member>

@@ -66,25 +66,24 @@
     </object>
     <object name="MiZoneGouraudData" persistent="false" scriptenabled="true">
         <member type="bool" name="enabled" pad="3"/>
-        <member type="f32" name="bloom1"/>
-        <member type="f32" name="bloom2"/>
-        <member type="f32" name="shading1"/>
-        <member type="f32" name="shading2"/>
-        <member type="f32" name="shading3"/>
-        <member type="f32" name="shading4"/>
+        <member type="f32" name="bloomScale"/>
+        <member type="f32" name="bloomBrightness"/>
+        <member type="array" name="shading" size="4">
+            <element type="f32"/>
+        </member>
         <member type="f32" name="unused"/>
         <member type="f32" name="blur"/>
     </object>
     <object name="MiZoneLensFlareLayerData" persistent="false" scriptenabled="true">
         <member type="bool" name="enabled" pad="3"/>
         <member type="f32" name="distance"/>
-        <member type="f32" name="scale1"/>
-        <member type="f32" name="scale2"/>
+        <member type="f32" name="outerScale"/>
+        <member type="f32" name="innerScale"/>
         <member type="f32" name="opacity"/>
     </object>
     <object name="MiZoneLensFlareData" persistent="false" scriptenabled="true">
         <member type="bool" name="enabled" pad="3"/>
-        <member type="f32" name="unknown"/>
+        <member type="f32" name="reduction"/>
         <member type="array" name="layers" size="7">
             <element type="MiZoneLensFlareLayerData*"/>
         </member>
@@ -94,25 +93,11 @@
         <member type="u32" name="battleSoundID"/>
     </object>
     <object name="MiZoneOtherData" persistent="false" scriptenabled="true">
-        <member type="array" name="other1" size="2">
+        <!-- Formerly contained several "other" values that did not appear to be used -->
+        <member type="f32" name="unused" pad="28"/>
+        <member type="array" name="characterLighting" size="3" pad="24">
             <element type="f32"/>
         </member>
-        <member type="array" name="other2" size="2">
-            <element type="f32"/>
-        </member>
-        <member type="f32" name="other3"/>
-        <member type="array" name="other4" size="3">
-            <element type="f32"/>
-        </member>
-        <member type="array" name="other5" size="3">
-            <element type="f32"/>
-        </member>
-        <member type="f32" name="other6"/>
-        <member type="f32" name="other7"/>
-        <member type="f32" name="other8"/>
-        <member type="f32" name="other9"/>
-        <member type="f32" name="other10"/>
-        <member type="f32" name="other11"/>
     </object>
     <object name="MiZoneData" persistent="false" scriptenabled="true">
         <member type="MiZoneBasicData*" name="basic"/>

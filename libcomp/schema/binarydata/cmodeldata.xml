@@ -2,15 +2,13 @@
 <objgen>
     <object name="MiCModelBase" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="u32" name="IconID"/>
-        <member type="f32" name="unk2"/>
-        <member type="f32" name="unk3"/>
-        <member type="u8" name="unk4"/>
-        <member type="u8" name="unk5"/>
-        <member type="u16" name="unk6"/>
-        <member type="string" length="36" name="Model" encoding="utf8"/>
-        <member type="string" length="36" name="Texture" encoding="cp932"/>
-        <member type="array" size="3" name="unk7">
+        <member type="u32" name="iconID"/>
+        <member type="f32" name="scale"/>
+        <member type="f32" name="summonCircleSize"/>
+        <member type="u8" name="unk4" pad="3"/>
+        <member type="string" length="36" name="model" encoding="utf8"/>
+        <member type="string" length="36" name="texture" encoding="cp932"/>
+        <member type="array" size="3" name="color">
             <element type="u8"/>
         </member>
         <member type="u8" name="unk8"/>
@@ -36,7 +34,7 @@
         <member type="f32" name="unk16"/>
     </object>
     <object name="MiCModelMotionMap" persistent="false">
-        <member type="u32" name="unk1"/>
+        <member type="u32" name="ID"/>
         <member type="f32" name="unk2"/>
         <member type="u32" name="unk3"/>
         <member type="f32" name="unk4"/>

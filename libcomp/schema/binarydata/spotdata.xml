@@ -21,7 +21,7 @@
         </member>
         <member type="float" name="centerX"/>
         <member type="float" name="centerY"/>
-        <member type="float" name="unk4"/>
+        <member type="float" name="centerZ"/>
         <member type="float" name="rotation"/>
         <member type="float" name="spanX"/>
         <member type="float" name="spanY"/>

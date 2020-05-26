@@ -21,8 +21,8 @@
     </object>
     <object name="MiModifiedEffectData" persistent="false">
         <member type="u16" name="ID"/>
-        <member type="u16" name="unk1"/>
-        <member type="s8" name="unk2"/>
+        <member type="u16" name="slot1"/>
+        <member type="s8" name="slot2"/>
         <member type="s8" name="type"/>
         <member type="s8" name="sequenceID"/>
         <member type="u8" name="sequenceID2"/>

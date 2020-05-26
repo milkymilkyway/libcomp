@@ -86,7 +86,7 @@
     <object name="MiNegotiationData" persistent="false" scriptenabled="true">
         <member type="u8" name="affabilityThreshold"/>
         <member type="u8" name="fearThreshold"/>
-        <member type="u8" name="fusionIntro" pad="1"/>
+        <member type="u8" name="personalityType" pad="1"/>
     </object>
     <object name="MiSummonData" persistent="false" scriptenabled="true">
         <member type="u32" name="summonSpeed" pad="1"/>

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <objgen>
     <object name="MiNextEpisodeInfo" persistent="false">
-        <member type="s32" name="unk1"/>
-        <member type="s32" name="unk2"/>
-        <member type="s32" name="unk3"/>
+        <member type="s32" name="questID"/>
+        <member type="s32" name="restrictionType"/>
+        <member type="s32" name="restrictionValue"/>
     </object>
     <object name="MiCQuestData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="Title" encoding="cp932"
+        <member type="string" name="title" encoding="cp932"
             round="4" lensz="4"/>
-        <member type="string" name="NPC" encoding="cp932"
+        <member type="string" name="npc" encoding="cp932"
             round="4" lensz="4"/>
-        <member type="s32" name="unk1"/>
-        <member type="s32" name="unk2"/>
-        <member type="s32" name="unk3"/>
+        <member type="s32" name="zoneID"/>
+        <member type="s32" name="xCoordinate"/>
+        <member type="s32" name="yCoordinate"/>
         <member type="array" size="8" name="lines">
             <element type="string" round="4" lensz="4" encoding="cp932"/>
         </member>

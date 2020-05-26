@@ -3,8 +3,8 @@
     <object name="MiCDevilDungeonData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="string" length="128" name="filterFile"/>
-        <member type="float" name="filter1"/>
-        <member type="float" name="filter2"/>
-        <member type="float" name="filter3"/>
+        <member type="float" name="fadeInTransparency"/>
+        <member type="float" name="fadeOutTransparency"/>
+        <member type="float" name="fadeInterval"/>
     </object>
 </objgen>

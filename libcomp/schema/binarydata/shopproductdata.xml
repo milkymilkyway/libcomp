@@ -5,7 +5,7 @@
         <member type="u32" name="item"/>
         <member type="u32" name="stack"/>
         <member type="u32" name="CPCost"/>
-        <member type="u32" name="unk"/>
+        <member type="u32" name="debugID"/>
         <member type="u32" name="unpurchasable"/>
     </object>
 </objgen>

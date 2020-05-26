@@ -226,8 +226,7 @@
     </object>
     <object name="MiExpertGrowthTbl" persistent="false" scriptenabled="true">
         <member type="u8" name="expertiseID"/>
-        <member type="s8" name="growthRate"/>
-        <member type="u16" name="expertGrowth3"/>
+        <member type="s8" name="growthRate" pad="2"/>
     </object>
     <object name="MiSkillCharasticData" persistent="false" scriptenabled="true">
         <member type="array" size="4" name="charastic">
@@ -245,7 +244,7 @@
             <value>PVP_RESTRICTED</value>
             <value>PVP_ONLY</value>
         </member>
-        <member type="u8" name="pvp2" pad="2"/>
+        <member type="u8" name="PVPRate" pad="2"/>
     </object>
     <object name="MiSkillData" persistent="false" scriptenabled="true">
         <member type="MiSkillItemStatusCommonData*" name="common"/>

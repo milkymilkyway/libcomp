@@ -11,6 +11,6 @@
             <element type="u32"/>
         </member>
         <member type="s32" name="sealedActionType"/>
-        <member type="float" name="unk3"/>
+        <member type="float" name="unusedDelay"/>
     </object>
 </objgen>

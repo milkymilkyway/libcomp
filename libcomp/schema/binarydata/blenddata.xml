@@ -40,9 +40,9 @@
     </object>
     <object name="MiBlendExtData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="u32" name="unk1"/>
+        <member type="u32" name="itemDependency"/>
         <member type="u32" name="groupID"/>
-        <member type="u32" name="unk2"/>
+        <member type="u32" name="restrictedID"/>
         <member type="array" size="2" name="srcItems">
             <element type="MiBlendExtData_SrcItemChange*"/>
         </member>

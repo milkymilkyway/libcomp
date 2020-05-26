@@ -3,7 +3,7 @@
     <object name="MiBazaarClerkNPCData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="u32" name="npcID"/>
-        <member type="u32" name="unk"/>
+        <member type="u32" name="animation"/>
         <member type="array" size="3" name="messageIDs">
             <element type="u32"/>
         </member>

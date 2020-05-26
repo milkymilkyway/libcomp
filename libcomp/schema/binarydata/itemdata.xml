@@ -46,7 +46,7 @@
         <member type="u32" name="flags"/>
     </object>
     <object name="MiPossessionData" persistent="false" scriptenabled="true">
-        <member type="u8" name="possess1"/>
+        <member type="u8" name="type"/>
         <member type="u8" name="durability"/>
         <member type="u16" name="stackSize"/>
         <member type="u32" name="useSkill"/>
@@ -54,19 +54,17 @@
     <object name="MiUseRestrictionsData" persistent="false" scriptenabled="true">
         <member type="u8" name="gender"/>
         <member type="u8" name="level"/>
-        <member type="enum" name="alignment" underlying="uint8_t">
+        <member type="enum" name="alignment" underlying="uint8_t" pad="1">
             <value>ALL</value>
             <value>LAW</value>
             <value>NEUTRAL</value>
             <value>CHAOS</value>
         </member>
-        <member type="u8" name="restriction1"/>
         <member type="list" name="skillTbl">
             <element type="MiSkillTbl*"/>
         </member>
         <member type="u8" name="modSlots"/>
-        <member type="u8" name="stock"/>
-        <member type="u16" name="restriction2"/>
+        <member type="u8" name="stock" pad="2"/>
     </object>
     <object name="MiItemPvPData" persistent="false" scriptenabled="true">
         <member type="s16" name="GPRequirement" pad="2"/>

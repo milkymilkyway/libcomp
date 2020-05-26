@@ -9,23 +9,22 @@
         <member type="string" length="516" name="desc"
             encoding="cp932"/>
         <member type="u16" name="icon"/>
-        <member type="s8" name="unk1"/>
-        <member type="s8" name="canTrade"/>
-        <member type="u32" name="unk2"/>
+        <member type="s8" name="category"/>
+        <member type="bool" name="tradeList"/>
+        <member type="u32" name="modelID"/>
     </object>
     <object name="MiCItemMotionData" persistent="false">
-        <member type="u32" name="motion1"/>
-        <member type="u32" name="motion2"/>
-        <member type="u32" name="motion3"/>
-        <member type="u32" name="motion4"/>
+        <member type="u32" name="idle"/>
+        <member type="u32" name="combatIdle"/>
+        <member type="u32" name="walk"/>
+        <member type="u32" name="run"/>
     </object>
     <object name="MiCItemSPEffectData" persistent="false">
-        <member type="string" length="68" name="effect1"/>
-        <member type="string" length="68" name="effect2"/>
-        <member type="array" size="3" name="effect3">
+        <member type="string" length="68" name="shotEffectFile"/>
+        <member type="string" length="68" name="swingEffectFile"/>
+        <member type="array" size="3" name="effectColor" pad="1">
             <element type="u8"/>
         </member>
-        <member type="u8" name="effect4"/>
     </object>
     <object name="MiCItemData" persistent="false">
         <member type="MiCItemBaseData*" name="baseData"/>

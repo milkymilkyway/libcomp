@@ -3,11 +3,11 @@
     <object name="MiUIInfoData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="u32" name="ui2"/>
-        <member type="s32" name="ui3"/>
-        <member type="s32" name="ui4"/>
-        <member type="s32" name="ui5"/>
-        <member type="s32" name="ui6"/>
-        <member type="s32" name="ui7"/>
+        <member type="s32" name="xPosition"/>
+        <member type="s32" name="yPosition"/>
+        <member type="s32" name="width"/>
+        <member type="s32" name="height"/>
+        <member type="s32" name="parentID"/>
         <member type="string" name="text" encoding="cp932" length="260"/>
         <member type="u32" name="ui9"/>
         <member type="s32" name="ui10"/>

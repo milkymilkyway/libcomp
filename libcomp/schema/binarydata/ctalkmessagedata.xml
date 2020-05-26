@@ -2,7 +2,7 @@
 <objgen>
     <object name="MiCTalkMessageData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="list" name="Lines">
+        <member type="list" name="lines">
             <element type="string" encoding="cp932" length="68"/>
         </member>
     </object>

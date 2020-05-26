@@ -825,7 +825,6 @@ bool ServerDataManager::VerifyEventIntegrity()
     // Validate zone partial references
     for(auto& zPair : mZonePartialData)
     {
-        auto parent = std::dynamic_pointer_cast<libcomp::Object>(zPair.second);
         for(auto action : GetAllZonePartialActions(zPair.second, true))
         {
             auto actions = GetAllZonePartialActions(zPair.second, true);

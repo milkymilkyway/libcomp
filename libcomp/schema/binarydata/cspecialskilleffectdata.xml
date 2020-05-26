@@ -4,27 +4,10 @@
         <member type="u32" name="ID"/>
         <member type="u32" name="skillID"/>
         <member type="u32" name="itemID"/>
-        <member type="u16" name="unk1" pad="2"/>
-        <member type="u32" name="unk2"/>
-        <member type="string" name="effect1" round="4"/>
-        <member type="string" name="effect2" round="4"/>
-        <member type="string" name="effect3" round="4"/>
-        <member type="string" name="effect4" round="4"/>
-        <member type="string" name="effect5" round="4"/>
-        <member type="string" name="effect6" round="4"/>
-        <member type="string" name="effect7" round="4"/>
-        <member type="string" name="effect8" round="4"/>
-        <member type="string" name="effect9" round="4"/>
-        <member type="string" name="effect10" round="4"/>
-        <member type="string" name="effect11" round="4"/>
-        <member type="string" name="effect12" round="4"/>
-        <member type="string" name="effect13" round="4"/>
-        <member type="string" name="effect14" round="4"/>
-        <member type="string" name="effect15" round="4"/>
-        <member type="string" name="effect16" round="4"/>
-        <member type="string" name="effect17" round="4"/>
-        <member type="string" name="effect18" round="4"/>
-        <member type="string" name="effect19" round="4"/>
-        <member type="string" name="effect20" round="4"/>
+        <member type="u16" name="animationID" pad="2"/>
+        <member type="u32" name="soundID"/>
+        <member type="array" size="20" name="effects">
+            <element type="string" round="4"/>
+        </member>
     </object>
 </objgen>
