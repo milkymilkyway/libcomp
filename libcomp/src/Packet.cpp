@@ -490,6 +490,9 @@ char* Packet::Direct(uint32_t sz)
             "size of the packet").Arg(sz), this);
     }
 
+    // Make sure the buffer is allocated before we fill it.
+    Allocate();
+
     // Set the new size of the packet.
     mSize = sz;
 
