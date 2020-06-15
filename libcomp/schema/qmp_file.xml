@@ -20,10 +20,10 @@
     </object>
     <object name="QmpBoundary" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="s32" name="Unk1"/>
-        <member type="s32" name="Unk2"/>
-        <member type="s32" name="Unk3"/>
-        <member type="array" name="Unk4" size="4">
+        <member type="s32" name="Size"/>
+        <member type="s32" name="CenterX"/>
+        <member type="s32" name="CenterY"/>
+        <member type="array" name="Quadrants" size="4">
             <element type="u32"/>
         </member>
         <member type="list" name="Lines">
