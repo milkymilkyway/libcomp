@@ -528,7 +528,7 @@ String String::LeftTrimmed() const
 
     // Source: http://stackoverflow.com/questions/216823/
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))));
+        [](unsigned char c){ return !std::isspace(c); }));
 
     return String(s);
 }
@@ -539,7 +539,7 @@ String String::RightTrimmed() const
 
     // Source: http://stackoverflow.com/questions/216823/
     s.erase(std::find_if(s.rbegin(), s.rend(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        [](unsigned char c){ return !std::isspace(c); }).base(), s.end());
 
     return String(s);
 }
@@ -552,11 +552,11 @@ String String::Trimmed() const
 
     // Left
     s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))));
+        [](unsigned char c){ return !std::isspace(c); }));
 
     // Right
     s.erase(std::find_if(s.rbegin(), s.rend(),
-        std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        [](unsigned char c){ return !std::isspace(c); }).base(), s.end());
 
     return String(s);
 }
