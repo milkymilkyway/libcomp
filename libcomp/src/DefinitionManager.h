@@ -850,7 +850,7 @@ public:
     template <class T>
     bool RegisterServerSideDefinition(const std::shared_ptr<T>& record);
 
-private:
+protected:
     /**
      * Load a binary file from the specified data store location
      * @param pDataStore Pointer to a data store location to check
@@ -987,6 +987,7 @@ private:
         return nullptr;
     }
 
+private:
     /// Map of client-side AI definitions by ID
     std::unordered_map<uint32_t,
         std::shared_ptr<objects::MiAIData>> mAIData;
