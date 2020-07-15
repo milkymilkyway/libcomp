@@ -36,125 +36,111 @@
 
 using namespace libcomp;
 
-std::list<libcomp::Message::MessageType> ManagerPacket::sSupportedTypes =
-    { libcomp::Message::MessageType::MESSAGE_TYPE_PACKET };
+std::list<libcomp::Message::MessageType> ManagerPacket::sSupportedTypes = {
+    libcomp::Message::MessageType::MESSAGE_TYPE_PACKET};
 
 ManagerPacket::ManagerPacket(std::weak_ptr<libcomp::BaseServer> server)
-    : mServer(server)
-{
+    : mServer(server) {}
+
+ManagerPacket::~ManagerPacket() {}
+
+std::list<libcomp::Message::MessageType> ManagerPacket::GetSupportedTypes()
+    const {
+  return sSupportedTypes;
 }
 
-ManagerPacket::~ManagerPacket()
-{
-}
+bool ManagerPacket::ProcessMessage(const libcomp::Message::Message* pMessage) {
+  const libcomp::Message::Packet* pPacketMessage =
+      dynamic_cast<const libcomp::Message::Packet*>(pMessage);
 
-std::list<libcomp::Message::MessageType>
-    ManagerPacket::GetSupportedTypes() const
-{
-    return sSupportedTypes;
-}
+  if (nullptr != pPacketMessage) {
+    libcomp::ReadOnlyPacket p(pPacketMessage->GetPacket());
+    p.Rewind();
+    // p.HexDump();
 
-bool ManagerPacket::ProcessMessage(const libcomp::Message::Message *pMessage)
-{
-    const libcomp::Message::Packet *pPacketMessage = dynamic_cast<
-        const libcomp::Message::Packet*>(pMessage);
+    CommandCode_t code = pPacketMessage->GetCommandCode();
 
-    if(nullptr != pPacketMessage)
-    {
-        libcomp::ReadOnlyPacket p(pPacketMessage->GetPacket());
-        p.Rewind();
-        //p.HexDump();
+    auto it = mPacketParsers.find(code);
 
-        CommandCode_t code = pPacketMessage->GetCommandCode();
+    if (it == mPacketParsers.end()) {
+      LogPacketError([code]() {
+        return String("Unknown packet with command code 0x%1.\n")
+            .Arg(code, 4, 16, '0');
+      });
 
-        auto it = mPacketParsers.find(code);
-
-        if(it == mPacketParsers.end())
-        {
-            LogPacketError([code]()
-            {
-                return String("Unknown packet with command code 0x%1.\n")
-                    .Arg(code, 4, 16, '0');
-            });
-
-            return false;
-        }
-
-        auto connection = pPacketMessage->GetConnection();
-        LogPacketDebug([code, connection]()
-        {
-            return String("Processing packet 0x%1 from %2 (%3): started\n")
-                .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
-                .Arg(connection->GetName());
-        });
-
-        if(!ValidateConnectionState(connection, code))
-        {
-            LogPacketDebug([code, connection]()
-            {
-                return String("Processing packet 0x%1 from %2 (%3): invalid\n")
-                    .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
-                    .Arg(connection->GetName());
-            });
-
-            connection->Close();
-            return false;
-        }
-
-        if(!it->second->Parse(this, connection, p))
-        {
-            LogPacketDebug([code, connection]()
-            {
-                return String("Processing packet 0x%1 from %2 (%3): failed\n")
-                    .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
-                    .Arg(connection->GetName());
-            });
-
-            connection->Close();
-            return false;
-        }
-
-        LogPacketDebug([code, connection]()
-        {
-            return String("Processing packet 0x%1 from %2 (%3): complete\n")
-                .Arg(code, 4, 16, '0').Arg(connection->GetRemoteAddress())
-                .Arg(connection->GetName());
-        });
-
-        return true;
+      return false;
     }
-    else
-    {
-        return false;
+
+    auto connection = pPacketMessage->GetConnection();
+    LogPacketDebug([code, connection]() {
+      return String("Processing packet 0x%1 from %2 (%3): started\n")
+          .Arg(code, 4, 16, '0')
+          .Arg(connection->GetRemoteAddress())
+          .Arg(connection->GetName());
+    });
+
+    if (!ValidateConnectionState(connection, code)) {
+      LogPacketDebug([code, connection]() {
+        return String("Processing packet 0x%1 from %2 (%3): invalid\n")
+            .Arg(code, 4, 16, '0')
+            .Arg(connection->GetRemoteAddress())
+            .Arg(connection->GetName());
+      });
+
+      connection->Close();
+      return false;
     }
-}
 
-std::shared_ptr<libcomp::BaseServer> ManagerPacket::GetServer()
-{
-    return mServer.lock();
-}
+    if (!it->second->Parse(this, connection, p)) {
+      LogPacketDebug([code, connection]() {
+        return String("Processing packet 0x%1 from %2 (%3): failed\n")
+            .Arg(code, 4, 16, '0')
+            .Arg(connection->GetRemoteAddress())
+            .Arg(connection->GetName());
+      });
 
-bool ManagerPacket::ValidateConnectionState(const std::shared_ptr<
-    libcomp::TcpConnection>& connection, CommandCode_t commandCode) const
-{
-    (void)connection;
-    (void)commandCode;
+      connection->Close();
+      return false;
+    }
+
+    LogPacketDebug([code, connection]() {
+      return String("Processing packet 0x%1 from %2 (%3): complete\n")
+          .Arg(code, 4, 16, '0')
+          .Arg(connection->GetRemoteAddress())
+          .Arg(connection->GetName());
+    });
 
     return true;
-}
-
-bool Parsers::Placeholder::Parse(ManagerPacket *pPacketManager,
-    const std::shared_ptr<libcomp::TcpConnection>& connection,
-    libcomp::ReadOnlyPacket& p) const
-{
-    // DO NOT ACTUALLY USE
-    // This is required so the packet parser class is not seen
-    // as incomplete within libcomp.
-    (void)pPacketManager;
-    (void)connection;
-    (void)p;
-
+  } else {
     return false;
+  }
 }
 
-#endif // !EXOTIC_PLATFORM
+std::shared_ptr<libcomp::BaseServer> ManagerPacket::GetServer() {
+  return mServer.lock();
+}
+
+bool ManagerPacket::ValidateConnectionState(
+    const std::shared_ptr<libcomp::TcpConnection>& connection,
+    CommandCode_t commandCode) const {
+  (void)connection;
+  (void)commandCode;
+
+  return true;
+}
+
+bool Parsers::Placeholder::Parse(
+    ManagerPacket* pPacketManager,
+    const std::shared_ptr<libcomp::TcpConnection>& connection,
+    libcomp::ReadOnlyPacket& p) const {
+  // DO NOT ACTUALLY USE
+  // This is required so the packet parser class is not seen
+  // as incomplete within libcomp.
+  (void)pPacketManager;
+  (void)connection;
+  (void)p;
+
+  return false;
+}
+
+#endif  // !EXOTIC_PLATFORM

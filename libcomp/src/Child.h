@@ -34,36 +34,33 @@
 #include <list>
 #include <string>
 
-namespace libcomp
-{
+namespace libcomp {
 
-class Child
-{
-public:
-    explicit Child(const std::string& program,
-        const std::list<std::string>& arguments,
-        int bootTimeout = 0, bool restart = false,
-        bool displayOutput = false);
-    ~Child();
+class Child {
+ public:
+  explicit Child(const std::string& program,
+                 const std::list<std::string>& arguments, int bootTimeout = 0,
+                 bool restart = false, bool displayOutput = false);
+  ~Child();
 
-    bool Start(bool notify = false);
-    pid_t GetPID() const;
-    std::string GetCommandLine() const;
-    bool ShouldRestart() const;
-    int GetBootTimeout() const;
+  bool Start(bool notify = false);
+  pid_t GetPID() const;
+  std::string GetCommandLine() const;
+  bool ShouldRestart() const;
+  int GetBootTimeout() const;
 
-    void Kill();
-    void Interrupt();
+  void Kill();
+  void Interrupt();
 
-private:
-    std::string mProgram;
-    std::list<std::string> mArguments;
-    pid_t mPID;
-    int mBootTimeout;
-    bool mRestart;
-    bool mDisplayOutput;
+ private:
+  std::string mProgram;
+  std::list<std::string> mArguments;
+  pid_t mPID;
+  int mBootTimeout;
+  bool mRestart;
+  bool mDisplayOutput;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_CHILD_H
+#endif  // LIBCOMP_SRC_CHILD_H

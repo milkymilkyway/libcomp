@@ -33,214 +33,134 @@
 
 using namespace libcomp;
 
-DatabaseBind::DatabaseBind(const String& column) : mColumn(column)
-{
+DatabaseBind::DatabaseBind(const String& column) : mColumn(column) {}
+
+DatabaseBind::~DatabaseBind() {}
+
+String DatabaseBind::GetColumn() const { return mColumn; }
+
+void DatabaseBind::SetColumn(const String& column) { mColumn = column; }
+
+DatabaseBindText::DatabaseBindText(const String& column, const String& value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindText::~DatabaseBindText() {}
+
+bool DatabaseBindText::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-DatabaseBind::~DatabaseBind()
-{
+bool DatabaseBindText::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-String DatabaseBind::GetColumn() const
-{
-    return mColumn;
-}
-
-void DatabaseBind::SetColumn(const String& column)
-{
-    mColumn = column;
-}
-
-DatabaseBindText::DatabaseBindText(const String& column,
-    const String& value) : DatabaseBind(column), mValue(value)
-{
-}
-
-DatabaseBindText::~DatabaseBindText()
-{
-}
-
-bool DatabaseBindText::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
-
-bool DatabaseBindText::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-String DatabaseBindText::GetValue() const
-{
-    return mValue;
-}
+String DatabaseBindText::GetValue() const { return mValue; }
 
 DatabaseBindBlob::DatabaseBindBlob(const String& column,
-    const std::vector<char>& value) : DatabaseBind(column), mValue(value)
-{
+                                   const std::vector<char>& value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindBlob::~DatabaseBindBlob() {}
+
+bool DatabaseBindBlob::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-DatabaseBindBlob::~DatabaseBindBlob()
-{
+bool DatabaseBindBlob::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-bool DatabaseBindBlob::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
-
-bool DatabaseBindBlob::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-std::vector<char> DatabaseBindBlob::GetValue() const
-{
-    return mValue;
-}
+std::vector<char> DatabaseBindBlob::GetValue() const { return mValue; }
 
 DatabaseBindUUID::DatabaseBindUUID(const String& column,
-    const libobjgen::UUID& value) : DatabaseBind(column), mValue(value)
-{
+                                   const libobjgen::UUID& value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindUUID::~DatabaseBindUUID() {}
+
+bool DatabaseBindUUID::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-DatabaseBindUUID::~DatabaseBindUUID()
-{
+bool DatabaseBindUUID::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-bool DatabaseBindUUID::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
+libobjgen::UUID DatabaseBindUUID::GetValue() const { return mValue; }
+
+DatabaseBindInt::DatabaseBindInt(const String& column, int32_t value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindInt::~DatabaseBindInt() {}
+
+bool DatabaseBindInt::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-bool DatabaseBindUUID::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
+bool DatabaseBindInt::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-libobjgen::UUID DatabaseBindUUID::GetValue() const
-{
-    return mValue;
+int32_t DatabaseBindInt::GetValue() const { return mValue; }
+
+DatabaseBindBigInt::DatabaseBindBigInt(const String& column, int64_t value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindBigInt::~DatabaseBindBigInt() {}
+
+bool DatabaseBindBigInt::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-DatabaseBindInt::DatabaseBindInt(const String& column, int32_t value) :
-    DatabaseBind(column), mValue(value)
-{
+bool DatabaseBindBigInt::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-DatabaseBindInt::~DatabaseBindInt()
-{
+int64_t DatabaseBindBigInt::GetValue() const { return mValue; }
+
+DatabaseBindFloat::DatabaseBindFloat(const String& column, float value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindFloat::~DatabaseBindFloat() {}
+
+bool DatabaseBindFloat::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-bool DatabaseBindInt::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
+bool DatabaseBindFloat::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-bool DatabaseBindInt::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
+float DatabaseBindFloat::GetValue() const { return mValue; }
+
+DatabaseBindDouble::DatabaseBindDouble(const String& column, double value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindDouble::~DatabaseBindDouble() {}
+
+bool DatabaseBindDouble::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-int32_t DatabaseBindInt::GetValue() const
-{
-    return mValue;
+bool DatabaseBindDouble::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-DatabaseBindBigInt::DatabaseBindBigInt(const String& column, int64_t value) :
-    DatabaseBind(column), mValue(value)
-{
+double DatabaseBindDouble::GetValue() const { return mValue; }
+
+DatabaseBindBool::DatabaseBindBool(const String& column, bool value)
+    : DatabaseBind(column), mValue(value) {}
+
+DatabaseBindBool::~DatabaseBindBool() {}
+
+bool DatabaseBindBool::Bind(DatabaseQuery& db) {
+  return db.Bind(mColumn, mValue);
 }
 
-DatabaseBindBigInt::~DatabaseBindBigInt()
-{
+bool DatabaseBindBool::Bind(DatabaseQuery& db, size_t idx) {
+  return db.Bind(idx, mValue);
 }
 
-bool DatabaseBindBigInt::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
+bool DatabaseBindBool::GetValue() const { return mValue; }
 
-bool DatabaseBindBigInt::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-int64_t DatabaseBindBigInt::GetValue() const
-{
-    return mValue;
-}
-
-DatabaseBindFloat::DatabaseBindFloat(const String& column, float value) :
-    DatabaseBind(column), mValue(value)
-{
-}
-
-DatabaseBindFloat::~DatabaseBindFloat()
-{
-}
-
-bool DatabaseBindFloat::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
-
-bool DatabaseBindFloat::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-float DatabaseBindFloat::GetValue() const
-{
-    return mValue;
-}
-
-DatabaseBindDouble::DatabaseBindDouble(const String& column, double value) :
-    DatabaseBind(column), mValue(value)
-{
-}
-
-DatabaseBindDouble::~DatabaseBindDouble()
-{
-}
-
-bool DatabaseBindDouble::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
-
-bool DatabaseBindDouble::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-double DatabaseBindDouble::GetValue() const
-{
-    return mValue;
-}
-
-DatabaseBindBool::DatabaseBindBool(const String& column, bool value) :
-    DatabaseBind(column), mValue(value)
-{
-}
-
-DatabaseBindBool::~DatabaseBindBool()
-{
-}
-
-bool DatabaseBindBool::Bind(DatabaseQuery& db)
-{
-    return db.Bind(mColumn, mValue);
-}
-
-bool DatabaseBindBool::Bind(DatabaseQuery& db, size_t idx)
-{
-    return db.Bind(idx, mValue);
-}
-
-bool DatabaseBindBool::GetValue() const
-{
-    return mValue;
-}
-
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

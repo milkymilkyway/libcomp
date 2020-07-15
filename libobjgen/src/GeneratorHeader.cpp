@@ -39,287 +39,263 @@
 
 using namespace libobjgen;
 
-std::string GeneratorHeader::GenerateClass(const MetaObject& obj)
-{
-    std::stringstream ss;
-    ss << "class " << obj.GetName() << " : public ";
+std::string GeneratorHeader::GenerateClass(const MetaObject& obj) {
+  std::stringstream ss;
+  ss << "class " << obj.GetName() << " : public ";
 
-    auto baseObject = obj.GetBaseObject();
-    if(!baseObject.empty())
-    {
-        ss << baseObject << std::endl;
-    }
-    else if(obj.IsPersistent())
-    {
-        ss << "libcomp::PersistentObject" << std::endl;
-    }
-    else
-    {
-        ss << "libcomp::Object" << std::endl;
-    }
-    ss << "{" << std::endl;
-    ss << "public:" << std::endl;
+  auto baseObject = obj.GetBaseObject();
+  if (!baseObject.empty()) {
+    ss << baseObject << std::endl;
+  } else if (obj.IsPersistent()) {
+    ss << "libcomp::PersistentObject" << std::endl;
+  } else {
+    ss << "libcomp::Object" << std::endl;
+  }
+  ss << "{" << std::endl;
+  ss << "public:" << std::endl;
 
-    // Print defitions for any enums we have
-    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
-    {
-        auto var = *it;
+  // Print defitions for any enums we have
+  for (auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it) {
+    auto var = *it;
 
-        if(var->IsInherited()) continue;
+    if (var->IsInherited()) continue;
 
-        if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_MAP)
-        {
-            var = std::dynamic_pointer_cast<MetaVariableMap>(var)->GetValueElementType();
-        }
-
-        if(var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ENUM)
-        {
-            ss << Tab() << "enum class " << Generator::GetCapitalName(var) << "_t : "
-                << std::dynamic_pointer_cast<MetaVariableEnum>(var)->GetUnderlyingType()
-                << std::endl;
-            ss << Tab() << "{" << std::endl;
-            auto values = std::dynamic_pointer_cast<MetaVariableEnum>(var)->GetValues();
-            for(auto value : values)
-            {
-                ss << Tab(2) << value.first <<
-                    (!value.second.empty() ? " = " + value.second : "") << "," << std::endl;
-            }
-            ss << Tab() << "};" << std::endl << std::endl;
-        }
+    if (var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_MAP) {
+      var = std::dynamic_pointer_cast<MetaVariableMap>(var)
+                ->GetValueElementType();
     }
 
-    ss << Tab() << obj.GetName() << "();" << std::endl;
-    ss << Tab() << "virtual ~" << obj.GetName() << "();" << std::endl;
+    if (var->GetMetaType() == MetaVariable::MetaVariableType_t::TYPE_ENUM) {
+      ss << Tab() << "enum class " << Generator::GetCapitalName(var) << "_t : "
+         << std::dynamic_pointer_cast<MetaVariableEnum>(var)
+                ->GetUnderlyingType()
+         << std::endl;
+      ss << Tab() << "{" << std::endl;
+      auto values =
+          std::dynamic_pointer_cast<MetaVariableEnum>(var)->GetValues();
+      for (auto value : values) {
+        ss << Tab(2) << value.first
+           << (!value.second.empty() ? " = " + value.second : "") << ","
+           << std::endl;
+      }
+      ss << Tab() << "};" << std::endl << std::endl;
+    }
+  }
+
+  ss << Tab() << obj.GetName() << "();" << std::endl;
+  ss << Tab() << "virtual ~" << obj.GetName() << "();" << std::endl;
+  ss << std::endl;
+
+  ss << Tab() << "virtual bool IsValid(bool recursive = true) const;"
+     << std::endl;
+  ss << std::endl;
+
+  ss << Tab() << "virtual bool Load(libcomp::ObjectInStream& stream);"
+     << std::endl
+     << std::endl;
+  ss << Tab() << "virtual bool Save(libcomp::ObjectOutStream& stream) const;"
+     << std::endl
+     << std::endl;
+
+  ss << Tab() << "virtual bool Load(std::istream& stream, bool flat = false);"
+     << std::endl
+     << std::endl;
+  ss << Tab()
+     << "virtual bool Save(std::ostream& stream, bool flat = false) const;"
+     << std::endl
+     << std::endl;
+
+  ss << Tab() << "virtual bool Load(const tinyxml2::XMLDocument& doc, "
+     << std::endl;
+  ss << Tab(2) << "const tinyxml2::XMLElement& root);" << std::endl
+     << std::endl;
+  ss << Tab() << "virtual bool Save(tinyxml2::XMLDocument& doc, " << std::endl;
+  ss << Tab(2) << "tinyxml2::XMLElement& root, bool append = false) const;"
+     << std::endl
+     << std::endl;
+
+  ss << Tab() << "virtual uint16_t GetDynamicSizeCount() const;" << std::endl;
+  ss << std::endl;
+
+  for (auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it) {
+    auto var = *it;
+
+    if (var->IsInherited()) continue;
+
+    ss << var->GetAccessDeclarations(*this, obj, var->GetName());
     ss << std::endl;
+  }
 
-    ss << Tab() << "virtual bool IsValid(bool recursive = true) const;"
-        << std::endl;
-    ss << std::endl;
+  if (obj.IsPersistent()) {
+    std::map<std::string, std::string> replacements;
+    ss << ParseTemplate(1, "VariablePersistentDeclarations", replacements);
+  }
 
-    ss << Tab() << "virtual bool Load(libcomp::ObjectInStream& stream);"
-        << std::endl << std::endl;
-    ss << Tab() << "virtual bool Save(libcomp::ObjectOutStream& stream) const;"
-        << std::endl << std::endl;
+  std::stringstream utilStream;
+  for (auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it) {
+    auto var = *it;
 
-    ss << Tab() << "virtual bool Load(std::istream& stream, bool flat = false);"
-        << std::endl << std::endl;
-    ss << Tab() << "virtual bool Save(std::ostream& stream, bool flat = false) const;"
-        << std::endl << std::endl;
+    if (var->IsInherited()) continue;
 
-    ss << Tab() << "virtual bool Load("
-        "const tinyxml2::XMLDocument& doc, " << std::endl;
-    ss << Tab(2) << "const tinyxml2::XMLElement& root);"
-        << std::endl << std::endl;
-    ss << Tab() << "virtual bool Save("
-        "tinyxml2::XMLDocument& doc, " << std::endl;
-    ss << Tab(2) << "tinyxml2::XMLElement& root, bool append = false) const;"
-        << std::endl << std::endl;
-
-    ss << Tab() << "virtual uint16_t GetDynamicSizeCount() const;" << std::endl;
-    ss << std::endl;
-
-    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
-    {
-        auto var = *it;
-
-        if(var->IsInherited()) continue;
-
-        ss << var->GetAccessDeclarations(*this, obj, var->GetName());
-        ss << std::endl;
+    auto util = var->GetUtilityDeclarations(*this, var->GetName());
+    if (util.length() > 0) {
+      utilStream << util;
     }
+  }
 
-    if(obj.IsPersistent())
-    {
-        std::map<std::string, std::string> replacements;
-        ss << ParseTemplate(1, "VariablePersistentDeclarations", replacements);
-    }
+  ss << Tab() << "static std::shared_ptr<" << obj.GetName()
+     << "> InheritedConstruction(const libcomp::String& name);" << std::endl;
+  ss << std::endl;
 
-    std::stringstream utilStream;
-    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
-    {
-        auto var = *it;
+  std::string utilDeclarations = utilStream.str();
+  if (utilDeclarations.length() > 0) {
+    ss << "protected:" << utilDeclarations << std::endl;
+  }
 
-        if(var->IsInherited()) continue;
+  ss << "private:" << std::endl;
 
-        auto util = var->GetUtilityDeclarations(*this, var->GetName());
-        if(util.length() > 0)
-        {
-            utilStream << util;
-        }
-    }
+  for (auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it) {
+    auto var = *it;
 
-    ss << Tab() << "static std::shared_ptr<" << obj.GetName()
-        << "> InheritedConstruction(const libcomp::String& name);" << std::endl;
-    ss << std::endl;
+    if (var->IsInherited()) continue;
 
-    std::string utilDeclarations = utilStream.str();
-    if(utilDeclarations.length() > 0)
-    {
-        ss << "protected:" << utilDeclarations << std::endl;
-    }
+    ss << Tab() << var->GetDeclaration(GetMemberName(var)) << std::endl;
+  }
 
-    ss << "private:" << std::endl;
+  ss << "};" << std::endl;
 
-    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
-    {
-        auto var = *it;
-
-        if(var->IsInherited()) continue;
-
-        ss << Tab() << var->GetDeclaration(GetMemberName(var)) << std::endl;
-    }
-
-    ss << "};" << std::endl;
-
-    return ss.str();
+  return ss.str();
 }
 
-std::string GeneratorHeader::GenerateHeaderDefine(const std::string& objName)
-{
-    std::stringstream ss;
-    ss << "OBJGEN_OBJECT_" << objName << "_H";
+std::string GeneratorHeader::GenerateHeaderDefine(const std::string& objName) {
+  std::stringstream ss;
+  ss << "OBJGEN_OBJECT_" << objName << "_H";
 
-    std::string headerDefine = ss.str();
-    std::transform(headerDefine.begin(), headerDefine.end(),
-        headerDefine.begin(), ::toupper);
+  std::string headerDefine = ss.str();
+  std::transform(headerDefine.begin(), headerDefine.end(), headerDefine.begin(),
+                 ::toupper);
 
-    return headerDefine;
+  return headerDefine;
 }
 
-std::string GeneratorHeader::Generate(const MetaObject& obj)
-{
-    std::stringstream ss;
-    ss << "// THIS FILE IS GENERATED" << std::endl;
-    ss << "// DO NOT MODIFY THE CONTENTS" << std::endl;
-    ss << "// DO NOT COMMIT TO VERSION CONTROL" << std::endl;
-    ss << std::endl;
+std::string GeneratorHeader::Generate(const MetaObject& obj) {
+  std::stringstream ss;
+  ss << "// THIS FILE IS GENERATED" << std::endl;
+  ss << "// DO NOT MODIFY THE CONTENTS" << std::endl;
+  ss << "// DO NOT COMMIT TO VERSION CONTROL" << std::endl;
+  ss << std::endl;
 
-    std::string headerDefine = GenerateHeaderDefine(obj.GetName());
+  std::string headerDefine = GenerateHeaderDefine(obj.GetName());
 
-    ss << "#ifndef " << headerDefine << std::endl;
-    ss << "#define " << headerDefine << std::endl;
-    ss << std::endl;
+  ss << "#ifndef " << headerDefine << std::endl;
+  ss << "#define " << headerDefine << std::endl;
+  ss << std::endl;
 
-    ss << "// libcomp Includes" << std::endl;
-    ss << "#include <Convert.h>" << std::endl;
-    ss << "#include <CString.h>" << std::endl;
+  ss << "// libcomp Includes" << std::endl;
+  ss << "#include <Convert.h>" << std::endl;
+  ss << "#include <CString.h>" << std::endl;
 
-    auto references = obj.GetReferencesTypes(true);
-    if(references.size() > 0 || obj.IsScriptEnabled())
-    {
-        ss << "#include <ObjectReference.h>" << std::endl;
-    }
+  auto references = obj.GetReferencesTypes(true);
+  if (references.size() > 0 || obj.IsScriptEnabled()) {
+    ss << "#include <ObjectReference.h>" << std::endl;
+  }
 
-    if(!obj.GetBaseObject().empty())
-    {
-        ss << "#include <" + Generator::GetObjectName(obj.GetBaseObject())
-            + ".h>" << std::endl;
-    }
-    else if(obj.IsPersistent())
-    {
-        ss << "#include <PersistentObject.h>" << std::endl;
+  if (!obj.GetBaseObject().empty()) {
+    ss << "#include <" + Generator::GetObjectName(obj.GetBaseObject()) + ".h>"
+       << std::endl;
+  } else if (obj.IsPersistent()) {
+    ss << "#include <PersistentObject.h>" << std::endl;
 
 #ifndef EXOTIC_BUILD
-        ss << std::endl;
-        ss << "// libobjgen Includes" << std::endl;
-        ss << "#include <MetaObject.h>" << std::endl;
-#endif // EXOTIC_BUILD
-    }
-    else
-    {
-        ss << "#include <Object.h>" << std::endl;
-    }
     ss << std::endl;
+    ss << "// libobjgen Includes" << std::endl;
+    ss << "#include <MetaObject.h>" << std::endl;
+#endif  // EXOTIC_BUILD
+  } else {
+    ss << "#include <Object.h>" << std::endl;
+  }
+  ss << std::endl;
 
-    bool includeArray = false;
-    bool includeSet = false;
-    for(auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it)
-    {
-        auto var = *it;
-        auto metaType = var->GetMetaType();
-        includeArray |= metaType ==
-            libobjgen::MetaVariable::MetaVariableType_t::TYPE_ARRAY;
-        includeSet |= metaType ==
-            libobjgen::MetaVariable::MetaVariableType_t::TYPE_SET;
+  bool includeArray = false;
+  bool includeSet = false;
+  for (auto it = obj.VariablesBegin(); it != obj.VariablesEnd(); ++it) {
+    auto var = *it;
+    auto metaType = var->GetMetaType();
+    includeArray |=
+        metaType == libobjgen::MetaVariable::MetaVariableType_t::TYPE_ARRAY;
+    includeSet |=
+        metaType == libobjgen::MetaVariable::MetaVariableType_t::TYPE_SET;
+  }
+
+  if (includeArray || includeSet) {
+    ss << "// Standard C++11 Includes" << std::endl;
+
+    if (includeArray) {
+      ss << "#include <array>" << std::endl;
     }
 
-    if(includeArray || includeSet)
-    {
-        ss << "// Standard C++11 Includes" << std::endl;
-
-        if(includeArray)
-        {
-            ss << "#include <array>" << std::endl;
-        }
-
-        if(includeSet)
-        {
-            ss << "#include <set>" << std::endl;
-        }
-
-        ss << std::endl;
+    if (includeSet) {
+      ss << "#include <set>" << std::endl;
     }
 
-    ss << "// tinyxml2 Includes" << std::endl;
-    ss << "#include <PushIgnore.h>" << std::endl;
-    ss << "#include <tinyxml2.h>" << std::endl;
-    ss << "#include <PopIgnore.h>" << std::endl;
     ss << std::endl;
+  }
 
-    auto objNamespace = obj.GetNamespace();
-    if(references.size() > 0)
-    {
-        ss << "namespace " << objNamespace << std::endl;
-        ss << "{" << std::endl;
-        ss << std::endl;
+  ss << "// tinyxml2 Includes" << std::endl;
+  ss << "#include <PushIgnore.h>" << std::endl;
+  ss << "#include <tinyxml2.h>" << std::endl;
+  ss << "#include <PopIgnore.h>" << std::endl;
+  ss << std::endl;
 
-        ss << "// Forward Declare the Object" << std::endl;
-        ss << "class " << obj.GetName() << ";" << std::endl;
-
-        ss << std::endl;
-        ss << "} // namespace " << objNamespace << std::endl;
-        ss << std::endl;
-
-        ss << "// Referenced Objects" << std::endl;
-
-        std::unordered_map<std::string, std::set<std::string>> refsByNamespace;
-        for(auto ref : references)
-        {
-            std::string ns;
-            std::string refName = Generator::GetObjectName(ref, ns);
-            refsByNamespace[!ns.empty() ? ns : "objects"]
-                .insert(refName);
-        }
-
-        for(auto pair : refsByNamespace)
-        {
-            auto refNamespace = pair.first;
-
-            ss << "namespace " << refNamespace << std::endl;
-            ss << "{" << std::endl;
-            ss << std::endl;
-
-            for(auto ref : pair.second)
-            {
-                ss << "class " << ref << ";" << std::endl;
-            }
-
-            ss << std::endl;
-            ss << "} // namespace " << refNamespace << std::endl;
-            ss << std::endl << std::endl;
-        }
-    }
-
+  auto objNamespace = obj.GetNamespace();
+  if (references.size() > 0) {
     ss << "namespace " << objNamespace << std::endl;
     ss << "{" << std::endl;
     ss << std::endl;
 
-    ss << GenerateClass(obj) << std::endl;
+    ss << "// Forward Declare the Object" << std::endl;
+    ss << "class " << obj.GetName() << ";" << std::endl;
 
+    ss << std::endl;
     ss << "} // namespace " << objNamespace << std::endl;
     ss << std::endl;
 
-    ss << "#endif // " << headerDefine << std::endl;
+    ss << "// Referenced Objects" << std::endl;
 
-    return ss.str();
+    std::unordered_map<std::string, std::set<std::string>> refsByNamespace;
+    for (auto ref : references) {
+      std::string ns;
+      std::string refName = Generator::GetObjectName(ref, ns);
+      refsByNamespace[!ns.empty() ? ns : "objects"].insert(refName);
+    }
+
+    for (auto pair : refsByNamespace) {
+      auto refNamespace = pair.first;
+
+      ss << "namespace " << refNamespace << std::endl;
+      ss << "{" << std::endl;
+      ss << std::endl;
+
+      for (auto ref : pair.second) {
+        ss << "class " << ref << ";" << std::endl;
+      }
+
+      ss << std::endl;
+      ss << "} // namespace " << refNamespace << std::endl;
+      ss << std::endl << std::endl;
+    }
+  }
+
+  ss << "namespace " << objNamespace << std::endl;
+  ss << "{" << std::endl;
+  ss << std::endl;
+
+  ss << GenerateClass(obj) << std::endl;
+
+  ss << "} // namespace " << objNamespace << std::endl;
+  ss << std::endl;
+
+  ss << "#endif // " << headerDefine << std::endl;
+
+  return ss.str();
 }

@@ -30,50 +30,46 @@
 // libcomp Includes
 #include "CString.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message type used to determine what type of @ref Manager should handle it.
  */
-enum class MessageType : int32_t
-{
-    MESSAGE_TYPE_SYSTEM,        //!< Message is a special system message type.
-    MESSAGE_TYPE_PACKET,        //!< Message is of type @ref MessagePacket.
-    MESSAGE_TYPE_CONNECTION,    //!< Message is of type @ref ConnectionMessage.
-    MESSAGE_TYPE_CLIENT,        //!< Message is of type @ref MessageClient.
+enum class MessageType : int32_t {
+  MESSAGE_TYPE_SYSTEM,      //!< Message is a special system message type.
+  MESSAGE_TYPE_PACKET,      //!< Message is of type @ref MessagePacket.
+  MESSAGE_TYPE_CONNECTION,  //!< Message is of type @ref ConnectionMessage.
+  MESSAGE_TYPE_CLIENT,      //!< Message is of type @ref MessageClient.
 };
 
 /**
  * Abstract base class representing a message to be handled when received by
  * a @ref MessageQueue.
  */
-class Message
-{
-public:
-    /**
-     * Cleanup the message.
-     */
-    virtual ~Message() { }
+class Message {
+ public:
+  /**
+   * Cleanup the message.
+   */
+  virtual ~Message() {}
 
-    /**
-     * Get the message's type.
-     * @return The message's type.
-     */
-    virtual MessageType GetType() const = 0;
+  /**
+   * Get the message's type.
+   * @return The message's type.
+   */
+  virtual MessageType GetType() const = 0;
 
-    /**
-     * Dump the message for logging.
-     * @return String representation of the message.
-     */
-    virtual libcomp::String Dump() const = 0;
+  /**
+   * Dump the message for logging.
+   * @return String representation of the message.
+   */
+  virtual libcomp::String Dump() const = 0;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGE_H
+#endif  // LIBCOMP_SRC_MESSAGE_H

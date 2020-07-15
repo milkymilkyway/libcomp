@@ -34,48 +34,50 @@
 // libcomp Includes
 #include <Object.h>
 
-// tinyxml2 Includes
+// Ignore warnings
 #include <PushIgnore.h>
+
+// tinyxml2 Includes
 #include <tinyxml2.h>
+
+// Stop ignoring warnings
 #include <PopIgnore.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
-class BinaryDataSet
-{
-public:
-    BinaryDataSet(std::function<std::shared_ptr<libcomp::Object>()> allocator,
-        std::function<uint32_t(const std::shared_ptr<
-            libcomp::Object>&)> mapper);
+class BinaryDataSet {
+ public:
+  BinaryDataSet(
+      std::function<std::shared_ptr<libcomp::Object>()> allocator,
+      std::function<uint32_t(const std::shared_ptr<libcomp::Object>&)> mapper);
 
-    virtual ~BinaryDataSet();
+  virtual ~BinaryDataSet();
 
-    bool Load(std::istream& file, bool loadMore = false);
-    bool Save(std::ostream& file) const;
+  bool Load(std::istream& file, bool loadMore = false);
+  bool Save(std::ostream& file) const;
 
-    bool LoadXml(tinyxml2::XMLDocument& doc, bool loadMore = false);
+  bool LoadXml(tinyxml2::XMLDocument& doc, bool loadMore = false);
 
-    std::string GetXml() const;
-    std::string GetTabular() const;
+  std::string GetXml() const;
+  std::string GetTabular() const;
 
-    std::list<std::shared_ptr<libcomp::Object>> GetObjects() const;
-    std::shared_ptr<libcomp::Object> GetObjectByID(uint32_t id) const;
+  std::list<std::shared_ptr<libcomp::Object>> GetObjects() const;
+  std::shared_ptr<libcomp::Object> GetObjectByID(uint32_t id) const;
 
-protected:
-    std::function<std::shared_ptr<libcomp::Object>()> mObjectAllocator;
-    std::function<uint32_t(const std::shared_ptr<
-        libcomp::Object>&)> mObjectMapper;
+ protected:
+  std::function<std::shared_ptr<libcomp::Object>()> mObjectAllocator;
+  std::function<uint32_t(const std::shared_ptr<libcomp::Object>&)>
+      mObjectMapper;
 
-private:
-    std::list<std::string> ReadNodes(tinyxml2::XMLElement *node,
-        int16_t dataMode) const;
+ private:
+  std::list<std::string> ReadNodes(tinyxml2::XMLElement* node,
+                                   int16_t dataMode) const;
 
-protected:
-    std::list<std::shared_ptr<libcomp::Object>> mObjects;
-    std::map<uint32_t, std::shared_ptr<libcomp::Object>> mObjectMap;
+ protected:
+  std::list<std::shared_ptr<libcomp::Object>> mObjects;
+  std::map<uint32_t, std::shared_ptr<libcomp::Object>> mObjectMap;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_BINARYDATASET_H
+#endif  // LIBCOMP_SRC_BINARYDATASET_H

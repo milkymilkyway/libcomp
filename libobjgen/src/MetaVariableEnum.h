@@ -30,98 +30,109 @@
 // libobjgen Includes
 #include "MetaVariable.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class MetaVariableEnum : public MetaVariable
-{
-public:
-    MetaVariableEnum();
-    virtual ~MetaVariableEnum();
+class MetaVariableEnum : public MetaVariable {
+ public:
+  MetaVariableEnum();
+  virtual ~MetaVariableEnum();
 
-    std::string GetDefaultValue() const;
-    void SetDefaultValue(const std::string& value);
+  std::string GetDefaultValue() const;
+  void SetDefaultValue(const std::string& value);
 
-    std::string GetTypePrefix() const;
-    void SetTypePrefix(const std::string& prefix);
+  std::string GetTypePrefix() const;
+  void SetTypePrefix(const std::string& prefix);
 
-    std::string GetUnderlyingType() const;
-    void SetUnderlyingType(const std::string& underlyingType);
+  std::string GetUnderlyingType() const;
+  void SetUnderlyingType(const std::string& underlyingType);
 
-    const std::vector<std::pair<std::string, std::string>>
-        GetValues() const;
-    bool SetValues(const std::vector<std::pair<std::string,
-        std::string>>& values);
+  const std::vector<std::pair<std::string, std::string>> GetValues() const;
+  bool SetValues(
+      const std::vector<std::pair<std::string, std::string>>& values);
 
-    virtual size_t GetSize() const;
+  virtual size_t GetSize() const;
 
-    virtual MetaVariableType_t GetMetaType() const;
+  virtual MetaVariableType_t GetMetaType() const;
 
-    virtual std::string GetType() const;
+  virtual std::string GetType() const;
 
-    virtual bool IsCoreType() const;
-    virtual bool IsScriptAccessible() const;
-    virtual bool IsValid() const;
+  virtual bool IsCoreType() const;
+  virtual bool IsScriptAccessible() const;
+  virtual bool IsValid() const;
 
-    virtual bool Load(std::istream& stream);
-    virtual bool Save(std::ostream& stream) const;
+  virtual bool Load(std::istream& stream);
+  virtual bool Save(std::ostream& stream) const;
 
-    virtual bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root);
-    virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& parent, const char* elementName) const;
+  virtual bool Load(const tinyxml2::XMLDocument& doc,
+                    const tinyxml2::XMLElement& root);
+  virtual bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& parent,
+                    const char* elementName) const;
 
-    virtual std::string GetArgumentType() const;
-    virtual std::string GetCodeType() const;
-    virtual std::string GetConstructValue() const;
-    virtual std::string GetDefaultValueCode() const;
-    virtual std::string GetValidCondition(const Generator& generator,
-        const std::string& name, bool recursive = false) const;
-    virtual std::string GetLoadCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetLoadRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetXmlLoadCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& node, size_t tabLevel = 1) const;
-    virtual std::string GetXmlSaveCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& parent, size_t tabLevel = 1,
-        const std::string elemName = "member") const;
-    virtual std::string GetBindValueCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetDatabaseLoadCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
+  virtual std::string GetArgumentType() const;
+  virtual std::string GetCodeType() const;
+  virtual std::string GetConstructValue() const;
+  virtual std::string GetDefaultValueCode() const;
+  virtual std::string GetValidCondition(const Generator& generator,
+                                        const std::string& name,
+                                        bool recursive = false) const;
+  virtual std::string GetLoadCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetSaveCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetLoadRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetSaveRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetXmlLoadCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& doc,
+                                     const std::string& node,
+                                     size_t tabLevel = 1) const;
+  virtual std::string GetXmlSaveCode(
+      const Generator& generator, const std::string& name,
+      const std::string& doc, const std::string& parent, size_t tabLevel = 1,
+      const std::string elemName = "member") const;
+  virtual std::string GetBindValueCode(const Generator& generator,
+                                       const std::string& name,
+                                       size_t tabLevel = 1) const;
+  virtual std::string GetDatabaseLoadCode(const Generator& generator,
+                                          const std::string& name,
+                                          size_t tabLevel = 1) const;
 
-    virtual std::string GetAccessDeclarations(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetAccessFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetUtilityDeclarations(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetUtilityFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetAccessScriptBindings(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
+  virtual std::string GetAccessDeclarations(const Generator& generator,
+                                            const MetaObject& object,
+                                            const std::string& name,
+                                            size_t tabLevel = 1) const;
+  virtual std::string GetAccessFunctions(const Generator& generator,
+                                         const MetaObject& object,
+                                         const std::string& name) const;
+  virtual std::string GetUtilityDeclarations(const Generator& generator,
+                                             const std::string& name,
+                                             size_t tabLevel = 1) const;
+  virtual std::string GetUtilityFunctions(const Generator& generator,
+                                          const MetaObject& object,
+                                          const std::string& name) const;
+  virtual std::string GetAccessScriptBindings(const Generator& generator,
+                                              const MetaObject& object,
+                                              const std::string& name,
+                                              size_t tabLevel = 1) const;
 
-private:
-    bool NumericValueIsValid(const std::string& num) const;
-    bool ValueExists(const std::string& val, bool first) const;
-    bool ContainsDuplicateValues(const std::vector<std::pair<std::string,
-        std::string>>& values) const;
+ private:
+  bool NumericValueIsValid(const std::string& num) const;
+  bool ValueExists(const std::string& val, bool first) const;
+  bool ContainsDuplicateValues(
+      const std::vector<std::pair<std::string, std::string>>& values) const;
 
-    std::vector<std::pair<std::string, std::string>> mValues;
-    std::string mTypePrefix;
-    std::string mDefaultValue;
-    std::string mUnderlyingType;
+  std::vector<std::pair<std::string, std::string>> mValues;
+  std::string mTypePrefix;
+  std::string mDefaultValue;
+  std::string mUnderlyingType;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLEENUM_H
+#endif  // LIBOBJGEN_SRC_METAVARIABLEENUM_H

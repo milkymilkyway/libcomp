@@ -30,41 +30,38 @@
 // libobjgen Includes
 #include <MetaVariableInt.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Represents a numeric variable that can be built dynamically at runtime.
  */
-template<typename T>
-class DynamicVariableInt : public DynamicVariable
-{
-public:
-    /**
-     * Create a new dynamic variable of the templated numeric type.
-     * @param metaVariable Pointer to a MetaVariableInt<T> definition
-     */
-    DynamicVariableInt(const std::shared_ptr<libobjgen::MetaVariable>&
-        metaVariable) : DynamicVariable(metaVariable)
-    {
-        mValue = std::dynamic_pointer_cast<libobjgen::MetaVariableInt<T>>(
-            metaVariable)->GetDefaultValue();
-    }
+template <typename T>
+class DynamicVariableInt : public DynamicVariable {
+ public:
+  /**
+   * Create a new dynamic variable of the templated numeric type.
+   * @param metaVariable Pointer to a MetaVariableInt<T> definition
+   */
+  DynamicVariableInt(
+      const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
+      : DynamicVariable(metaVariable) {
+    mValue =
+        std::dynamic_pointer_cast<libobjgen::MetaVariableInt<T>>(metaVariable)
+            ->GetDefaultValue();
+  }
 
-    /**
-     * Clean up the variable.
-     */
-    virtual ~DynamicVariableInt()
-    {
-    }
+  /**
+   * Clean up the variable.
+   */
+  virtual ~DynamicVariableInt() {}
 
-    virtual bool Load(ObjectInStream& stream);
-    virtual bool Save(ObjectOutStream& stream) const;
+  virtual bool Load(ObjectInStream& stream);
+  virtual bool Save(ObjectOutStream& stream) const;
 
-private:
-    T mValue;
+ private:
+  T mValue;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DYNAMICVARIABLEINT_H
+#endif  // LIBCOMP_SRC_DYNAMICVARIABLEINT_H

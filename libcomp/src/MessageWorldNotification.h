@@ -34,11 +34,9 @@
 // Standard C++11 Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that signifies that a world wants to connect to the
@@ -46,47 +44,46 @@ namespace Message
  * will close the connection and "reverse it" so the lobby
  * maintains the connections instead.
  */
-class WorldNotification : public ConnectionMessage
-{
-public:
-    /**
-     * Create the message.
-     * @param address The address the connection is coming from
-     * @param port The port the connection is coming from
-     */
-    WorldNotification(const String& address, uint16_t port);
+class WorldNotification : public ConnectionMessage {
+ public:
+  /**
+   * Create the message.
+   * @param address The address the connection is coming from
+   * @param port The port the connection is coming from
+   */
+  WorldNotification(const String& address, uint16_t port);
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~WorldNotification();
+  /**
+   * Cleanup the message.
+   */
+  virtual ~WorldNotification();
 
-    /**
-     * Get the address the connection is coming from.
-     * @return The address the connection is coming from
-     */
-    String GetAddress() const;
+  /**
+   * Get the address the connection is coming from.
+   * @return The address the connection is coming from
+   */
+  String GetAddress() const;
 
-    /**
-     * Get the port the connection is coming from.
-     * @return The port the connection is coming from
-     */
-    uint16_t GetPort() const;
+  /**
+   * Get the port the connection is coming from.
+   * @return The port the connection is coming from
+   */
+  uint16_t GetPort() const;
 
-    virtual ConnectionMessageType GetConnectionMessageType() const;
+  virtual ConnectionMessageType GetConnectionMessageType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 
-private:
-    /// The address the connection is coming from
-    String mAddress;
+ private:
+  /// The address the connection is coming from
+  String mAddress;
 
-    /// The port the connection is coming from
-    uint16_t mPort;
+  /// The port the connection is coming from
+  uint16_t mPort;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGEWORLDNOTIFICATION_H
+#endif  // LIBCOMP_SRC_MESSAGEWORLDNOTIFICATION_H

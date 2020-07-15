@@ -25,6 +25,7 @@
  */
 
 #include "WatchThread.h"
+
 #include "DayCare.h"
 
 // Linux Includes
@@ -33,51 +34,37 @@
 
 using namespace libcomp;
 
-WatchThread::WatchThread(DayCare *pJuvy) : mDayCare(pJuvy)
-{
-    mThread = new std::thread([](WatchThread *pThread){
-        pThread->Run();
-    }, this);
+WatchThread::WatchThread(DayCare* pJuvy) : mDayCare(pJuvy) {
+  mThread = new std::thread([](WatchThread* pThread) { pThread->Run(); }, this);
 }
 
-WatchThread::~WatchThread()
-{
-    try
-    {
-        mThread->join();
-    }
-    catch(const std::system_error& e)
-    {
-    }
+WatchThread::~WatchThread() {
+  try {
+    mThread->join();
+  } catch (const std::system_error& e) {
+  }
 
-    delete mThread;
-    mThread = nullptr;
+  delete mThread;
+  mThread = nullptr;
 }
 
-void WatchThread::Run()
-{
-    while(mDayCare->IsRunning() || mDayCare->HaveChildren())
-    {
-        int status;
-        pid_t pid = wait(&status);
+void WatchThread::Run() {
+  while (mDayCare->IsRunning() || mDayCare->HaveChildren()) {
+    int status;
+    pid_t pid = wait(&status);
 
-        mDayCare->NotifyExit(pid, status);
+    mDayCare->NotifyExit(pid, status);
 
-        // If we have no children, wait a bit for more to spawn.
-        if(!mDayCare->HaveChildren())
-        {
-            usleep(1000000); // 1 second
-        }
+    // If we have no children, wait a bit for more to spawn.
+    if (!mDayCare->HaveChildren()) {
+      usleep(1000000);  // 1 second
     }
+  }
 }
 
-void WatchThread::WaitForExit()
-{
-    try
-    {
-        mThread->join();
-    }
-    catch(const std::system_error& e)
-    {
-    }
+void WatchThread::WaitForExit() {
+  try {
+    mThread->join();
+  } catch (const std::system_error& e) {
+  }
 }

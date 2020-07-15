@@ -40,8 +40,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Generic worker assigned to a message queue used to handle messages as
@@ -49,147 +48,143 @@ namespace libcomp
  * and should be shutdown at the same time the executing server does.
  * @sa BaseServer
  */
-class Worker
-{
-public:
-    /**
-     * Create a new worker.
-     */
-    Worker();
+class Worker {
+ public:
+  /**
+   * Create a new worker.
+   */
+  Worker();
 
-    /**
-     * Cleanup the worker.
-     */
-    virtual ~Worker();
+  /**
+   * Cleanup the worker.
+   */
+  virtual ~Worker();
 
-    /**
-     * Add a manager to process messages.
-     * @param manager A message manager
-     */
-    void AddManager(const std::shared_ptr<Manager>& manager);
+  /**
+   * Add a manager to process messages.
+   * @param manager A message manager
+   */
+  void AddManager(const std::shared_ptr<Manager>& manager);
 
-    /**
-     * Remove all managers from the worker.
-     */
-    void RemoveAllManagers();
+  /**
+   * Remove all managers from the worker.
+   */
+  void RemoveAllManagers();
 
-    /**
-     * Loop until stopped, making a call to @ref Worker::Run.
-     * @param blocking If false a new thread will be started
-     *  to run this function asynchronously
-     */
-    void Start(const libcomp::String& name, bool blocking = false);
+  /**
+   * Loop until stopped, making a call to @ref Worker::Run.
+   * @param blocking If false a new thread will be started
+   *  to run this function asynchronously
+   */
+  void Start(const libcomp::String& name, bool blocking = false);
 
-    /**
-     * Wait for a message to enter the queue then handle it
-     * with the appropriate @ref Manager configured for the
-     * worker.
-     * @param pMessageQueue Queue to check for messages
-     */
-    virtual void Run(libcomp::MessageQueue<
-        libcomp::Message::Message*> *pMessageQueue);
+  /**
+   * Wait for a message to enter the queue then handle it
+   * with the appropriate @ref Manager configured for the
+   * worker.
+   * @param pMessageQueue Queue to check for messages
+   */
+  virtual void Run(
+      libcomp::MessageQueue<libcomp::Message::Message*>* pMessageQueue);
 
-    /**
-     * Signal that the worker should shutdown by sending a
-     * @ref Message::Shutdown.
-     */
-    virtual void Shutdown();
+  /**
+   * Signal that the worker should shutdown by sending a
+   * @ref Message::Shutdown.
+   */
+  virtual void Shutdown();
 
-    /**
-     * Join the thread used for asynchronous execution.
-     */
-    virtual void Join();
+  /**
+   * Join the thread used for asynchronous execution.
+   */
+  virtual void Join();
 
-    /**
-     * Check if the worker is currently running.
-     * @return true if it is running, false if it is not
-     */
-    bool IsRunning() const;
+  /**
+   * Check if the worker is currently running.
+   * @return true if it is running, false if it is not
+   */
+  bool IsRunning() const;
 
-    /**
-     * Get the name for this worker.
-     * @returns Name for this worker.
-     */
-    String GetWorkerName() const;
+  /**
+   * Get the name for this worker.
+   * @returns Name for this worker.
+   */
+  String GetWorkerName() const;
 
-    /**
-     * Set the next worker to forward messages to.
-     */
-    void SetNextWorker(const std::weak_ptr<Worker>& nextWorker);
+  /**
+   * Set the next worker to forward messages to.
+   */
+  void SetNextWorker(const std::weak_ptr<Worker>& nextWorker);
 
-    /**
-     * Get the message queue assinged to the worker.
-     * @return Assigned message queue
-     */
-    std::shared_ptr<libcomp::MessageQueue<
-        libcomp::Message::Message*>> GetMessageQueue() const;
+  /**
+   * Get the message queue assinged to the worker.
+   * @return Assigned message queue
+   */
+  std::shared_ptr<libcomp::MessageQueue<libcomp::Message::Message*>>
+  GetMessageQueue() const;
 
-    /**
-     * Get the number of active references to the message queue
-     * assigned to the worker.
-     * @sa BaseServer::GetNextConnectionWorker
-     * @return The number of active references to the message queue
-     */
-    long AssignmentCount() const;
+  /**
+   * Get the number of active references to the message queue
+   * assigned to the worker.
+   * @sa BaseServer::GetNextConnectionWorker
+   * @return The number of active references to the message queue
+   */
+  long AssignmentCount() const;
 
-    /**
-     * Executes code in the worker thread.
-     * @param f Function (lambda) to execute in the worker thread.
-     * @param args Arguments to pass to the function when it is executed.
-     * @return true on success, false on failure
-     */
-    template<typename Function, typename... Args>
-    bool ExecuteInWorker(Function&& f, Args&&... args) const
-    {
-        auto queue = GetMessageQueue();
+  /**
+   * Executes code in the worker thread.
+   * @param f Function (lambda) to execute in the worker thread.
+   * @param args Arguments to pass to the function when it is executed.
+   * @return true on success, false on failure
+   */
+  template <typename Function, typename... Args>
+  bool ExecuteInWorker(Function&& f, Args&&... args) const {
+    auto queue = GetMessageQueue();
 
-        if(nullptr != queue)
-        {
-            auto msg = new libcomp::Message::ExecuteImpl<Args...>(
-                std::forward<Function>(f), std::forward<Args>(args)...);
-            queue->Enqueue(msg);
+    if (nullptr != queue) {
+      auto msg = new libcomp::Message::ExecuteImpl<Args...>(
+          std::forward<Function>(f), std::forward<Args>(args)...);
+      queue->Enqueue(msg);
 
-            return true;
-        }
-
-        return false;
+      return true;
     }
 
-protected:
-    /**
-     * Clean up the worker, deleting the thread if it exists and resetting
-     * the message queue.  This is called by the destructor.
-     */
-    virtual void Cleanup();
+    return false;
+  }
 
-    /**
-     * Handle an incoming message from the queue.
-     * @param pMessage Message to handle from the queue.
-     */
-    virtual void HandleMessage(libcomp::Message::Message *pMessage);
+ protected:
+  /**
+   * Clean up the worker, deleting the thread if it exists and resetting
+   * the message queue.  This is called by the destructor.
+   */
+  virtual void Cleanup();
 
-private:
-    /// Signifier that the worker should continue running
-    bool mRunning;
+  /**
+   * Handle an incoming message from the queue.
+   * @param pMessage Message to handle from the queue.
+   */
+  virtual void HandleMessage(libcomp::Message::Message* pMessage);
 
-    /// Name for this worker.
-    String mWorkerName;
+ private:
+  /// Signifier that the worker should continue running
+  bool mRunning;
 
-    /// Next worker to forward messages to.
-    std::weak_ptr<Worker> mNextWorker;
+  /// Name for this worker.
+  String mWorkerName;
 
-    /// Message queue to retrieve messages from
-    std::shared_ptr<libcomp::MessageQueue<
-        libcomp::Message::Message*>> mMessageQueue;
+  /// Next worker to forward messages to.
+  std::weak_ptr<Worker> mNextWorker;
 
-    /// Map of pointers to message handlers mapped by message type
-    EnumMultiMap<Message::MessageType,
-        std::shared_ptr<Manager>> mManagers;
+  /// Message queue to retrieve messages from
+  std::shared_ptr<libcomp::MessageQueue<libcomp::Message::Message*>>
+      mMessageQueue;
 
-    /// Thread used to handle asynchronous execution
-    std::thread *mThread;
+  /// Map of pointers to message handlers mapped by message type
+  EnumMultiMap<Message::MessageType, std::shared_ptr<Manager>> mManagers;
+
+  /// Thread used to handle asynchronous execution
+  std::thread* mThread;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_WORKER_H
+#endif  // LIBCOMP_SRC_WORKER_H

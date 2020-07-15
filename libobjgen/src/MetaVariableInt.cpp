@@ -26,67 +26,59 @@
 
 #include "MetaVariableInt.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<int8_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_S8;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<int8_t>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_S8;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<uint8_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_U8;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<uint8_t>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_U8;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<int16_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_S16;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<int16_t>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_S16;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<uint16_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_U16;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<uint16_t>::GetMetaType()
+    const {
+  return MetaVariable::MetaVariableType_t::TYPE_U16;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<int32_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_S32;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<int32_t>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_S32;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<uint32_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_U32;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<uint32_t>::GetMetaType()
+    const {
+  return MetaVariable::MetaVariableType_t::TYPE_U32;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<int64_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_S64;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<int64_t>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_S64;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<uint64_t>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_U64;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<uint64_t>::GetMetaType()
+    const {
+  return MetaVariable::MetaVariableType_t::TYPE_U64;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<float>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_FLOAT;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<float>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_FLOAT;
 }
 
-template<>
-MetaVariable::MetaVariableType_t MetaVariableInt<double>::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_DOUBLE;
+template <>
+MetaVariable::MetaVariableType_t MetaVariableInt<double>::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_DOUBLE;
 }
 
-} // namespace libobjgen
+}  // namespace libobjgen

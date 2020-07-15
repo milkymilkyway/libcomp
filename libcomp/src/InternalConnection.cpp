@@ -28,17 +28,12 @@
 
 using namespace libcomp;
 
-InternalConnection::InternalConnection(asio::io_service& io_service) :
-    libcomp::EncryptedConnection(io_service)
-{
-}
+InternalConnection::InternalConnection(asio::io_service& io_service)
+    : libcomp::EncryptedConnection(io_service) {}
 
-InternalConnection::InternalConnection(asio::ip::tcp::socket& socket,
-    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman) :
-    libcomp::EncryptedConnection(socket, diffieHellman)
-{
-}
+InternalConnection::InternalConnection(
+    asio::ip::tcp::socket& socket,
+    const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman)
+    : libcomp::EncryptedConnection(socket, diffieHellman) {}
 
-InternalConnection::~InternalConnection()
-{
-}
+InternalConnection::~InternalConnection() {}

@@ -28,12 +28,9 @@
 
 #ifdef EXOTIC_PLATFORM
 
-bool libcomp::IsMemoryManagerEnabled()
-{
-    return false;
-}
+bool libcomp::IsMemoryManagerEnabled() { return false; }
 
-#else // !EXOTIC_PLATFORM
+#else  // !EXOTIC_PLATFORM
 
 // libcomp Includes
 #include "Constants.h"
@@ -43,13 +40,19 @@ bool libcomp::IsMemoryManagerEnabled()
 #include <zlib.h>
 
 #ifdef _WIN32
+// Windows Includes
 #include <windows.h>
+
+// Windows Debug Includes
 #include <dbghelp.h>
-#else // _WIN32
-#include <regex_ext>
-#include <execinfo.h>
+#else  // _WIN32
 #include <cxxabi.h>
-#endif // _WIN32
+#include <execinfo.h>
+
+#include <regex_ext>
+#endif  // _WIN32
+
+#include <signal.h>
 
 #include <climits>
 #include <cstdlib>
@@ -57,8 +60,6 @@ bool libcomp::IsMemoryManagerEnabled()
 #include <iomanip>
 #include <mutex>
 #include <sstream>
-
-#include <signal.h>
 
 using namespace libcomp;
 
@@ -75,498 +76,434 @@ static MemoryManager *gManager = nullptr;
  * @returns Negative value if left < right, positive if
  *   left > right or 0 if equal.
  */
-static int compare_tree(rbtree_key left, rbtree_key right)
-{
-    if(left < right)
-    {
-        return -1;
-    }
-    else if(left > right)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+static int compare_tree(rbtree_key left, rbtree_key right) {
+  if (left < right) {
+    return -1;
+  } else if (left > right) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
-bool libcomp::IsMemoryManagerEnabled()
-{
-    return gMemoryManagerEnabled;
+bool libcomp::IsMemoryManagerEnabled() { return gMemoryManagerEnabled; }
+
+void libcomp::InitMemoryManager() {
+  gManager = (MemoryManager *)malloc(sizeof(MemoryManager));
+  gManager->Setup();
+  gMemoryManagerEnabled = true;
 }
 
-void libcomp::InitMemoryManager()
-{
-    gManager = (MemoryManager*)malloc(sizeof(MemoryManager));
-    gManager->Setup();
-    gMemoryManagerEnabled = true;
+void libcomp::TriggerMemorySnapshot() {
+  if (gManager) {
+    gManager->Snapshot();
+  }
 }
 
-void libcomp::TriggerMemorySnapshot()
-{
-    if(gManager)
-    {
-        gManager->Snapshot();
-    }
+void libcomp::GetMemoryStats(uint64_t &allocationCount, size_t &heapSize) {
+  if (gManager) {
+    gManager->GetStats(allocationCount, heapSize);
+  } else {
+    allocationCount = 0;
+    heapSize = 0;
+  }
 }
 
-void libcomp::GetMemoryStats(uint64_t& allocationCount, size_t& heapSize)
-{
-    if(gManager)
-    {
-        gManager->GetStats(allocationCount, heapSize);
-    }
-    else
-    {
-        allocationCount = 0;
-        heapSize = 0;
-    }
-}
-
-void MemoryAllocation::CreateBacktrace()
-{
-    allocBacktrace = nullptr;
-    allocBacktraceCount = 0;
-    allocBacktraceChecksum = 0;
+void MemoryAllocation::CreateBacktrace() {
+  allocBacktrace = nullptr;
+  allocBacktraceCount = 0;
+  allocBacktraceChecksum = 0;
 
 #ifdef _WIN32
-    static std::mutex lock;
+  static std::mutex lock;
 
-    // Lock the mutex before generating the backtrace.
-    std::lock_guard<std::mutex> guard(lock);
+  // Lock the mutex before generating the backtrace.
+  std::lock_guard<std::mutex> guard(lock);
 
-    // Array to store each backtrace address.
-    void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
+  // Array to store each backtrace address.
+  void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
-    USHORT frameCount = CaptureStackBackTrace(0,
-        MAX_BACKTRACE_DEPTH, backtraceAddresses, NULL);
+  USHORT frameCount =
+      CaptureStackBackTrace(0, MAX_BACKTRACE_DEPTH, backtraceAddresses, NULL);
 
-    if(frameCount > 0)
-    {
-        allocBacktrace = (void**)malloc(sizeof(void*) * frameCount);
-        memcpy(allocBacktrace, backtraceAddresses, sizeof(void*) * frameCount);
-        allocBacktraceCount = frameCount;
-    }
-#else // _WIN32
-    // Array to store each backtrace address.
-    void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
+  if (frameCount > 0) {
+    allocBacktrace = (void **)malloc(sizeof(void *) * frameCount);
+    memcpy(allocBacktrace, backtraceAddresses, sizeof(void *) * frameCount);
+    allocBacktraceCount = frameCount;
+  }
+#else  // _WIN32
+  // Array to store each backtrace address.
+  void *backtraceAddresses[MAX_BACKTRACE_DEPTH];
 
 #ifdef __APPLE__
 #define backtrace_size_t int32_t
-#endif // __APPLE__
+#endif  // __APPLE__
 
-    // Populate the array of backtrace addresses and get how many were added.
-    backtrace_size_t backtraceSize = ::backtrace(backtraceAddresses,
-        MAX_BACKTRACE_DEPTH);
+  // Populate the array of backtrace addresses and get how many were added.
+  backtrace_size_t backtraceSize =
+      ::backtrace(backtraceAddresses, MAX_BACKTRACE_DEPTH);
 
-    // If we have a valid array of backtraces, parse them.
-    if(backtraceSize > 0)
-    {
-        allocBacktrace = (void**)malloc((size_t)(
-            sizeof(void*) * (uint16_t)backtraceSize));
-        memcpy(allocBacktrace, backtraceAddresses, (size_t)(sizeof(void*) *
-            (uint16_t)backtraceSize));
-        allocBacktraceCount = (uint16_t)backtraceSize;
-    }
-#endif // _WIN32
+  // If we have a valid array of backtraces, parse them.
+  if (backtraceSize > 0) {
+    allocBacktrace =
+        (void **)malloc((size_t)(sizeof(void *) * (uint16_t)backtraceSize));
+    memcpy(allocBacktrace, backtraceAddresses,
+           (size_t)(sizeof(void *) * (uint16_t)backtraceSize));
+    allocBacktraceCount = (uint16_t)backtraceSize;
+  }
+#endif  // _WIN32
 }
 
-void MemoryAllocation::FreeBacktrace()
-{
-    if(nullptr != allocBacktrace)
-    {
-        free(allocBacktrace);
-    }
+void MemoryAllocation::FreeBacktrace() {
+  if (nullptr != allocBacktrace) {
+    free(allocBacktrace);
+  }
 }
 
-void MemoryAllocation::LogBacktrace(FILE *out)
-{
+void MemoryAllocation::LogBacktrace(FILE *out) {
 #ifdef _WIN32
-    static std::mutex lock;
+  static std::mutex lock;
 
-    SymSetOptions(SYMOPT_LOAD_LINES);
+  SymSetOptions(SYMOPT_LOAD_LINES);
 
-    const static BOOL symInit = SymInitialize(GetCurrentProcess(), NULL, TRUE);
+  const static BOOL symInit = SymInitialize(GetCurrentProcess(), NULL, TRUE);
 
-    if(TRUE != symInit)
-    {
-        uint16_t emptyBacktrace = 0;
+  if (TRUE != symInit) {
+    uint16_t emptyBacktrace = 0;
 
-        fwrite(&emptyBacktrace, sizeof(emptyBacktrace), 1, out);
+    fwrite(&emptyBacktrace, sizeof(emptyBacktrace), 1, out);
 
-        return;
+    return;
+  }
+
+  // Record the depth of the backtrace.
+  fwrite(&allocBacktraceCount, sizeof(allocBacktraceCount), 1, out);
+
+  for (USHORT i = 0; i < allocBacktraceCount; ++i) {
+    DWORD64 displacement = 0;
+
+    uint8_t *pInfoBuffer = new uint8_t[sizeof(SYMBOL_INFO) + MAX_SYMBOL_LEN];
+    SYMBOL_INFO *pInfo = reinterpret_cast<SYMBOL_INFO *>(pInfoBuffer);
+    memset(pInfoBuffer, 0, sizeof(SYMBOL_INFO) + MAX_SYMBOL_LEN);
+    pInfo->MaxNameLen = MAX_SYMBOL_LEN;
+    pInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+    // Retrieve the symbol for each frame in the array.
+    if (TRUE == symInit &&
+        TRUE == SymFromAddr(GetCurrentProcess(), (DWORD64)allocBacktrace[i],
+                            &displacement, pInfo)) {
+      char name[MAX_SYMBOL_LEN];
+      char sym[MAX_SYMBOL_LEN];
+
+      std::stringstream ss;
+
+      if (0 >= UnDecorateSymbolName(pInfo->Name, sym, MAX_SYMBOL_LEN,
+                                    UNDNAME_COMPLETE)) {
+        strncpy(sym, pInfo->Name, MAX_SYMBOL_LEN - 1);
+      }
+
+      if (0 <
+          GetModuleFileNameA((HMODULE)pInfo->ModBase, name, MAX_SYMBOL_LEN)) {
+        char *pModuleName = strrchr(name, '\\');
+
+        if (NULL == pModuleName) {
+          pModuleName = name;
+        } else {
+          pModuleName++;
+        }
+
+        ss << pModuleName << "(" << sym << "+0x" << std::hex << displacement
+           << ")";
+      } else {
+        ss << R"_raw_(???()_raw_" << sym << "+0x" << std::hex << displacement
+           << ")";
+      }
+
+      ss << " [0x" << std::hex << (DWORD64)allocBacktrace[i] << "]";
+
+      DWORD lineDisplacement;
+      IMAGEHLP_LINE64 line;
+
+      if (TRUE == SymGetLineFromAddr64(GetCurrentProcess(),
+                                       (ULONG64)allocBacktrace[i],
+                                       &lineDisplacement, &line)) {
+        ss << " " << line.FileName << ":" << std::dec << line.LineNumber;
+      }
+
+      auto backtraceString = ss.str();
+      uint64_t backtraceAddress = (uint64_t)allocBacktrace[i];
+      uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
+
+      fwrite(&backtraceAddress, sizeof(backtraceAddress), 1, out);
+      fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
+      fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
+    } else {
+      std::stringstream ss;
+      ss << "0x" << std::hex << (DWORD64)allocBacktrace[i];
+
+      auto backtraceString = ss.str();
+      uint64_t backtraceAddresses = (uint64_t)allocBacktrace[i];
+      uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
+
+      fwrite(&backtraceAddresses, sizeof(backtraceAddresses), 1, out);
+      fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
+      fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
     }
 
-    // Record the depth of the backtrace.
-    fwrite(&allocBacktraceCount, sizeof(allocBacktraceCount), 1, out);
+    delete[] pInfoBuffer;
+    pInfoBuffer = nullptr;
+  }
+#else  // _WIN32
+  uint16_t fixedBacktraceDepth = (uint16_t)(allocBacktraceCount - 1);
 
-    for(USHORT i = 0; i < allocBacktraceCount; ++i)
-    {
-        DWORD64 displacement = 0;
+  // Record the depth of the backtrace.
+  fwrite(&fixedBacktraceDepth, sizeof(fixedBacktraceDepth), 1, out);
 
-        uint8_t *pInfoBuffer = new uint8_t[sizeof(SYMBOL_INFO) +
-            MAX_SYMBOL_LEN];
-        SYMBOL_INFO *pInfo = reinterpret_cast<SYMBOL_INFO*>(pInfoBuffer);
-        memset(pInfoBuffer, 0, sizeof(SYMBOL_INFO) + MAX_SYMBOL_LEN);
-        pInfo->MaxNameLen = MAX_SYMBOL_LEN;
-        pInfo->SizeOfStruct = sizeof(SYMBOL_INFO);
+  // If we have a valid array of backtraces, parse them.
+  if (allocBacktraceCount > 0) {
+    // Retrieve the symbols for each backtrace in the array.
+    char **backtraceSymbols = backtrace_symbols(
+        allocBacktrace, (backtrace_size_t)allocBacktraceCount);
 
-        // Retrieve the symbol for each frame in the array.
-        if(TRUE == symInit && TRUE == SymFromAddr(GetCurrentProcess(),
-            (DWORD64)allocBacktrace[i], &displacement, pInfo))
-        {
-            char name[MAX_SYMBOL_LEN];
-            char sym[MAX_SYMBOL_LEN];
+    // If the symbols were created, parse then.
+    if (backtraceSymbols) {
+      // For each symbol in the array, convert it to a String and add it
+      // to the backtrace string list. Set i = 1 to skip over this
+      // constructor function.
+      for (uint16_t i = 1; i < allocBacktraceCount; i++) {
+        std::string symbol = backtraceSymbols[i];
+        std::string demangled;
 
+        // Demangle any C++ symbols in the backtrace.
+        auto callback = [&](const std::smatch &match) {
+          std::string s;
+
+          int status = -1;
+
+#if 1 == EXCEPTION_STRIP_MODULE
+          char *szDemangled =
+              abi::__cxa_demangle(match.str(2).c_str(), 0, 0, &status);
+#else   // 1 != EXCEPTION_STRIP_MODULE
+          char *szDemangled =
+              abi::__cxa_demangle(match.str(1).c_str(), 0, 0, &status);
+#endif  // 1 == EXCEPTION_STRIP_MODULE
+
+          if (0 == status) {
             std::stringstream ss;
+#if 1 == EXCEPTION_STRIP_MODULE
+            ss << szDemangled << "+" << match.str(3);
+#else   // 1 != EXCEPTION_STRIP_MODULE
+            ss << "(" << szDemangled << "+" << match.str(2) << ")";
+#endif  // 1 == EXCEPTION_STRIP_MODULE
+            s = ss.str();
+          } else {
+            s = match.str(0);
+          }
 
-            if(0 >= UnDecorateSymbolName(pInfo->Name, sym,
-                MAX_SYMBOL_LEN, UNDNAME_COMPLETE))
-            {
-                strncpy(sym, pInfo->Name, MAX_SYMBOL_LEN - 1);
-            }
+          free(szDemangled);
 
-            if(0 < GetModuleFileNameA((HMODULE)pInfo->ModBase, name,
-                MAX_SYMBOL_LEN))
-            {
-                char *pModuleName = strrchr(name, '\\');
-
-                if(NULL == pModuleName)
-                {
-                    pModuleName = name;
-                }
-                else
-                {
-                    pModuleName++;
-                }
-
-                ss << pModuleName << "(" << sym << "+0x"
-                    << std::hex << displacement << ")";
-            }
-            else
-            {
-                ss << R"_raw_(???()_raw_" << sym << "+0x"
-                    << std::hex << displacement << ")";
-            }
-
-            ss << " [0x" << std::hex << (DWORD64)allocBacktrace[i] << "]";
-
-            DWORD lineDisplacement;
-            IMAGEHLP_LINE64 line;
-
-            if(TRUE == SymGetLineFromAddr64(GetCurrentProcess(),
-                (ULONG64)allocBacktrace[i], &lineDisplacement, &line))
-            {
-                ss << " " << line.FileName << ":"
-                    << std::dec << line.LineNumber;
-            }
-
-            auto backtraceString = ss.str();
-            uint64_t backtraceAddress = (uint64_t)allocBacktrace[i];
-            uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
-
-            fwrite(&backtraceAddress, sizeof(backtraceAddress), 1, out);
-            fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
-            fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
-        }
-        else
-        {
-            std::stringstream ss;
-            ss << "0x" << std::hex << (DWORD64)allocBacktrace[i];
-
-            auto backtraceString = ss.str();
-            uint64_t backtraceAddresses = (uint64_t)allocBacktrace[i];
-            uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
-
-            fwrite(&backtraceAddresses, sizeof(backtraceAddresses), 1, out);
-            fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
-            fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
-        }
-
-        delete[] pInfoBuffer;
-        pInfoBuffer = nullptr;
-    }
-#else // _WIN32
-    uint16_t fixedBacktraceDepth = (uint16_t)(allocBacktraceCount - 1);
-
-    // Record the depth of the backtrace.
-    fwrite(&fixedBacktraceDepth, sizeof(fixedBacktraceDepth), 1, out);
-
-    // If we have a valid array of backtraces, parse them.
-    if(allocBacktraceCount > 0)
-    {
-        // Retrieve the symbols for each backtrace in the array.
-        char **backtraceSymbols = backtrace_symbols(
-            allocBacktrace, (backtrace_size_t)allocBacktraceCount);
-
-        // If the symbols were created, parse then.
-        if(backtraceSymbols)
-        {
-            // For each symbol in the array, convert it to a String and add it
-            // to the backtrace string list. Set i = 1 to skip over this
-            // constructor function.
-            for(uint16_t i = 1; i < allocBacktraceCount; i++)
-            {
-                std::string symbol = backtraceSymbols[i];
-                std::string demangled;
-
-                // Demangle any C++ symbols in the backtrace.
-                auto callback = [&](const std::smatch& match)
-                {
-                    std::string s;
-
-                    int status = -1;
+          return s;
+        };
 
 #if 1 == EXCEPTION_STRIP_MODULE
-                    char *szDemangled = abi::__cxa_demangle(
-                        match.str(2).c_str(), 0, 0, &status);
-#else // 1 != EXCEPTION_STRIP_MODULE
-                    char *szDemangled = abi::__cxa_demangle(
-                        match.str(1).c_str(), 0, 0, &status);
-#endif // 1 == EXCEPTION_STRIP_MODULE
+        static const std::regex re("^(.*)\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
+#else   // 1 != EXCEPTION_STRIP_MODULE
+        static const std::regex re("\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
+#endif  // 1 == EXCEPTION_STRIP_MODULE
 
-                    if(0 == status)
-                    {
-                        std::stringstream ss;
-#if 1 == EXCEPTION_STRIP_MODULE
-                        ss << szDemangled << "+" << match.str(3);
-#else // 1 != EXCEPTION_STRIP_MODULE
-                        ss << "(" << szDemangled << "+" << match.str(2) << ")";
-#endif // 1 == EXCEPTION_STRIP_MODULE
-                        s = ss.str();
-                    }
-                    else
-                    {
-                        s = match.str(0);
-                    }
+        demangled =
+            std::regex_replace(symbol.cbegin(), symbol.cend(), re, callback);
 
-                    free(szDemangled);
+        auto backtraceString = demangled;
+        uint64_t backtraceAddress = (uint64_t)allocBacktrace[i];
+        uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
 
-                    return s;
-                };
+        fwrite(&backtraceAddress, sizeof(backtraceAddress), 1, out);
+        fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
+        fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
+      }
 
-#if 1 == EXCEPTION_STRIP_MODULE
-                static const std::regex re("^(.*)\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
-#else // 1 != EXCEPTION_STRIP_MODULE
-                static const std::regex re("\\((.+)\\+(0x[0-9a-fA-F]+)\\)");
-#endif // 1 == EXCEPTION_STRIP_MODULE
-
-                demangled = std::regex_replace(symbol.cbegin(), symbol.cend(),
-                    re, callback);
-
-                auto backtraceString = demangled;
-                uint64_t backtraceAddress = (uint64_t)allocBacktrace[i];
-                uint32_t backtraceStringLength = (uint32_t)backtraceString.length();
-
-                fwrite(&backtraceAddress, sizeof(backtraceAddress), 1, out);
-                fwrite(&backtraceStringLength, sizeof(backtraceStringLength), 1, out);
-                fwrite(backtraceString.c_str(), backtraceStringLength, 1, out);
-            }
-
-            // Since backtrace_symbols allocated the array, we must free it.
-            // Note that the man page specifies that the strings themselves
-            // should not be freed.
-            free(backtraceSymbols);
-        }
+      // Since backtrace_symbols allocated the array, we must free it.
+      // Note that the man page specifies that the strings themselves
+      // should not be freed.
+      free(backtraceSymbols);
     }
-#endif // _WIN32
+  }
+#endif  // _WIN32
 }
 
-void MemoryManager::Setup()
-{
-    mSnapshotInProgress = true;
-    mLock = new std::mutex();
+void MemoryManager::Setup() {
+  mSnapshotInProgress = true;
+  mLock = new std::mutex();
 
-    mAllocationCount = 0;
-    mHeapSize = 0;
-    mAllocations = rbtree_create();
-    mSnapshotInProgress = false;
+  mAllocationCount = 0;
+  mHeapSize = 0;
+  mAllocations = rbtree_create();
+  mSnapshotInProgress = false;
 }
 
-void MemoryManager::Snapshot()
-{
-    mLock->lock();
+void MemoryManager::Snapshot() {
+  mLock->lock();
 
-    mSnapshotInProgress = true;
+  mSnapshotInProgress = true;
 
-    FILE *out = fopen(MEMORY_SNAPSHOT_FILE, "w");
+  FILE *out = fopen(MEMORY_SNAPSHOT_FILE, "w");
 
-    {
-        std::unordered_map<uint32_t, std::list<MemoryAllocation*>> allocMap;
-        CollectAllocation(allocMap, mAllocations->root);
+  {
+    std::unordered_map<uint32_t, std::list<MemoryAllocation *> > allocMap;
+    CollectAllocation(allocMap, mAllocations->root);
 
-        uint64_t heapSize = (uint64_t)mHeapSize;
-        uint64_t collectionCount = (uint64_t)allocMap.size();
+    uint64_t heapSize = (uint64_t)mHeapSize;
+    uint64_t collectionCount = (uint64_t)allocMap.size();
 
-        fwrite("MEMD", 4, 1, out);
-        fwrite(&mAllocationCount, sizeof(mAllocationCount), 1, out);
-        fwrite(&heapSize, sizeof(heapSize), 1, out);
-        fwrite(&collectionCount, sizeof(collectionCount), 1, out);
+    fwrite("MEMD", 4, 1, out);
+    fwrite(&mAllocationCount, sizeof(mAllocationCount), 1, out);
+    fwrite(&heapSize, sizeof(heapSize), 1, out);
+    fwrite(&collectionCount, sizeof(collectionCount), 1, out);
 
-        for(auto it = allocMap.begin(); it != allocMap.end(); ++it)
-        {
-            uint64_t total = 0;
+    for (auto it = allocMap.begin(); it != allocMap.end(); ++it) {
+      uint64_t total = 0;
 
-            for(auto pAllocation : it->second)
-            {
-                total += (uint64_t)pAllocation->size;
-            }
+      for (auto pAllocation : it->second) {
+        total += (uint64_t)pAllocation->size;
+      }
 
-            uint32_t checksum = it->first;
-            uint64_t allocCount = (uint64_t)it->second.size();
+      uint32_t checksum = it->first;
+      uint64_t allocCount = (uint64_t)it->second.size();
 
-            fwrite(&total, sizeof(total), 1, out);
-            fwrite(&checksum, sizeof(checksum), 1, out);
-            fwrite(&allocCount, sizeof(allocCount), 1, out);
+      fwrite(&total, sizeof(total), 1, out);
+      fwrite(&checksum, sizeof(checksum), 1, out);
+      fwrite(&allocCount, sizeof(allocCount), 1, out);
 
-            it->second.front()->LogBacktrace(out);
+      it->second.front()->LogBacktrace(out);
 
-            for(auto pAllocation : it->second)
-            {
-                uint64_t addr = (uint64_t)pAllocation->pAddress;
-                uint64_t size = (uint64_t)pAllocation->size;
-                uint64_t stamp = (uint64_t)pAllocation->stamp;
+      for (auto pAllocation : it->second) {
+        uint64_t addr = (uint64_t)pAllocation->pAddress;
+        uint64_t size = (uint64_t)pAllocation->size;
+        uint64_t stamp = (uint64_t)pAllocation->stamp;
 
-                fwrite(&addr, sizeof(addr), 1, out);
-                fwrite(&size, sizeof(size), 1, out);
-                fwrite(&stamp, sizeof(stamp), 1, out);
-            }
-        }
+        fwrite(&addr, sizeof(addr), 1, out);
+        fwrite(&size, sizeof(size), 1, out);
+        fwrite(&stamp, sizeof(stamp), 1, out);
+      }
     }
+  }
 
-    fclose(out);
+  fclose(out);
 
-    mSnapshotInProgress = false;
+  mSnapshotInProgress = false;
 
-    mLock->unlock();
+  mLock->unlock();
 }
 
-void MemoryManager::Allocate(void *pAddress, size_t size)
-{
-    if(nullptr == pAddress || mSnapshotInProgress)
-    {
-        return;
-    }
+void MemoryManager::Allocate(void *pAddress, size_t size) {
+  if (nullptr == pAddress || mSnapshotInProgress) {
+    return;
+  }
 
-    mLock->lock();
+  mLock->lock();
 
-    MemoryAllocation *pAllocation = (MemoryAllocation*)malloc(
-        sizeof(MemoryAllocation));
-    pAllocation->pAddress = pAddress;
-    pAllocation->size = size;
-    pAllocation->stamp = time(0);
-    pAllocation->CreateBacktrace();
+  MemoryAllocation *pAllocation =
+      (MemoryAllocation *)malloc(sizeof(MemoryAllocation));
+  pAllocation->pAddress = pAddress;
+  pAllocation->size = size;
+  pAllocation->stamp = time(0);
+  pAllocation->CreateBacktrace();
 
-    mAllocationCount++;
-    mHeapSize += size;
+  mAllocationCount++;
+  mHeapSize += size;
 
-    rbtree_insert(mAllocations, (rbtree_key)pAddress,
-        (rbtree_value)pAllocation, compare_tree);
+  rbtree_insert(mAllocations, (rbtree_key)pAddress, (rbtree_value)pAllocation,
+                compare_tree);
 
-    mLock->unlock();
+  mLock->unlock();
 }
 
-void MemoryManager::Deallocate(void *pAddress)
-{
-    if(nullptr == pAddress || mSnapshotInProgress)
-    {
-        return;
-    }
+void MemoryManager::Deallocate(void *pAddress) {
+  if (nullptr == pAddress || mSnapshotInProgress) {
+    return;
+  }
 
-    mLock->lock();
+  mLock->lock();
 
-    MemoryAllocation *pAllocation = (MemoryAllocation*)rbtree_take(
-        mAllocations, (rbtree_key)pAddress, compare_tree);
+  MemoryAllocation *pAllocation = (MemoryAllocation *)rbtree_take(
+      mAllocations, (rbtree_key)pAddress, compare_tree);
 
-    if(nullptr != pAllocation)
-    {
-        mAllocationCount--;
-        mHeapSize -= pAllocation->size;
+  if (nullptr != pAllocation) {
+    mAllocationCount--;
+    mHeapSize -= pAllocation->size;
 
-        pAllocation->FreeBacktrace();
+    pAllocation->FreeBacktrace();
 
-        free(pAllocation);
-    }
+    free(pAllocation);
+  }
 
-    mLock->unlock();
+  mLock->unlock();
 }
 
-void MemoryManager::GetStats(uint64_t& allocationCount, size_t& heapSize)
-{
-    mLock->lock();
-    allocationCount = mAllocationCount;
-    heapSize = mHeapSize;
-    mLock->unlock();
+void MemoryManager::GetStats(uint64_t &allocationCount, size_t &heapSize) {
+  mLock->lock();
+  allocationCount = mAllocationCount;
+  heapSize = mHeapSize;
+  mLock->unlock();
 }
 
-void MemoryManager::CollectAllocation(std::unordered_map<uint32_t,
-    std::list<MemoryAllocation*>>& collection, rbtree_node node)
-{
-    if(!node)
-    {
-        return;
+void MemoryManager::CollectAllocation(
+    std::unordered_map<uint32_t, std::list<MemoryAllocation *> > &collection,
+    rbtree_node node) {
+  if (!node) {
+    return;
+  }
+
+  uint32_t crc = (uint32_t)crc32(0L, Z_NULL, 0);
+  MemoryAllocation *pAllocation = (MemoryAllocation *)node->value;
+  pAllocation->allocBacktraceChecksum = (uint32_t)crc32(
+      (uLong)crc, (Bytef *)pAllocation->allocBacktrace,
+      (uInt)(sizeof(void *) * (size_t)pAllocation->allocBacktraceCount));
+  collection[pAllocation->allocBacktraceChecksum].push_back(pAllocation);
+
+  CollectAllocation(collection, node->left);
+  CollectAllocation(collection, node->right);
+}
+
+void *operator new(size_t size) {
+  void *pData = malloc(size);
+
+  if (gMemoryManagerEnabled && gManager) {
+    gManager->Allocate(pData, size);
+  }
+
+  return pData;
+}
+
+void *operator new[](size_t size) {
+  void *pData = malloc(size);
+
+  if (gMemoryManagerEnabled && gManager) {
+    gManager->Allocate(pData, size);
+  }
+
+  return pData;
+}
+
+void operator delete(void *pData) noexcept {
+  if (0 != pData) {
+    if (gMemoryManagerEnabled && gManager) {
+      gManager->Deallocate(pData);
     }
 
-    uint32_t crc = (uint32_t)crc32(0L, Z_NULL, 0);
-    MemoryAllocation *pAllocation = (MemoryAllocation*)node->value;
-    pAllocation->allocBacktraceChecksum = (uint32_t)crc32((uLong)crc,
-        (Bytef*)pAllocation->allocBacktrace, (uInt)(sizeof(void*) *
-        (size_t)pAllocation->allocBacktraceCount));
-    collection[pAllocation->allocBacktraceChecksum].push_back(pAllocation);
-
-    CollectAllocation(collection, node->left);
-    CollectAllocation(collection, node->right);
+    free(pData);
+  }
 }
 
-void* operator new(size_t size)
-{
-    void *pData = malloc(size);
-
-    if(gMemoryManagerEnabled && gManager)
-    {
-        gManager->Allocate(pData, size);
+void operator delete(void *pData, size_t) noexcept {
+  if (0 != pData) {
+    if (gMemoryManagerEnabled && gManager) {
+      gManager->Deallocate(pData);
     }
 
-    return pData;
+    free(pData);
+  }
 }
 
-void* operator new[](size_t size)
-{
-    void *pData = malloc(size);
-
-    if(gMemoryManagerEnabled && gManager)
-    {
-        gManager->Allocate(pData, size);
-    }
-
-    return pData;
-}
-
-void operator delete(void *pData) noexcept
-{
-    if(0 != pData)
-    {
-        if(gMemoryManagerEnabled && gManager)
-        {
-            gManager->Deallocate(pData);
-        }
-
-        free(pData);
-    }
-}
-
-void operator delete(void *pData, size_t) noexcept
-{
-    if(0 != pData)
-    {
-        if(gMemoryManagerEnabled && gManager)
-        {
-            gManager->Deallocate(pData);
-        }
-
-        free(pData);
-    }
-}
-
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

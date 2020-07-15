@@ -28,129 +28,122 @@
 #define LIBCOMP_SRC_RANDOMIZER_H
 
 // C++ Standard Includes
+#include <stdint.h>
+
 #include <cmath>
 #include <list>
 #include <random>
 #include <set>
-#include <stdint.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Static utility class used for improved random number generation. Random
  * number generation is handled on a per thread basis and is thus thread safe.
  */
-class Randomizer
-{
-public:
-    /**
-     * Get a random integer number of the templated type between the minimum
-     * and maximum values supplied. Use GetRandomNumber64 for types uint64_t
-     * and int64_t.
-     * @param minVal Minimum value that can be generated
-     * @param maxVal Maximum value that can be generated
-     * @return Random number between the minimum and maximum values
-     */
-    template <class T>
-    static T GetRandomNumber(T minVal, T maxVal)
-    {
-        SeedRNG();
+class Randomizer {
+ public:
+  /**
+   * Get a random integer number of the templated type between the minimum
+   * and maximum values supplied. Use GetRandomNumber64 for types uint64_t
+   * and int64_t.
+   * @param minVal Minimum value that can be generated
+   * @param maxVal Maximum value that can be generated
+   * @return Random number between the minimum and maximum values
+   */
+  template <class T>
+  static T GetRandomNumber(T minVal, T maxVal) {
+    SeedRNG();
 
-        std::uniform_int_distribution<T> dis(minVal, maxVal);
-        return dis(sGen);
+    std::uniform_int_distribution<T> dis(minVal, maxVal);
+    return dis(sGen);
+  }
+
+  /**
+   * Get a random 64 bit integer number of the templated type between the
+   * minimum and maximum values supplied. Use GetRandomNumber instead for
+   * non-64 bit integers as this is significantly less performant.
+   * @param minVal Minimum value that can be generated
+   * @param maxVal Maximum value that can be generated
+   * @return Random number between the minimum and maximum values
+   */
+  template <class T>
+  static T GetRandomNumber64(T minVal, T maxVal) {
+    SeedRNG();
+
+    std::uniform_int_distribution<T> dis(minVal, maxVal);
+    return dis(sGen64);
+  }
+
+  /**
+   * Get a random decimal number of the templated type between the minimum and
+   * maximum values supplied.
+   * @param minVal Minimum value that can be generated
+   * @param maxVal Maximum value that can be generated
+   * @param precision Number of decimal places to round by
+   * @return Random decimal number between the minimum and maximum values
+   */
+  template <class T>
+  static T GetRandomDecimal(T minVal, T maxVal, uint8_t precision);
+
+  /**
+   * Get a random entry from the supplied list.
+   * @param List of entries to pull a random entry from
+   * @return Random entry from the supplied list or the default value
+   *  for the templated type if empty
+   */
+  template <class T>
+  static T GetEntry(const std::list<T>& dataset) {
+    if (dataset.size() == 0) {
+      return T{};
     }
 
-    /**
-     * Get a random 64 bit integer number of the templated type between the
-     * minimum and maximum values supplied. Use GetRandomNumber instead for
-     * non-64 bit integers as this is significantly less performant.
-     * @param minVal Minimum value that can be generated
-     * @param maxVal Maximum value that can be generated
-     * @return Random number between the minimum and maximum values
-     */
-    template <class T>
-    static T GetRandomNumber64(T minVal, T maxVal)
-    {
-        SeedRNG();
+    auto it = dataset.begin();
+    size_t randomIdx =
+        (size_t)GetRandomNumber<uint32_t>(0, (uint32_t)(dataset.size() - 1));
+    std::advance(it, randomIdx);
 
-        std::uniform_int_distribution<T> dis(minVal, maxVal);
-        return dis(sGen64);
+    return *it;
+  }
+
+  /**
+   * Get a random entry from the supplied set.
+   * @param Set of entries to pull a random entry from
+   * @return Random entry from the supplied set or the default value
+   *  for the templated type if empty
+   */
+  template <class T>
+  static T GetEntry(const std::set<T>& dataset) {
+    if (dataset.size() == 0) {
+      return T{};
     }
 
-    /**
-     * Get a random decimal number of the templated type between the minimum and
-     * maximum values supplied.
-     * @param minVal Minimum value that can be generated
-     * @param maxVal Maximum value that can be generated
-     * @param precision Number of decimal places to round by
-     * @return Random decimal number between the minimum and maximum values
-     */
-    template <class T>
-    static T GetRandomDecimal(T minVal, T maxVal, uint8_t precision);
+    auto it = dataset.begin();
+    size_t randomIdx =
+        (size_t)GetRandomNumber<uint32_t>(0, (uint32_t)(dataset.size() - 1));
+    std::advance(it, randomIdx);
 
-    /**
-     * Get a random entry from the supplied list.
-     * @param List of entries to pull a random entry from
-     * @return Random entry from the supplied list or the default value
-     *  for the templated type if empty
-     */
-    template <class T>
-    static T GetEntry(const std::list<T>& dataset)
-    {
-        if(dataset.size() == 0)
-        {
-            return T{};
-        }
+    return *it;
+  }
 
-        auto it = dataset.begin();
-        size_t randomIdx = (size_t)GetRandomNumber<uint32_t>(0,
-            (uint32_t)(dataset.size() - 1));
-        std::advance(it, randomIdx);
+ private:
+  /**
+   * Generate the random number seed value for the 32-bit and 64-bit
+   * generators if it has not been already.
+   */
+  static void SeedRNG();
 
-        return *it;
-    }
+  /// Thread specific 32-bit random number generator
+  static thread_local std::mt19937 sGen;
 
-    /**
-     * Get a random entry from the supplied set.
-     * @param Set of entries to pull a random entry from
-     * @return Random entry from the supplied set or the default value
-     *  for the templated type if empty
-     */
-    template <class T>
-    static T GetEntry(const std::set<T>& dataset)
-    {
-        if(dataset.size() == 0)
-        {
-            return T{};
-        }
-
-        auto it = dataset.begin();
-        size_t randomIdx = (size_t)GetRandomNumber<uint32_t>(0,
-            (uint32_t)(dataset.size() - 1));
-        std::advance(it, randomIdx);
-
-        return *it;
-    }
-
-private:
-    /**
-     * Generate the random number seed value for the 32-bit and 64-bit
-     * generators if it has not been already.
-     */
-    static void SeedRNG();
-
-    /// Thread specific 32-bit random number generator
-    static thread_local std::mt19937 sGen;
-
-    /// Thread specific 65-bit random number generator
-    static thread_local std::mt19937_64 sGen64;
+  /// Thread specific 65-bit random number generator
+  static thread_local std::mt19937_64 sGen64;
 };
 
-} // namspace libcomp
+}  // namespace libcomp
 
 #define RNG(T, X, Y) libcomp::Randomizer::GetRandomNumber<T>(X, Y)
 #define RNG64(T, X, Y) libcomp::Randomizer::GetRandomNumber64<T>(X, Y)
 #define RNG_DEC(T, X, Y, P) libcomp::Randomizer::GetRandomDecimal<T>(X, Y, P)
 
-#endif // LIBCOMP_SRC_RANDOMIZER_H
+#endif  // LIBCOMP_SRC_RANDOMIZER_H

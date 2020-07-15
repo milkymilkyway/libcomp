@@ -31,45 +31,36 @@
 #include "CString.h"
 #include "Message.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that triggers a server tick event.
  */
-class Tick : public Message
-{
-public:
-    /**
-     * Create the message.
-     */
-    Tick()
-    {
-    }
+class Tick : public Message {
+ public:
+  /**
+   * Create the message.
+   */
+  Tick() {}
 
-    /**
-     * Cleanup the message.
-     */
-    ~Tick()
-    {
-    }
+  /**
+   * Cleanup the message.
+   */
+  ~Tick() {}
 
-    virtual MessageType GetType() const
-    {
-        return MessageType::MESSAGE_TYPE_SYSTEM;
-    }
+  virtual MessageType GetType() const {
+    return MessageType::MESSAGE_TYPE_SYSTEM;
+  }
 
-    virtual libcomp::String Dump() const override
-    {
-        return libcomp::String("Message: Tick");
-    }
+  virtual libcomp::String Dump() const override {
+    return libcomp::String("Message: Tick");
+  }
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGETICK_H
+#endif  // LIBCOMP_SRC_MESSAGETICK_H

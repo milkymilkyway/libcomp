@@ -32,30 +32,27 @@
 #include "ConnectionMessage.h"
 #include "TcpConnection.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
-class ConnectionClosed : public ConnectionMessage
-{
-public:
-    ConnectionClosed(std::shared_ptr<TcpConnection> connection);
-    virtual ~ConnectionClosed();
+class ConnectionClosed : public ConnectionMessage {
+ public:
+  ConnectionClosed(std::shared_ptr<TcpConnection> connection);
+  virtual ~ConnectionClosed();
 
-    std::shared_ptr<TcpConnection> GetConnection() const;
+  std::shared_ptr<TcpConnection> GetConnection() const;
 
-    virtual ConnectionMessageType GetConnectionMessageType() const;
+  virtual ConnectionMessageType GetConnectionMessageType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 
-private:
-    std::shared_ptr<TcpConnection> mConnection;
+ private:
+  std::shared_ptr<TcpConnection> mConnection;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGECONNECTIONCLOSED_H
+#endif  // LIBCOMP_SRC_MESSAGECONNECTIONCLOSED_H

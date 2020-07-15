@@ -30,31 +30,29 @@
 // libobjgen Includes
 #include <MetaVariableList.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Represents a list variable that can be built dynamically at runtime.
  */
-class DynamicVariableList : public DynamicVariable
-{
-public:
-    /**
-     * Create a new dynamic list variable.
-     * @param metaVariable Pointer to a MetaVariableList definition
-     */
-    DynamicVariableList(const std::shared_ptr<libobjgen::MetaVariable>&
-        metaVariable);
+class DynamicVariableList : public DynamicVariable {
+ public:
+  /**
+   * Create a new dynamic list variable.
+   * @param metaVariable Pointer to a MetaVariableList definition
+   */
+  DynamicVariableList(
+      const std::shared_ptr<libobjgen::MetaVariable>& metaVariable);
 
-    /**
-     * Clean up the variable.
-     */
-    virtual ~DynamicVariableList();
+  /**
+   * Clean up the variable.
+   */
+  virtual ~DynamicVariableList();
 
-    virtual bool Load(ObjectInStream& stream);
-    virtual bool Save(ObjectOutStream& stream) const;
+  virtual bool Load(ObjectInStream& stream);
+  virtual bool Save(ObjectOutStream& stream) const;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DYNAMICVARIABLELIST_H
+#endif  // LIBCOMP_SRC_DYNAMICVARIABLELIST_H

@@ -34,69 +34,64 @@
 
 // Standard C++11 Includes
 #include <signal.h>
+
 #include <thread>
 
 #ifdef HAVE_SYSTEMD
 #include <systemd/sd-daemon.h>
-#endif // HAVE_SYSTEMD
+#endif  // HAVE_SYSTEMD
 
 static libcomp::BaseServer *gServer = nullptr;
 
-static std::list<std::thread*> gShutdownThreads;
+static std::list<std::thread *> gShutdownThreads;
 
-void ShutdownSignalHandler(int sig)
-{
-    (void)sig;
+void ShutdownSignalHandler(int sig) {
+  (void)sig;
 
-    static int killCount = 0;
+  static int killCount = 0;
 
 #ifdef HAVE_SYSTEMD
-    sd_notify(0, "STOPPING=1");
-#endif // HAVE_SYSTEMD
+  sd_notify(0, "STOPPING=1");
+#endif  // HAVE_SYSTEMD
 
-    if(0 < killCount)
-    {
-        printf("Someone can't wait can they?\n");
-        printf("Doing a hard kill... this could corrupt data >.<\n");
+  if (0 < killCount) {
+    printf("Someone can't wait can they?\n");
+    printf("Doing a hard kill... this could corrupt data >.<\n");
 
-        signal(sig, SIG_DFL);
-        raise(sig);
+    signal(sig, SIG_DFL);
+    raise(sig);
 
-        return;
+    return;
+  }
+
+  killCount++;
+
+  // Start a thread to handle the shutdown so it may use a mutex.
+  gShutdownThreads.push_back(new std::thread([]() {
+    // Send the server the shutdown signal.
+    if (nullptr != gServer) {
+      gServer->Shutdown();
     }
-
-    killCount++;
-
-    // Start a thread to handle the shutdown so it may use a mutex.
-    gShutdownThreads.push_back(new std::thread([](){
-        // Send the server the shutdown signal.
-        if(nullptr != gServer)
-        {
-            gServer->Shutdown();
-        }
-    }));
+  }));
 }
 
-void libcomp::Shutdown::Configure(libcomp::BaseServer *pServer)
-{
-    gServer = pServer;
+void libcomp::Shutdown::Configure(libcomp::BaseServer *pServer) {
+  gServer = pServer;
 
-    signal(SIGINT,  &ShutdownSignalHandler);
-    signal(SIGTERM, &ShutdownSignalHandler);
+  signal(SIGINT, &ShutdownSignalHandler);
+  signal(SIGTERM, &ShutdownSignalHandler);
 }
 
-void libcomp::Shutdown::Complete()
-{
-    // Clear this for the signal handler since we already left the thread.
-    gServer = nullptr;
+void libcomp::Shutdown::Complete() {
+  // Clear this for the signal handler since we already left the thread.
+  gServer = nullptr;
 
-    // Join all shutdown threads to make sure they completed.
-    for(auto thread : gShutdownThreads)
-    {
-        thread->join();
+  // Join all shutdown threads to make sure they completed.
+  for (auto thread : gShutdownThreads) {
+    thread->join();
 
-        delete thread;
-    }
+    delete thread;
+  }
 }
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

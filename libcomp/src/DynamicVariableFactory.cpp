@@ -37,112 +37,95 @@
 
 using namespace libcomp;
 
-DynamicVariableFactory::DynamicVariableFactory()
-{
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S8] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<int8_t>(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U8] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<uint8_t>(metaVariable));
-        };
+DynamicVariableFactory::DynamicVariableFactory() {
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S8] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<int8_t>(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U8] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<uint8_t>(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S16] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<int16_t>(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U16] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<uint16_t>(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S16] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<int16_t>(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U16] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<uint16_t>(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S32] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<int32_t>(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U32] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<uint32_t>(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S32] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<int32_t>(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U32] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<uint32_t>(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S64] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<int64_t>(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U64] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<uint64_t>(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_S64] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<int64_t>(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_U64] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<uint64_t>(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_FLOAT] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<float>(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_DOUBLE] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableInt<double>(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_FLOAT] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<float>(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_DOUBLE] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableInt<double>(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableString(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_STRING] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableString(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_ARRAY] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableArray(metaVariable));
-        };
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_LIST] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableList(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_ARRAY] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableArray(metaVariable));
+      };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_LIST] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableList(metaVariable));
+      };
 
-    mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF] =
-        [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
-        {
-            return std::shared_ptr<DynamicVariable>(
-                new DynamicVariableReference(metaVariable));
-        };
+  mAllocators[libobjgen::MetaVariable::MetaVariableType_t::TYPE_REF] =
+      [](const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) {
+        return std::shared_ptr<DynamicVariable>(
+            new DynamicVariableReference(metaVariable));
+      };
 }
 
 std::shared_ptr<DynamicVariable> DynamicVariableFactory::Create(
-    const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) const
-{
-    auto it = mAllocators.find(metaVariable->GetMetaType());
+    const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) const {
+  auto it = mAllocators.find(metaVariable->GetMetaType());
 
-    if(it != mAllocators.end())
-    {
-        return it->second(metaVariable);
-    }
+  if (it != mAllocators.end()) {
+    return it->second(metaVariable);
+  }
 
-    return {};
+  return {};
 }
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

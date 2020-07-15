@@ -30,13 +30,12 @@
 #ifndef EXOTIC_PLATFORM
 
 // libobjgen Includes
-#include "UUID.h"
+#include <UUID.h>
 
 // libcomp Includes
 #include "CString.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
 class DatabaseQuery;
 
@@ -45,320 +44,311 @@ class DatabaseQuery;
  * getting and setting the associated column.
  * @sa PersistentObject::GetMemberBindValues
  */
-class DatabaseBind
-{
-public:
-    /**
-     * Create a new database column binding.
-     * @param column Database column to bind the actions to
-     */
-    DatabaseBind(const String& column);
+class DatabaseBind {
+ public:
+  /**
+   * Create a new database column binding.
+   * @param column Database column to bind the actions to
+   */
+  DatabaseBind(const String& column);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBind();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBind();
 
-    /**
-     * Get the column being bound.
-     * @return Column being bound
-     */
-    String GetColumn() const;
+  /**
+   * Get the column being bound.
+   * @return Column being bound
+   */
+  String GetColumn() const;
 
-    /**
-     * Set the column being bound.
-     * @param column being bound
-     */
-    void SetColumn(const String& column);
+  /**
+   * Set the column being bound.
+   * @param column being bound
+   */
+  void SetColumn(const String& column);
 
-    /**
-     * Set the binding based on a database specific query
-     * implementation.
-     * @param db A database specific query
-     * @return true on success, false on failure
-     */
-    virtual bool Bind(DatabaseQuery& db) = 0;
+  /**
+   * Set the binding based on a database specific query
+   * implementation.
+   * @param db A database specific query
+   * @return true on success, false on failure
+   */
+  virtual bool Bind(DatabaseQuery& db) = 0;
 
-    /**
-     * Set the binding based on a database specific query
-     * implementation by binding index.
-     * @param db A database specific query
-     * @param idx Index to bind to
-     * @return true on success, false on failure
-     */
-    virtual bool Bind(DatabaseQuery& db, size_t idx) = 0;
+  /**
+   * Set the binding based on a database specific query
+   * implementation by binding index.
+   * @param db A database specific query
+   * @param idx Index to bind to
+   * @return true on success, false on failure
+   */
+  virtual bool Bind(DatabaseQuery& db, size_t idx) = 0;
 
-protected:
-    /// Column being bound
-    String mColumn;
+ protected:
+  /// Column being bound
+  String mColumn;
 };
 
 /**
  * Text column database binding by column name and value.
  */
-class DatabaseBindText : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database text column binding with a value.
-     * @param column Database text column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindText(const String& column, const String& value);
+class DatabaseBindText : public DatabaseBind {
+ public:
+  /**
+   * Create a new database text column binding with a value.
+   * @param column Database text column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindText(const String& column, const String& value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindText();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindText();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    String GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  String GetValue() const;
 
-private:
-    /// String value to bind
-    String mValue;
+ private:
+  /// String value to bind
+  String mValue;
 };
 
 /**
  * Blob column database binding by column name and value.
  */
-class DatabaseBindBlob : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database blob column binding with a value.
-     * @param column Database blob column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindBlob(const String& column, const std::vector<char>& value);
+class DatabaseBindBlob : public DatabaseBind {
+ public:
+  /**
+   * Create a new database blob column binding with a value.
+   * @param column Database blob column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindBlob(const String& column, const std::vector<char>& value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindBlob();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindBlob();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    std::vector<char> GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  std::vector<char> GetValue() const;
 
-private:
-    /// Blob value to bind
-    std::vector<char> mValue;
+ private:
+  /// Blob value to bind
+  std::vector<char> mValue;
 };
 
 /**
  * UUID column database binding by column name and value.
  */
-class DatabaseBindUUID : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database UUID column binding with a value.
-     * @param column Database UUID column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindUUID(const String& column, const libobjgen::UUID& value);
+class DatabaseBindUUID : public DatabaseBind {
+ public:
+  /**
+   * Create a new database UUID column binding with a value.
+   * @param column Database UUID column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindUUID(const String& column, const libobjgen::UUID& value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindUUID();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindUUID();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    libobjgen::UUID GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  libobjgen::UUID GetValue() const;
 
-private:
-    /// UUID value to bind
-    libobjgen::UUID mValue;
+ private:
+  /// UUID value to bind
+  libobjgen::UUID mValue;
 };
 
 /**
  * 32-bit integer column database binding by column name and value.
  */
-class DatabaseBindInt : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database 32-bit integer column binding with a value.
-     * @param column Database 32-bit integer column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindInt(const String& column, int32_t value);
+class DatabaseBindInt : public DatabaseBind {
+ public:
+  /**
+   * Create a new database 32-bit integer column binding with a value.
+   * @param column Database 32-bit integer column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindInt(const String& column, int32_t value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindInt();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindInt();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    int32_t GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  int32_t GetValue() const;
 
-private:
-    /// 32-bit integer value to bind
-    int32_t mValue;
+ private:
+  /// 32-bit integer value to bind
+  int32_t mValue;
 };
 
 /**
  * 64-bit integer column database binding by column name and value.
  */
-class DatabaseBindBigInt : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database 64-bit integer column binding with a value.
-     * @param column Database 64-bit integer column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindBigInt(const String& column, int64_t value);
+class DatabaseBindBigInt : public DatabaseBind {
+ public:
+  /**
+   * Create a new database 64-bit integer column binding with a value.
+   * @param column Database 64-bit integer column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindBigInt(const String& column, int64_t value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindBigInt();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindBigInt();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    int64_t GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  int64_t GetValue() const;
 
-private:
-    /// 64-bit integer value to bind
-    int64_t mValue;
+ private:
+  /// 64-bit integer value to bind
+  int64_t mValue;
 };
 
 /**
  * Float column database binding by column name and value.
  */
-class DatabaseBindFloat : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database float column binding with a value.
-     * @param column Database float column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindFloat(const String& column, float value);
+class DatabaseBindFloat : public DatabaseBind {
+ public:
+  /**
+   * Create a new database float column binding with a value.
+   * @param column Database float column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindFloat(const String& column, float value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindFloat();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindFloat();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    float GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  float GetValue() const;
 
-private:
-    /// Float value to bind
-    float mValue;
+ private:
+  /// Float value to bind
+  float mValue;
 };
 
 /**
  * Double column database binding by column name and value.
  */
-class DatabaseBindDouble : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database double column binding with a value.
-     * @param column Database double column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindDouble(const String& column, double value);
+class DatabaseBindDouble : public DatabaseBind {
+ public:
+  /**
+   * Create a new database double column binding with a value.
+   * @param column Database double column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindDouble(const String& column, double value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindDouble();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindDouble();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    double GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  double GetValue() const;
 
-private:
-    /// Double value to bind
-    double mValue;
+ private:
+  /// Double value to bind
+  double mValue;
 };
 
 /**
  * Boolean column database binding by column name and value.
  */
-class DatabaseBindBool : public DatabaseBind
-{
-public:
-    /**
-     * Create a new database boolean column binding with a value.
-     * @param column Database boolean column to bind the actions to
-     * @param value Value to bind to the column
-     */
-    DatabaseBindBool(const String& column, bool value);
+class DatabaseBindBool : public DatabaseBind {
+ public:
+  /**
+   * Create a new database boolean column binding with a value.
+   * @param column Database boolean column to bind the actions to
+   * @param value Value to bind to the column
+   */
+  DatabaseBindBool(const String& column, bool value);
 
-    /**
-     * Clean up the binding.
-     */
-    virtual ~DatabaseBindBool();
+  /**
+   * Clean up the binding.
+   */
+  virtual ~DatabaseBindBool();
 
-    virtual bool Bind(DatabaseQuery& db);
+  virtual bool Bind(DatabaseQuery& db);
 
-    virtual bool Bind(DatabaseQuery& db, size_t idx);
+  virtual bool Bind(DatabaseQuery& db, size_t idx);
 
-    /**
-     * Get the value being bound
-     * @return The value being bound
-     */
-    bool GetValue() const;
+  /**
+   * Get the value being bound
+   * @return The value being bound
+   */
+  bool GetValue() const;
 
-private:
-    /// Boolean value to bind
-    bool mValue;
+ private:
+  /// Boolean value to bind
+  bool mValue;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
-#endif // LIBCOMP_SRC_DATABASEBIND_H
+#endif  // LIBCOMP_SRC_DATABASEBIND_H

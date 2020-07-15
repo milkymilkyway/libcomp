@@ -37,89 +37,86 @@
 // tinyxml2 Includes
 #include <tinyxml2.h>
 
-namespace libobjgen
-{
+namespace libobjgen {
 
 class MetaVariable;
 
-class MetaObject
-{
-friend class MetaObjectXmlParser;
+class MetaObject {
+  friend class MetaObjectXmlParser;
 
-public:
-    typedef std::list<std::shared_ptr<MetaVariable>> VariableList;
-    typedef std::unordered_map<std::string, std::shared_ptr<MetaVariable>>
-        VariableMap;
+ public:
+  typedef std::list<std::shared_ptr<MetaVariable>> VariableList;
+  typedef std::unordered_map<std::string, std::shared_ptr<MetaVariable>>
+      VariableMap;
 
-    MetaObject();
-    ~MetaObject();
+  MetaObject();
+  ~MetaObject();
 
-    std::string GetName() const;
-    bool SetName(const std::string& name);
+  std::string GetName() const;
+  bool SetName(const std::string& name);
 
-    std::string GetNamespace() const;
-    bool SetNamespace(const std::string& ns);
+  std::string GetNamespace() const;
+  bool SetNamespace(const std::string& ns);
 
-    std::string GetBaseObject() const;
-    bool SetBaseObject(const std::string& name);
+  std::string GetBaseObject() const;
+  bool SetBaseObject(const std::string& name);
 
-    bool IsPersistent() const;
-    void SetPersistent(bool persistent);
+  bool IsPersistent() const;
+  void SetPersistent(bool persistent);
 
-    bool IsInheritedConstruction() const;
-    void SetInheritedConstruction(bool enabled);
+  bool IsInheritedConstruction() const;
+  void SetInheritedConstruction(bool enabled);
 
-    bool IsScriptEnabled() const;
-    void SetScriptEnabled(bool scriptEnabled);
+  bool IsScriptEnabled() const;
+  void SetScriptEnabled(bool scriptEnabled);
 
-    std::string GetSourceLocation() const;
-    void SetSourceLocation(const std::string& location);
+  std::string GetSourceLocation() const;
+  void SetSourceLocation(const std::string& location);
 
-    bool AddVariable(const std::shared_ptr<MetaVariable>& var);
-    bool RemoveVariable(const std::string& name);
-    std::shared_ptr<MetaVariable> GetVariable(const std::string& name);
+  bool AddVariable(const std::shared_ptr<MetaVariable>& var);
+  bool RemoveVariable(const std::string& name);
+  std::shared_ptr<MetaVariable> GetVariable(const std::string& name);
 
-    VariableList::const_iterator VariablesBegin() const;
-    VariableList::const_iterator VariablesEnd() const;
+  VariableList::const_iterator VariablesBegin() const;
+  VariableList::const_iterator VariablesEnd() const;
 
-    static bool IsValidIdentifier(const std::string& ident);
+  static bool IsValidIdentifier(const std::string& ident);
 
-    bool IsValid() const;
+  bool IsValid() const;
 
-    uint16_t GetDynamicSizeCount() const;
+  uint16_t GetDynamicSizeCount() const;
 
-    bool Load(std::istream& stream);
-    bool Save(std::ostream& stream) const;
-    bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& root) const;
+  bool Load(std::istream& stream);
+  bool Save(std::ostream& stream) const;
+  bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& root) const;
 
-    std::set<std::string> GetReferencesTypes(
-        bool includeNamespace = false) const;
-    std::list<std::shared_ptr<MetaVariable>> GetReferences() const;
+  std::set<std::string> GetReferencesTypes(bool includeNamespace = false) const;
+  std::list<std::shared_ptr<MetaVariable>> GetReferences() const;
 
-    void AddInheritedObject(const std::shared_ptr<MetaObject>& obj);
-    std::list<std::shared_ptr<MetaObject>> GetInheritedObjects() const;
-    void GetAllInheritedObjects(std::list<std::shared_ptr<
-        MetaObject>>& objs) const;
+  void AddInheritedObject(const std::shared_ptr<MetaObject>& obj);
+  std::list<std::shared_ptr<MetaObject>> GetInheritedObjects() const;
+  void GetAllInheritedObjects(
+      std::list<std::shared_ptr<MetaObject>>& objs) const;
 
-private:
-    void GetReferences(std::shared_ptr<MetaVariable>& var,
-        std::list<std::shared_ptr<MetaVariable>>& references) const;
+ private:
+  void GetReferences(
+      std::shared_ptr<MetaVariable>& var,
+      std::list<std::shared_ptr<MetaVariable>>& references) const;
 
-    std::string mName;
-    std::string mNamespace;
-    std::string mBaseObject;
-    bool mScriptEnabled;
-    bool mPersistent;
-    bool mInheritedConstruction;
-    std::string mSourceLocation;
+  std::string mName;
+  std::string mNamespace;
+  std::string mBaseObject;
+  bool mScriptEnabled;
+  bool mPersistent;
+  bool mInheritedConstruction;
+  std::string mSourceLocation;
 
-    VariableList mVariables;
-    VariableMap mVariableMapping;
+  VariableList mVariables;
+  VariableMap mVariableMapping;
 
-    std::list<std::shared_ptr<MetaObject>> mInheritedObjects;
+  std::list<std::shared_ptr<MetaObject>> mInheritedObjects;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAOBJECT_H
+#endif  // LIBOBJGEN_SRC_METAOBJECT_H

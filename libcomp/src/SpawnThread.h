@@ -35,34 +35,32 @@
 #include <functional>
 #include <thread>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class DayCare;
 
-class SpawnThread
-{
-public:
-    explicit SpawnThread(DayCare *pJuvy, bool printDetails = true,
-        std::function<void()> onDetain = 0);
-    ~SpawnThread();
+class SpawnThread {
+ public:
+  explicit SpawnThread(DayCare *pJuvy, bool printDetails = true,
+                       std::function<void()> onDetain = 0);
+  ~SpawnThread();
 
-    void QueueChild(const std::shared_ptr<Child>& child);
+  void QueueChild(const std::shared_ptr<Child> &child);
 
-    void Run();
-    void WaitForExit();
-    void RequestExit();
+  void Run();
+  void WaitForExit();
+  void RequestExit();
 
-private:
-    bool mPrintDetails;
+ private:
+  bool mPrintDetails;
 
-    DayCare *mDayCare;
-    std::thread *mThread;
+  DayCare *mDayCare;
+  std::thread *mThread;
 
-    libcomp::MessageQueue<std::shared_ptr<Child>> mRestartQueue;
-    std::function<void()> mOnDetain;
+  libcomp::MessageQueue<std::shared_ptr<Child>> mRestartQueue;
+  std::function<void()> mOnDetain;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_SPAWNTHREAD_H
+#endif  // LIBCOMP_SRC_SPAWNTHREAD_H

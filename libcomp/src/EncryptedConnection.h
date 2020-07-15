@@ -35,22 +35,19 @@
 #include <fstream>
 #include <functional>
 
-namespace objects
-{
+namespace objects {
 
 class ServerConfig;
 
-} // namespace objects
+}  // namespace objects
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 class Message;
 
-} // namespace Message
+}  // namespace Message
 
 /**
  * Represents an encrypted network connection. This connection will perform a
@@ -126,223 +123,224 @@ class Message;
  * message object will provide the command code and the packet data will
  * contain only the command specific data for that specific command.
  */
-class EncryptedConnection : public libcomp::TcpConnection
-{
-public:
-    /**
-     * Create a new encrypted connection.
-     * @param io_service ASIO service to manage this connection.
-     */
-    EncryptedConnection(asio::io_service& io_service);
+class EncryptedConnection : public libcomp::TcpConnection {
+ public:
+  /**
+   * Create a new encrypted connection.
+   * @param io_service ASIO service to manage this connection.
+   */
+  EncryptedConnection(asio::io_service& io_service);
 
-    /**
-     * Create a new encrypted connection.
-     * @param socket Socket provided by the server for the new client.
-     * @param diffieHellman Asymmetric encryption information.
-     */
-    EncryptedConnection(asio::ip::tcp::socket& socket, const std::shared_ptr<
-        Crypto::DiffieHellman>& diffieHellman);
+  /**
+   * Create a new encrypted connection.
+   * @param socket Socket provided by the server for the new client.
+   * @param diffieHellman Asymmetric encryption information.
+   */
+  EncryptedConnection(
+      asio::ip::tcp::socket& socket,
+      const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman);
 
-    /**
-     * Cleanup the connection object.
-     */
-    virtual ~EncryptedConnection();
+  /**
+   * Cleanup the connection object.
+   */
+  virtual ~EncryptedConnection();
 
-    /**
-     * Close the connection to the remote host.
-     * @return true on success; false otherwise.
-     */
-    virtual bool Close();
+  /**
+   * Close the connection to the remote host.
+   * @return true on success; false otherwise.
+   */
+  virtual bool Close();
 
-    /**
-     * Called when a connection has been established.
-     */
-    virtual void ConnectionSuccess();
+  /**
+   * Called when a connection has been established.
+   */
+  virtual void ConnectionSuccess();
 
-    /**
-     * Set the message queue for this connection. When a packet is parsed by
-     * the connection it will be sent as a @ref libcomp::Message::Packet to
-     * the message queue set by this function.
-     * @param messageQueue Message queue to be used by the connection.
-     */
-    void SetMessageQueue(const std::weak_ptr<MessageQueue<
-        libcomp::Message::Message*>>& messageQueue);
+  /**
+   * Set the message queue for this connection. When a packet is parsed by
+   * the connection it will be sent as a @ref libcomp::Message::Packet to
+   * the message queue set by this function.
+   * @param messageQueue Message queue to be used by the connection.
+   */
+  void SetMessageQueue(
+      const std::weak_ptr<MessageQueue<libcomp::Message::Message*>>&
+          messageQueue);
 
-    /**
-     * Set the server configuration object.
-     * @param config Server configuration object to use.
-     */
-    void SetServerConfig(const std::shared_ptr<objects::ServerConfig>& config);
+  /**
+   * Set the server configuration object.
+   * @param config Server configuration object to use.
+   */
+  void SetServerConfig(const std::shared_ptr<objects::ServerConfig>& config);
 
-protected:
-    /**
-     * Send a message to the message queue. This takes a function because it
-     * may decide the message can't be sent. In this case it will save time by
-     * not calling the allocation function.
-     * @param messageAllocFunction Function that will construct the message.
-     */
-    void SendMessage(const std::function<libcomp::Message::Message*(const
-        std::shared_ptr<libcomp::TcpConnection>&)>& messageAllocFunction);
+ protected:
+  /**
+   * Send a message to the message queue. This takes a function because it
+   * may decide the message can't be sent. In this case it will save time by
+   * not calling the allocation function.
+   * @param messageAllocFunction Function that will construct the message.
+   */
+  void SendMessage(const std::function<libcomp::Message::Message*(
+                       const std::shared_ptr<libcomp::TcpConnection>&)>&
+                       messageAllocFunction);
 
-    /**
-     * Type for a packet parsing function. This is used for the different
-     * encryption states to handle incoming packets.
-     * @param packet Packet that was received.
-     */
-    typedef void (EncryptedConnection::*PacketParser_t)(
-        libcomp::Packet& packet);
+  /**
+   * Type for a packet parsing function. This is used for the different
+   * encryption states to handle incoming packets.
+   * @param packet Packet that was received.
+   */
+  typedef void (EncryptedConnection::*PacketParser_t)(libcomp::Packet& packet);
 
-    /**
-     * Parse the initial encryption packet from the server. This is used when
-     * in the client role. This parser will take the reply from the server and
-     * extract the Diffie-Hellman base, prime, and server public. The connection
-     * will then generated the shared private and transition to the encrypted
-     * state. When this happens, @ref ConnectionEncrypted will be called and a
-     * message will be added onto the @ref libcomp::MessageQueue.
-     * @sa ConnectionEncrypted
-     * @sa SetMessageQueue
-     * @sa ParseServerEncryptionStart
-     * @sa ParseServerEncryptionFinish
-     * @param packet Incoming packet to parse.
-     */
-    void ParseClientEncryptionStart(libcomp::Packet& packet);
+  /**
+   * Parse the initial encryption packet from the server. This is used when
+   * in the client role. This parser will take the reply from the server and
+   * extract the Diffie-Hellman base, prime, and server public. The connection
+   * will then generated the shared private and transition to the encrypted
+   * state. When this happens, @ref ConnectionEncrypted will be called and a
+   * message will be added onto the @ref libcomp::MessageQueue.
+   * @sa ConnectionEncrypted
+   * @sa SetMessageQueue
+   * @sa ParseServerEncryptionStart
+   * @sa ParseServerEncryptionFinish
+   * @param packet Incoming packet to parse.
+   */
+  void ParseClientEncryptionStart(libcomp::Packet& packet);
 
-    /**
-     * Parse the initial packet from the client. This will check for the
-     * encryption magic from the client. This will recognize two additional
-     * magic sequences for a ping and world connection request. These allow for
-     * a quick non-encrypted notification. The ping will send the client back
-     * the same magic sequence and close the connection. The world connection
-     * request will trigger an event that may connect back to the client. The
-     * port is encoded in the magic and the address is retrieved by the
-     * @ref GetRemoteAddress function. For normal encrypted connections, the
-     * server will reply with the Diffie-Hellman base, prime, and the server
-     * public. It is then the responsibility of the client to perform two
-     * tasks. First, the client should use this information to generate the
-     * shared private. The shared private should be used as the Blowfish
-     * encryption key for future packets. Second, the client should reply to
-     * the server with it's client public in clear text. The server will parse
-     * this reply in the @ref ParseServerEncryptionFinish function.
-     * @sa ParseClientEncryptionStart
-     * @sa ParseServerEncryptionFinish
-     * @param packet Incoming packet to parse.
-     */
-    void ParseServerEncryptionStart(libcomp::Packet& packet);
+  /**
+   * Parse the initial packet from the client. This will check for the
+   * encryption magic from the client. This will recognize two additional
+   * magic sequences for a ping and world connection request. These allow for
+   * a quick non-encrypted notification. The ping will send the client back
+   * the same magic sequence and close the connection. The world connection
+   * request will trigger an event that may connect back to the client. The
+   * port is encoded in the magic and the address is retrieved by the
+   * @ref GetRemoteAddress function. For normal encrypted connections, the
+   * server will reply with the Diffie-Hellman base, prime, and the server
+   * public. It is then the responsibility of the client to perform two
+   * tasks. First, the client should use this information to generate the
+   * shared private. The shared private should be used as the Blowfish
+   * encryption key for future packets. Second, the client should reply to
+   * the server with it's client public in clear text. The server will parse
+   * this reply in the @ref ParseServerEncryptionFinish function.
+   * @sa ParseClientEncryptionStart
+   * @sa ParseServerEncryptionFinish
+   * @param packet Incoming packet to parse.
+   */
+  void ParseServerEncryptionStart(libcomp::Packet& packet);
 
-    /**
-     * Parse the final client packet needed for encryption. This will parse the
-     * client public and generate the shared private. The shared private will
-     * then be used as the Blowfish key for future packets. The server will
-     * then transition into the encrypted state. When this happens,
-     * @ref ConnectionEncrypted will be called and a message will be added onto
-     * the @ref libcomp::MessageQueue.
-     * @sa ConnectionEncrypted
-     * @sa SetMessageQueue
-     * @sa ParseClientEncryptionStart
-     * @sa ParseServerEncryptionStart
-     * @param packet
-     */
-    void ParseServerEncryptionFinish(libcomp::Packet& packet);
+  /**
+   * Parse the final client packet needed for encryption. This will parse the
+   * client public and generate the shared private. The shared private will
+   * then be used as the Blowfish key for future packets. The server will
+   * then transition into the encrypted state. When this happens,
+   * @ref ConnectionEncrypted will be called and a message will be added onto
+   * the @ref libcomp::MessageQueue.
+   * @sa ConnectionEncrypted
+   * @sa SetMessageQueue
+   * @sa ParseClientEncryptionStart
+   * @sa ParseServerEncryptionStart
+   * @param packet
+   */
+  void ParseServerEncryptionFinish(libcomp::Packet& packet);
 
-    /**
-     * Parse incoming encrypted packet data. This will buffer all incoming
-     * data. It will then peek at the first 8 bytes to determine the size of
-     * the packet. If a full packet is in the buffer it will call the other
-     * version of this function.
-     * @param packet Incoming packet data to parse.
-     */
-    void ParsePacket(libcomp::Packet& packet);
+  /**
+   * Parse incoming encrypted packet data. This will buffer all incoming
+   * data. It will then peek at the first 8 bytes to determine the size of
+   * the packet. If a full packet is in the buffer it will call the other
+   * version of this function.
+   * @param packet Incoming packet data to parse.
+   */
+  void ParsePacket(libcomp::Packet& packet);
 
-    /**
-     * Parse an encrypted packet that has been fully received. This will first
-     * decrypt the packet. It will then decompress the packet if needed.
-     * Finally it will parse and split out each individual command. For each
-     * command, a @ref libcomp::Message::Packet is generated and sent to the
-     * message queue set by @ref SetMessageQueue.
-     * @sa SetMessageQueue
-     * @param packet Encrypted packet to parse.
-     * @param paddedSize Over the wire size of the packet.
-     * @param realSize Size of the packet after decryption.
-     */
-    void ParsePacket(libcomp::Packet& packet,
-        uint32_t paddedSize, uint32_t realSize);
+  /**
+   * Parse an encrypted packet that has been fully received. This will first
+   * decrypt the packet. It will then decompress the packet if needed.
+   * Finally it will parse and split out each individual command. For each
+   * command, a @ref libcomp::Message::Packet is generated and sent to the
+   * message queue set by @ref SetMessageQueue.
+   * @sa SetMessageQueue
+   * @param packet Encrypted packet to parse.
+   * @param paddedSize Over the wire size of the packet.
+   * @param realSize Size of the packet after decryption.
+   */
+  void ParsePacket(libcomp::Packet& packet, uint32_t paddedSize,
+                   uint32_t realSize);
 
-    /**
-     * Parse additional magic sequences. See the description in
-     * @ref ParseServerEncryptionStart for what this additional magic sequences
-     * are for.
-     * @param packet Packet to parse.
-     * @return true if the packet was parsed; false otherwise.
-     */
-    virtual bool ParseExtensionConnection(libcomp::Packet& packet);
+  /**
+   * Parse additional magic sequences. See the description in
+   * @ref ParseServerEncryptionStart for what this additional magic sequences
+   * are for.
+   * @param packet Packet to parse.
+   * @return true if the packet was parsed; false otherwise.
+   */
+  virtual bool ParseExtensionConnection(libcomp::Packet& packet);
 
-    /**
-     * Report a socket error. This should disconnect the connection.
-     * @param errorMessage Error message to report.
-     */
-    virtual void SocketError(const libcomp::String& errorMessage =
-        libcomp::String());
+  /**
+   * Report a socket error. This should disconnect the connection.
+   * @param errorMessage Error message to report.
+   */
+  virtual void SocketError(
+      const libcomp::String& errorMessage = libcomp::String());
 
-    /**
-     * Called when the connection transitions into the encrypted state.
-     */
-    virtual void ConnectionEncrypted();
+  /**
+   * Called when the connection transitions into the encrypted state.
+   */
+  virtual void ConnectionEncrypted();
 
-    /**
-     * Called after a packet has been received from the remote host.
-     * @param packet Packet that was received.
-     */
-    virtual void PacketReceived(libcomp::Packet& packet);
+  /**
+   * Called after a packet has been received from the remote host.
+   * @param packet Packet that was received.
+   */
+  virtual void PacketReceived(libcomp::Packet& packet);
 
-    /**
-     * Called to prepare packets before they are sent to the remote host. This
-     * will combine commands into a single over the wire packet. It will then
-     * encrypt it. If the connection is not in the encrypted state it will
-     * not alter the packet data.
-     * @param packets List of packets to be sent to the remote host.
-     */
-    virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
+  /**
+   * Called to prepare packets before they are sent to the remote host. This
+   * will combine commands into a single over the wire packet. It will then
+   * encrypt it. If the connection is not in the encrypted state it will
+   * not alter the packet data.
+   * @param packets List of packets to be sent to the remote host.
+   */
+  virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
 
-    /**
-     * Decompress a packet. This base implementation does nothing as only some
-     * connections support this part of the protocol.
-     * @sa ChannelConnection
-     * @sa InternalConnection
-     * @sa LobbyConnection
-     * @param packet Packet to decompress.
-     * @param paddedSize Over the wire size of the packet.
-     * @param realSize Actual size of the packet.
-     * @param dataStart Offset into the packet of where the compressed data is.
-     * @return true on success; false otherwise.
-     */
-    virtual bool DecompressPacket(libcomp::Packet& packet,
-        uint32_t& paddedSize, uint32_t& realSize, uint32_t& dataStart);
+  /**
+   * Decompress a packet. This base implementation does nothing as only some
+   * connections support this part of the protocol.
+   * @sa ChannelConnection
+   * @sa InternalConnection
+   * @sa LobbyConnection
+   * @param packet Packet to decompress.
+   * @param paddedSize Over the wire size of the packet.
+   * @param realSize Actual size of the packet.
+   * @param dataStart Offset into the packet of where the compressed data is.
+   * @return true on success; false otherwise.
+   */
+  virtual bool DecompressPacket(libcomp::Packet& packet, uint32_t& paddedSize,
+                                uint32_t& realSize, uint32_t& dataStart);
 
-    /**
-     * Returns a list of packets that have been combined.
-     * @return List of packet that have been combined.
-     */
-    virtual std::list<ReadOnlyPacket> GetCombinedPackets();
+  /**
+   * Returns a list of packets that have been combined.
+   * @return List of packet that have been combined.
+   */
+  virtual std::list<ReadOnlyPacket> GetCombinedPackets();
 
-    /**
-     * Returns the size of the combined packet header.
-     * @return Size of the combined packet header.
-     */
-    virtual uint32_t GetHeaderSize();
+  /**
+   * Returns the size of the combined packet header.
+   * @return Size of the combined packet header.
+   */
+  virtual uint32_t GetHeaderSize();
 
-    /// Active parse being used for received packets.
-    PacketParser_t mPacketParser;
+  /// Active parse being used for received packets.
+  PacketParser_t mPacketParser;
 
-    /// Shared pointer for the message queue for this connection.
-    std::weak_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
+  /// Shared pointer for the message queue for this connection.
+  std::weak_ptr<MessageQueue<libcomp::Message::Message*>> mMessageQueue;
 
-    /// Server configuration.
-    std::shared_ptr<objects::ServerConfig> mServerConfig;
+  /// Server configuration.
+  std::shared_ptr<objects::ServerConfig> mServerConfig;
 
-    /// File to save a capture to.
-    std::ofstream *mCaptureFile;
+  /// File to save a capture to.
+  std::ofstream* mCaptureFile;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_ENCRYPTEDCONNECTION_H
+#endif  // LIBCOMP_SRC_ENCRYPTEDCONNECTION_H

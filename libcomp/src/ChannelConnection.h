@@ -30,44 +30,43 @@
 // libcomp Includes
 #include "EncryptedConnection.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Represents a dedicated connection type for a channel server in charge
  * of game client communication.
  */
-class ChannelConnection : public libcomp::EncryptedConnection
-{
-public:
-    /**
-     * Create a new channel connection.
-     * @param io_service ASIO service to manage this connection.
-     */
-    ChannelConnection(asio::io_service& io_service);
+class ChannelConnection : public libcomp::EncryptedConnection {
+ public:
+  /**
+   * Create a new channel connection.
+   * @param io_service ASIO service to manage this connection.
+   */
+  ChannelConnection(asio::io_service& io_service);
 
-    /**
-     * Create a new channel connection.
-     * @param socket Socket provided by the server for the new client.
-     * @param diffieHellman Asymmetric encryption information.
-     */
-    ChannelConnection(asio::ip::tcp::socket& socket, const std::shared_ptr<
-        Crypto::DiffieHellman>& diffieHellman);
+  /**
+   * Create a new channel connection.
+   * @param socket Socket provided by the server for the new client.
+   * @param diffieHellman Asymmetric encryption information.
+   */
+  ChannelConnection(
+      asio::ip::tcp::socket& socket,
+      const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman);
 
-    /**
-     * Cleanup the connection object.
-     */
-    virtual ~ChannelConnection();
+  /**
+   * Cleanup the connection object.
+   */
+  virtual ~ChannelConnection();
 
-protected:
-    virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
+ protected:
+  virtual void PreparePackets(std::list<ReadOnlyPacket>& packets);
 
-    virtual bool DecompressPacket(libcomp::Packet& packet,
-        uint32_t& paddedSize, uint32_t& realSize, uint32_t& dataStart);
+  virtual bool DecompressPacket(libcomp::Packet& packet, uint32_t& paddedSize,
+                                uint32_t& realSize, uint32_t& dataStart);
 
-    virtual uint32_t GetHeaderSize();
+  virtual uint32_t GetHeaderSize();
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_CHANNELCONNECTION_H
+#endif  // LIBCOMP_SRC_CHANNELCONNECTION_H

@@ -33,17 +33,16 @@
 #define EXCEPTION_STRIP_MODULE (0)
 
 #if __FreeBSD__
-typedef size_t  backtrace_size_t;
+typedef size_t backtrace_size_t;
 #elif __linux__
-typedef int     backtrace_size_t;
+typedef int backtrace_size_t;
 #endif
 
 #ifdef _WIN32
 #define MAX_SYMBOL_LEN (1024)
-#endif // _WIN32
+#endif  // _WIN32
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Base exception class. Any application specific exceptions should be derived
@@ -53,70 +52,69 @@ namespace libcomp
  * When constructing an exception, use the @ref EXCEPTION macro for automatic
  * insertation of the file and line the exception occured on.
  */
-class Exception
-{
-public:
-    /**
-     * Construct a basic exception. Pass __FILE__ as the @em file argument and
-     * __LINE__ as the @em line argument. It is recommended you use the
-     * @ref EXCEPTION macro instead.
-     * @param msg Message describing the exception.
-     * @param file File the exception occured in.
-     * @param line Line the exception occured on.
-     */
-    Exception(const String& msg, const String& file, int line);
+class Exception {
+ public:
+  /**
+   * Construct a basic exception. Pass __FILE__ as the @em file argument and
+   * __LINE__ as the @em line argument. It is recommended you use the
+   * @ref EXCEPTION macro instead.
+   * @param msg Message describing the exception.
+   * @param file File the exception occured in.
+   * @param line Line the exception occured on.
+   */
+  Exception(const String& msg, const String& file, int line);
 
-    /**
-     * Retrieve the line number the exception occured on.
-     * @returns Line number the exception was thrown from.
-     */
-    int Line() const;
+  /**
+   * Retrieve the line number the exception occured on.
+   * @returns Line number the exception was thrown from.
+   */
+  int Line() const;
 
-    /**
-     * Retrieve the file the exception occured in.
-     * @returns File the exception was thrown from.
-     */
-    String File() const;
+  /**
+   * Retrieve the file the exception occured in.
+   * @returns File the exception was thrown from.
+   */
+  String File() const;
 
-    /**
-     * Retrieve the message describing the exception.
-     * @returns Message describing the exception.
-     */
-    String Message() const;
+  /**
+   * Retrieve the message describing the exception.
+   * @returns Message describing the exception.
+   */
+  String Message() const;
 
-    /**
-     * Retrieve a backtrace of the exception.
-     * @returns Backtrace of the exception.
-     */
-    std::list<String> Backtrace() const;
+  /**
+   * Retrieve a backtrace of the exception.
+   * @returns Backtrace of the exception.
+   */
+  std::list<String> Backtrace() const;
 
-    /**
-     * Generate a log message for the exception. Derived exception classes
-     * should re-implement this function if they have more information related
-     * to the exception.
-     */
-    virtual void Log() const;
+  /**
+   * Generate a log message for the exception. Derived exception classes
+   * should re-implement this function if they have more information related
+   * to the exception.
+   */
+  virtual void Log() const;
 
-    /**
-     * Register the SIGSEGV signal handler to catch crashes.
-     */
-    static void RegisterSignalHandler();
+  /**
+   * Register the SIGSEGV signal handler to catch crashes.
+   */
+  static void RegisterSignalHandler();
 
-private:
-    /// Line number the exception occured on.
-    int mLine;
+ private:
+  /// Line number the exception occured on.
+  int mLine;
 
-    /// File the exception occured in.
-    String mFile;
+  /// File the exception occured in.
+  String mFile;
 
-    /// Message describing the exception.
-    String mMessage;
+  /// Message describing the exception.
+  String mMessage;
 
-    /// Backtrace information for the exception.
-    std::list<String> mBacktrace;
+  /// Backtrace information for the exception.
+  std::list<String> mBacktrace;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
 /**
  * Construct and throw a generic exception.
@@ -124,4 +122,4 @@ private:
  */
 #define EXCEPTION(msg) throw libcomp::Exception(msg, __FILE__, __LINE__)
 
-#endif // LIBCOMP_SRC_EXCEPTION_H
+#endif  // LIBCOMP_SRC_EXCEPTION_H

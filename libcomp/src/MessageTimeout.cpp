@@ -28,20 +28,12 @@
 
 using namespace libcomp;
 
-Message::Timeout::Timeout()
-{
+Message::Timeout::Timeout() {}
+
+Message::Timeout::~Timeout() {}
+
+Message::MessageType Message::Timeout::GetType() const {
+  return MessageType::MESSAGE_TYPE_SYSTEM;
 }
 
-Message::Timeout::~Timeout()
-{
-}
-
-Message::MessageType Message::Timeout::GetType() const
-{
-    return MessageType::MESSAGE_TYPE_SYSTEM;
-}
-
-libcomp::String Message::Timeout::Dump() const
-{
-    return "Message: Timeout";
-}
+libcomp::String Message::Timeout::Dump() const { return "Message: Timeout"; }

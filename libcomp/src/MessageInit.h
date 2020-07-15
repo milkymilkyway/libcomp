@@ -34,35 +34,32 @@
 // Standard C++11 Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that signifies that a @ref BaseServer is shutting down.
  */
-class Init : public Message
-{
-public:
-    /**
-     * Create the message.
-     */
-    Init();
+class Init : public Message {
+ public:
+  /**
+   * Create the message.
+   */
+  Init();
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~Init();
+  /**
+   * Cleanup the message.
+   */
+  virtual ~Init();
 
-    virtual MessageType GetType() const;
+  virtual MessageType GetType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGEINIT_H
+#endif  // LIBCOMP_SRC_MESSAGEINIT_H

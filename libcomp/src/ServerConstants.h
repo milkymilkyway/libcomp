@@ -36,29 +36,25 @@
 #include <set>
 #include <unordered_map>
 
-namespace tinyxml2
-{
+namespace tinyxml2 {
 class XMLElement;
 }
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Static Accessor class for the initalization and retrieval of
  * ServerConstants::Data.
  */
-class ServerConstants
-{
-private:
-/**
- * Server side configurable constants data container. Despite being
- * loaded after application level constants typically are, at any given
- * point there will be exactly one of these which can only be accessed
- * as a constant reference.
- */
-struct Data
-{
+class ServerConstants {
+ private:
+  /**
+   * Server side configurable constants data container. Despite being
+   * loaded after application level constants typically are, at any given
+   * point there will be exactly one of these which can only be accessed
+   * as a constant reference.
+   */
+  struct Data {
     /// Demon cooldown in seconds from being digitalized
     uint32_t DIGITALIZE_COOLDOWN;
 
@@ -583,7 +579,8 @@ struct Data
     uint32_t API_ADMIN_LVL_KICK_PLAYER;
     /// Required user level for messaging all players on a world via the API.
     uint32_t API_ADMIN_LVL_MESSAGE_WORLD;
-    /// Required user level for checking the online count or status of a player via the API.
+    /// Required user level for checking the online count or status of a player
+    /// via the API.
     uint32_t API_ADMIN_LVL_ONLINE;
     /// Required user level for adding items to an account's post via the API.
     uint32_t API_ADMIN_LVL_POST_ITEMS;
@@ -706,246 +703,215 @@ struct Data
     uint32_t GM_CMD_LVL_ZONE;
     /// Required user level for the @xp GM command.
     uint32_t GM_CMD_LVL_XP;
-};
+  };
 
-public:
-    /**
-     * Initialize the server side constants from an XML file
-     * @param filePath Path to the constants XML file
-     * @return false if anything failed during initialization
-     */
-    static bool Initialize(const String& filePath);
+ public:
+  /**
+   * Initialize the server side constants from an XML file
+   * @param filePath Path to the constants XML file
+   * @return false if anything failed during initialization
+   */
+  static bool Initialize(const String& filePath);
 
-    /**
-     * Get a constant reference to the server side constants
-     * data
-     * @return Reference to the server side constants data
-     */
-    static const Data& GetConstants();
+  /**
+   * Get a constant reference to the server side constants
+   * data
+   * @return Reference to the server side constants data
+   */
+  static const Data& GetConstants();
 
-private:
-    /**
-     * Utility function to load a string from the constants read
-     * from the XML file
-     * @param value Value assigned to a constant
-     * @param prop String reference to assign the value to
-     * @return true on success, false on failure
-     */
-    static bool LoadString(const std::string& value, String& prop);
+ private:
+  /**
+   * Utility function to load a string from the constants read
+   * from the XML file
+   * @param value Value assigned to a constant
+   * @param prop String reference to assign the value to
+   * @return true on success, false on failure
+   */
+  static bool LoadString(const std::string& value, String& prop);
 
-    /**
-     * Utility function to load a list of strings from the constants read
-     * from the XML file
-     * @param elem Pointer to the string list parent element
-     * @param prop List of strings reference to assign the value to
-     * @return true on success, false on failure
-     */
-    static bool LoadStringList(const tinyxml2::XMLElement* elem,
-        std::list<String>& prop);
+  /**
+   * Utility function to load a list of strings from the constants read
+   * from the XML file
+   * @param elem Pointer to the string list parent element
+   * @param prop List of strings reference to assign the value to
+   * @return true on success, false on failure
+   */
+  static bool LoadStringList(const tinyxml2::XMLElement* elem,
+                             std::list<String>& prop);
 
-    /**
-     * Utility function to load a list of strings into an array
-     * @param prop Array of integers to assign the value to
-     * @param values List of strings reference to pull the values from
-     * @return true on success, false on failure
-     */
-    template<typename T, std::size_t SIZE>
-    static bool ToIntegerArray(std::array<T, SIZE>& prop,
-        std::list<String> values)
-    {
-        if(SIZE != values.size())
-        {
-            return false;
-        }
-
-        bool success;
-        size_t idx = 0;
-        for(auto str : values)
-        {
-            T val = str.ToInteger<T>(&success);
-            if(!success)
-            {
-                return false;
-            }
-
-            prop[idx++] = val;
-        }
-
-        return true;
+  /**
+   * Utility function to load a list of strings into an array
+   * @param prop Array of integers to assign the value to
+   * @param values List of strings reference to pull the values from
+   * @return true on success, false on failure
+   */
+  template <typename T, std::size_t SIZE>
+  static bool ToIntegerArray(std::array<T, SIZE>& prop,
+                             std::list<String> values) {
+    if (SIZE != values.size()) {
+      return false;
     }
 
-    /**
-     * Utility function to load a list of strings into a set
-     * @param prop Set of integers to assign the value to
-     * @param values List of strings reference to pull the values from
-     * @return true on success, false on failure
-     */
-    template<typename T>
-    static bool ToIntegerSet(std::set<T>& prop,
-        std::list<String> values)
-    {
-        bool success;
-        for(auto str : values)
-        {
-            T val = str.ToInteger<T>(&success);
-            if(!success)
-            {
-                return false;
-            }
+    bool success;
+    size_t idx = 0;
+    for (auto str : values) {
+      T val = str.ToInteger<T>(&success);
+      if (!success) {
+        return false;
+      }
 
-            prop.insert(val);
-        }
-
-        return true;
+      prop[idx++] = val;
     }
 
-    /**
-     * Utility function to load key value string pairs from the
-     * constants read from the XML file
-     * @param elem Pointer to the pair list parent element
-     * @param map String to string map to assign the value to
-     * @return true on success, false on failure
-     */
-    static bool LoadKeyValueStrings(const tinyxml2::XMLElement* elem,
-        std::unordered_map<std::string, std::string>& map);
+    return true;
+  }
 
-    /**
-     * Utility function to load a string from the constants read
-     * from the XML file and assign it to an integer
-     * @param value Value assigned to a constant
-     * @param prop Integer reference to assign the value to
-     * @return true on success, false on failure
-     */
-    template<typename T>
-    static bool LoadInteger(const std::string& value, T& prop)
-    {
-        bool success = false;
-        libcomp::String outString;
-        if(LoadString(value, outString))
-        {
-            prop = outString.ToInteger<T>(&success);
-        }
+  /**
+   * Utility function to load a list of strings into a set
+   * @param prop Set of integers to assign the value to
+   * @param values List of strings reference to pull the values from
+   * @return true on success, false on failure
+   */
+  template <typename T>
+  static bool ToIntegerSet(std::set<T>& prop, std::list<String> values) {
+    bool success;
+    for (auto str : values) {
+      T val = str.ToInteger<T>(&success);
+      if (!success) {
+        return false;
+      }
 
-        return success;
+      prop.insert(val);
     }
 
-    /**
-     * Utility function to load a string from the constants read
-     * from the XML file and assign it to a decimal
-     * @param value Value assigned to a constant
-     * @param prop Decimal reference to assign the value to
-     * @return true on success, false on failure
-     */
-    template<typename T>
-    static bool LoadDecimal(const std::string& value, T& prop)
-    {
-        bool success = false;
-        libcomp::String outString;
-        if(LoadString(value, outString))
-        {
-            prop = outString.ToDecimal<T>(&success);
-        }
+    return true;
+  }
 
-        return success;
+  /**
+   * Utility function to load key value string pairs from the
+   * constants read from the XML file
+   * @param elem Pointer to the pair list parent element
+   * @param map String to string map to assign the value to
+   * @return true on success, false on failure
+   */
+  static bool LoadKeyValueStrings(
+      const tinyxml2::XMLElement* elem,
+      std::unordered_map<std::string, std::string>& map);
+
+  /**
+   * Utility function to load a string from the constants read
+   * from the XML file and assign it to an integer
+   * @param value Value assigned to a constant
+   * @param prop Integer reference to assign the value to
+   * @return true on success, false on failure
+   */
+  template <typename T>
+  static bool LoadInteger(const std::string& value, T& prop) {
+    bool success = false;
+    libcomp::String outString;
+    if (LoadString(value, outString)) {
+      prop = outString.ToInteger<T>(&success);
     }
 
-    /**
-     * Utility function to load a map of string to string pairs from
-     * the constants read from the XML file and convert to integer types
-     * @param valueMap Value map assigned to a constant
-     * @param propMap Integer map reference to assign the values to
-     * @return true on success, false on failure
-     */
-    template<typename K, typename V>
-    static bool LoadIntegerMap(const std::unordered_map<std::string,
-        std::string>& valueMap, std::unordered_map<K, V>& propMap)
-    {
-        for(auto pair : valueMap)
-        {
-            K key = 0;
-            V val = 0;
-            if(LoadInteger(pair.first, key) && LoadInteger(pair.second, val))
-            {
-                propMap[key] = val;
-            }
-            else
-            {
-                return false;
-            }
-        }
+    return success;
+  }
 
-        return true;
+  /**
+   * Utility function to load a string from the constants read
+   * from the XML file and assign it to a decimal
+   * @param value Value assigned to a constant
+   * @param prop Decimal reference to assign the value to
+   * @return true on success, false on failure
+   */
+  template <typename T>
+  static bool LoadDecimal(const std::string& value, T& prop) {
+    bool success = false;
+    libcomp::String outString;
+    if (LoadString(value, outString)) {
+      prop = outString.ToDecimal<T>(&success);
     }
 
-    /**
-     * Utility function to load convert a string to a list of numeric
-     * ranges and return in a list.
-     * @param value String of numeric ranges
-     * @param success Output success indicator
-     * @return List of converted numbers or empty if failure occurs
-     */
-    template<typename T>
-    static std::list<T> ToIntegerRange(const std::string& value, bool& success)
-    {
-        std::list<T> results;
+    return success;
+  }
 
-        auto params = libcomp::String(value).Split(",");
-        for(auto param : params)
-        {
-            auto subParams = libcomp::String(param).Split("-");
-            if(subParams.size() == 2)
-            {
-                // Min-max
-                T min = 0;
-                T max = 0;
-                if(LoadInteger(subParams.front().C(), min) &&
-                    LoadInteger(subParams.back().C(), max) &&
-                    min < max)
-                {
-                    for(T i = min; i <= max; i++)
-                    {
-                        results.push_back(i);
-                    }
-                }
-                else
-                {
-                    success = false;
-                }
-            }
-            else if(subParams.size() == 1)
-            {
-                // Single value
-                T p = 0;
-                if(LoadInteger(param.C(), p))
-                {
-                    results.push_back(p);
-                }
-                else
-                {
-                    success = false;
-                }
-            }
-            else
-            {
-                success = false;
-            }
+  /**
+   * Utility function to load a map of string to string pairs from
+   * the constants read from the XML file and convert to integer types
+   * @param valueMap Value map assigned to a constant
+   * @param propMap Integer map reference to assign the values to
+   * @return true on success, false on failure
+   */
+  template <typename K, typename V>
+  static bool LoadIntegerMap(
+      const std::unordered_map<std::string, std::string>& valueMap,
+      std::unordered_map<K, V>& propMap) {
+    for (auto pair : valueMap) {
+      K key = 0;
+      V val = 0;
+      if (LoadInteger(pair.first, key) && LoadInteger(pair.second, val)) {
+        propMap[key] = val;
+      } else {
+        return false;
+      }
+    }
 
-            if(!success)
-            {
-                results.clear();
-                return results;
-            }
+    return true;
+  }
+
+  /**
+   * Utility function to load convert a string to a list of numeric
+   * ranges and return in a list.
+   * @param value String of numeric ranges
+   * @param success Output success indicator
+   * @return List of converted numbers or empty if failure occurs
+   */
+  template <typename T>
+  static std::list<T> ToIntegerRange(const std::string& value, bool& success) {
+    std::list<T> results;
+
+    auto params = libcomp::String(value).Split(",");
+    for (auto param : params) {
+      auto subParams = libcomp::String(param).Split("-");
+      if (subParams.size() == 2) {
+        // Min-max
+        T min = 0;
+        T max = 0;
+        if (LoadInteger(subParams.front().C(), min) &&
+            LoadInteger(subParams.back().C(), max) && min < max) {
+          for (T i = min; i <= max; i++) {
+            results.push_back(i);
+          }
+        } else {
+          success = false;
         }
+      } else if (subParams.size() == 1) {
+        // Single value
+        T p = 0;
+        if (LoadInteger(param.C(), p)) {
+          results.push_back(p);
+        } else {
+          success = false;
+        }
+      } else {
+        success = false;
+      }
 
+      if (!success) {
+        results.clear();
         return results;
+      }
     }
 
-    /// Container for all server side constants
-    static Data sConstants;
+    return results;
+  }
+
+  /// Container for all server side constants
+  static Data sConstants;
 };
 
-} // namspace libcomp
+}  // namespace libcomp
 
 #define SVR_CONST libcomp::ServerConstants::GetConstants()
 
-#endif // LIBCOMP_SRC_SERVERCONSTANTS_H
+#endif  // LIBCOMP_SRC_SERVERCONSTANTS_H

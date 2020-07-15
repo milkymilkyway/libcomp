@@ -28,103 +28,91 @@
 #define LIBCOMP_SRC_TIMERMANAGER_H
 
 // libcomp Includes
-#include "MessageExecute.h"
-
 #include <chrono>
+#include <condition_variable>
 #include <list>
 #include <set>
-
-#include <condition_variable>
 #include <thread>
 
-namespace libcomp
-{
+#include "MessageExecute.h"
+
+namespace libcomp {
 
 class TimerEvent;
 
-class TimerEventComp
-{
-public:
-    bool operator()(const TimerEvent *lhs, const TimerEvent *rhs) const;
+class TimerEventComp {
+ public:
+  bool operator()(const TimerEvent* lhs, const TimerEvent* rhs) const;
 };
 
-class TimerManager
-{
-public:
-    TimerManager();
-    ~TimerManager();
+class TimerManager {
+ public:
+  TimerManager();
+  ~TimerManager();
 
-    TimerEvent* RegisterEvent(
-        const std::chrono::steady_clock::time_point& time,
-        libcomp::Message::Execute *pMessage);
-    TimerEvent* RegisterPeriodicEvent(
-        const std::chrono::milliseconds& period,
-        libcomp::Message::Execute *pMessage);
-    void CancelEvent(TimerEvent *pEvent);
+  TimerEvent* RegisterEvent(const std::chrono::steady_clock::time_point& time,
+                            libcomp::Message::Execute* pMessage);
+  TimerEvent* RegisterPeriodicEvent(const std::chrono::milliseconds& period,
+                                    libcomp::Message::Execute* pMessage);
+  void CancelEvent(TimerEvent* pEvent);
 
-    /**
-     * Executes code in the worker thread.
-     * @param f Function (lambda) to execute in the worker thread.
-     * @param args Arguments to pass to the function when it is executed.
-     * @return true on success, false on failure
-     */
-    template<typename Function, typename... Args>
-    TimerEvent* ScheduleEvent(
-        const std::chrono::steady_clock::time_point& time,
-        Function&& f, Args&&... args)
-    {
-        auto msg = new libcomp::Message::ExecuteImpl<Args...>(
-            std::forward<Function>(f), std::forward<Args>(args)...);
+  /**
+   * Executes code in the worker thread.
+   * @param f Function (lambda) to execute in the worker thread.
+   * @param args Arguments to pass to the function when it is executed.
+   * @return true on success, false on failure
+   */
+  template <typename Function, typename... Args>
+  TimerEvent* ScheduleEvent(const std::chrono::steady_clock::time_point& time,
+                            Function&& f, Args&&... args) {
+    auto msg = new libcomp::Message::ExecuteImpl<Args...>(
+        std::forward<Function>(f), std::forward<Args>(args)...);
 
-        return RegisterEvent(time, msg);
-    }
+    return RegisterEvent(time, msg);
+  }
 
-    /**
-     * Executes code in the worker thread.
-     * @param f Function (lambda) to execute in the worker thread.
-     * @param args Arguments to pass to the function when it is executed.
-     * @return true on success, false on failure
-     */
-    template<typename Function, typename... Args>
-    TimerEvent* ScheduleEventIn(int seconds,
-        Function&& f, Args&&... args)
-    {
-        auto msg = new libcomp::Message::ExecuteImpl<Args...>(
-            std::forward<Function>(f), std::forward<Args>(args)...);
+  /**
+   * Executes code in the worker thread.
+   * @param f Function (lambda) to execute in the worker thread.
+   * @param args Arguments to pass to the function when it is executed.
+   * @return true on success, false on failure
+   */
+  template <typename Function, typename... Args>
+  TimerEvent* ScheduleEventIn(int seconds, Function&& f, Args&&... args) {
+    auto msg = new libcomp::Message::ExecuteImpl<Args...>(
+        std::forward<Function>(f), std::forward<Args>(args)...);
 
-        return RegisterEvent(std::chrono::steady_clock::now() +
-            std::chrono::seconds(seconds), msg);
-    }
+    return RegisterEvent(
+        std::chrono::steady_clock::now() + std::chrono::seconds(seconds), msg);
+  }
 
-    /**
-     * Executes code in the worker thread.
-     * @param f Function (lambda) to execute in the worker thread.
-     * @param args Arguments to pass to the function when it is executed.
-     * @return true on success, false on failure
-     */
-    template<typename Function, typename... Args>
-    TimerEvent* SchedulePeriodicEvent(
-        const std::chrono::milliseconds& period,
-        Function&& f, Args&&... args)
-    {
-        auto msg = new libcomp::Message::ExecuteImpl<Args...>(
-            std::forward<Function>(f), std::forward<Args>(args)...);
+  /**
+   * Executes code in the worker thread.
+   * @param f Function (lambda) to execute in the worker thread.
+   * @param args Arguments to pass to the function when it is executed.
+   * @return true on success, false on failure
+   */
+  template <typename Function, typename... Args>
+  TimerEvent* SchedulePeriodicEvent(const std::chrono::milliseconds& period,
+                                    Function&& f, Args&&... args) {
+    auto msg = new libcomp::Message::ExecuteImpl<Args...>(
+        std::forward<Function>(f), std::forward<Args>(args)...);
 
-        return RegisterPeriodicEvent(period, msg);
-    }
+    return RegisterPeriodicEvent(period, msg);
+  }
 
-private:
-    void ProcessEvents(std::unique_lock<std::mutex>& lock);
-    void WaitForEvent(std::unique_lock<std::mutex>& lock);
+ private:
+  void ProcessEvents(std::unique_lock<std::mutex>& lock);
+  void WaitForEvent(std::unique_lock<std::mutex>& lock);
 
-    volatile bool mRunning;
-    volatile bool mProcessingEvents;
-    std::multiset<TimerEvent*, TimerEventComp> mEvents;
-    std::condition_variable mEventCondition;
-    std::mutex mEventLock;
-    std::thread mRunThread;
+  volatile bool mRunning;
+  volatile bool mProcessingEvents;
+  std::multiset<TimerEvent*, TimerEventComp> mEvents;
+  std::condition_variable mEventCondition;
+  std::mutex mEventLock;
+  std::thread mRunThread;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_TIMERMANAGER_H
+#endif  // LIBCOMP_SRC_TIMERMANAGER_H

@@ -30,65 +30,72 @@
 // libobjgen Includes
 #include "MetaVariable.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class MetaVariableBool : public MetaVariable
-{
-public:
-    MetaVariableBool();
-    virtual ~MetaVariableBool();
+class MetaVariableBool : public MetaVariable {
+ public:
+  MetaVariableBool();
+  virtual ~MetaVariableBool();
 
-    bool GetDefaultValue() const;
-    void SetDefaultValue(const bool value);
+  bool GetDefaultValue() const;
+  void SetDefaultValue(const bool value);
 
-    virtual size_t GetSize() const;
+  virtual size_t GetSize() const;
 
-    virtual MetaVariableType_t GetMetaType() const;
+  virtual MetaVariableType_t GetMetaType() const;
 
-    virtual std::string GetType() const;
+  virtual std::string GetType() const;
 
-    virtual bool IsCoreType() const;
-    virtual bool IsScriptAccessible() const;
-    virtual bool IsValid() const;
+  virtual bool IsCoreType() const;
+  virtual bool IsScriptAccessible() const;
+  virtual bool IsValid() const;
 
-    virtual bool Load(std::istream& stream);
-    virtual bool Save(std::ostream& stream) const;
+  virtual bool Load(std::istream& stream);
+  virtual bool Save(std::ostream& stream) const;
 
-    virtual bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root);
-    virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& parent, const char* elementName) const;
+  virtual bool Load(const tinyxml2::XMLDocument& doc,
+                    const tinyxml2::XMLElement& root);
+  virtual bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& parent,
+                    const char* elementName) const;
 
-    virtual std::string GetCodeType() const;
-    virtual std::string GetConstructValue() const;
-    virtual std::string GetDefaultValueCode() const;
-    virtual std::string GetValidCondition(const Generator& generator,
-        const std::string& name, bool recursive = false) const;
-    virtual std::string GetLoadCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetLoadRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetXmlLoadCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& node, size_t tabLevel = 1) const;
-    virtual std::string GetXmlSaveCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& parent, size_t tabLevel = 1,
-        const std::string elemName = "member") const;
-    virtual std::string GetBindValueCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetDatabaseLoadCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
+  virtual std::string GetCodeType() const;
+  virtual std::string GetConstructValue() const;
+  virtual std::string GetDefaultValueCode() const;
+  virtual std::string GetValidCondition(const Generator& generator,
+                                        const std::string& name,
+                                        bool recursive = false) const;
+  virtual std::string GetLoadCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetSaveCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetLoadRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetSaveRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetXmlLoadCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& doc,
+                                     const std::string& node,
+                                     size_t tabLevel = 1) const;
+  virtual std::string GetXmlSaveCode(
+      const Generator& generator, const std::string& name,
+      const std::string& doc, const std::string& parent, size_t tabLevel = 1,
+      const std::string elemName = "member") const;
+  virtual std::string GetBindValueCode(const Generator& generator,
+                                       const std::string& name,
+                                       size_t tabLevel = 1) const;
+  virtual std::string GetDatabaseLoadCode(const Generator& generator,
+                                          const std::string& name,
+                                          size_t tabLevel = 1) const;
 
-private:
-    bool mDefaultValue;
+ private:
+  bool mDefaultValue;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLEBOOL_H
+#endif  // LIBOBJGEN_SRC_METAVARIABLEBOOL_H

@@ -37,76 +37,67 @@
 #include <memory>
 #include <utility>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that provides code to execute inside the worker.
  */
-class Execute : public Message
-{
-public:
-    /**
-     * Execute the code contained in the message.
-     */
-    virtual void Run() = 0;
+class Execute : public Message {
+ public:
+  /**
+   * Execute the code contained in the message.
+   */
+  virtual void Run() = 0;
 };
 
 /**
  * Message that provides code to execute inside the worker.
  * @note This is the implementation for a function with a specific signature.
  */
-template<typename... Function>
-class ExecuteImpl : public Execute
-{
-public:
-    using BindType_t = decltype(std::bind(std::declval<std::function<void(
-        Function...)>>(), std::declval<Function>()...));
+template <typename... Function>
+class ExecuteImpl : public Execute {
+ public:
+  using BindType_t =
+      decltype(std::bind(std::declval<std::function<void(Function...)>>(),
+                         std::declval<Function>()...));
 
-    /**
-     * Create the message.
-     */
-    template<typename... Args>
-    explicit ExecuteImpl(std::function<void(Function...)> f, Args&&... args) :
-        Execute(), mBind(std::move(f), std::forward<Args>(args)...)
-    {
-        libcomp::Exception e("Execute Message", __FILE__, __LINE__);
-        mBacktrace = String::Join(e.Backtrace(), "\n");
-    }
+  /**
+   * Create the message.
+   */
+  template <typename... Args>
+  explicit ExecuteImpl(std::function<void(Function...)> f, Args&&... args)
+      : Execute(), mBind(std::move(f), std::forward<Args>(args)...) {
+    libcomp::Exception e("Execute Message", __FILE__, __LINE__);
+    mBacktrace = String::Join(e.Backtrace(), "\n");
+  }
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~ExecuteImpl()
-    {
-    }
+  /**
+   * Cleanup the message.
+   */
+  virtual ~ExecuteImpl() {}
 
-    virtual MessageType GetType() const
-    {
-        return MessageType::MESSAGE_TYPE_SYSTEM;
-    }
+  virtual MessageType GetType() const {
+    return MessageType::MESSAGE_TYPE_SYSTEM;
+  }
 
-    virtual libcomp::String Dump() const override
-    {
-        return libcomp::String("Message: Execute\n"
-            "%1").Arg(mBacktrace);
-    }
+  virtual libcomp::String Dump() const override {
+    return libcomp::String(
+               "Message: Execute\n"
+               "%1")
+        .Arg(mBacktrace);
+  }
 
-    virtual void Run()
-    {
-        mBind();
-    }
+  virtual void Run() { mBind(); }
 
-private:
-    BindType_t mBind;
-    libcomp::String mBacktrace;
+ private:
+  BindType_t mBind;
+  libcomp::String mBacktrace;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGEEXECUTE_H
+#endif  // LIBCOMP_SRC_MESSAGEEXECUTE_H

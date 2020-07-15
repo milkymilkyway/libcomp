@@ -36,119 +36,118 @@
 #include <unordered_map>
 
 // Standard C Includes
-#include <ctime>
-#include <cstdio>
 #include <stdint.h>
+
+#include <cstdio>
+#include <ctime>
 
 #define MEMORY_SNAPSHOT_FILE "memory_snapshot.bin"
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * A memory allocation contains the address, size, timestamp and a backtrace
  * of where the memory was allocated.
  */
-struct MemoryAllocation
-{
-    /// Array of backtrace frames.
-    void **allocBacktrace;
+struct MemoryAllocation {
+  /// Array of backtrace frames.
+  void **allocBacktrace;
 
-    /// Number of backtrace frames recorded.
-    uint16_t allocBacktraceCount;
+  /// Number of backtrace frames recorded.
+  uint16_t allocBacktraceCount;
 
-    /// Checksum of the backtrace frames.
-    uint32_t allocBacktraceChecksum;
+  /// Checksum of the backtrace frames.
+  uint32_t allocBacktraceChecksum;
 
-    /// Address of the allocation.
-    void  *pAddress;
+  /// Address of the allocation.
+  void *pAddress;
 
-    /// Size (in bytes) of the allocation.
-    size_t size;
+  /// Size (in bytes) of the allocation.
+  size_t size;
 
-    /// Time stamp of when the memory was allocated.
-    time_t stamp;
+  /// Time stamp of when the memory was allocated.
+  time_t stamp;
 
-    /**
-     * Creates the backtrace.
-     */
-    void CreateBacktrace();
+  /**
+   * Creates the backtrace.
+   */
+  void CreateBacktrace();
 
-    /**
-     * Frees the backtrace.
-     */
-    void FreeBacktrace();
+  /**
+   * Frees the backtrace.
+   */
+  void FreeBacktrace();
 
-    /**
-     * Logs the backtrace to the given file.
-     * @param out File to log the backtrace to.
-     */
-    void LogBacktrace(FILE *out);
+  /**
+   * Logs the backtrace to the given file.
+   * @param out File to log the backtrace to.
+   */
+  void LogBacktrace(FILE *out);
 };
 
 /**
  * This class will track memory allocations for later analysis.
  */
-class MemoryManager
-{
-public:
-    /**
-     * Called to setup the manager.
-     */
-    void Setup();
+class MemoryManager {
+ public:
+  /**
+   * Called to setup the manager.
+   */
+  void Setup();
 
-    /**
-     * Called to dump the statistics to a file.
-     */
-    void Snapshot();
+  /**
+   * Called to dump the statistics to a file.
+   */
+  void Snapshot();
 
-    /**
-     * Called to track an allocated a block of memory.
-     * @param pAddress Address of the memory block.
-     * @param size Size of the memory block.
-     */
-    void Allocate(void *pAddress, size_t size);
+  /**
+   * Called to track an allocated a block of memory.
+   * @param pAddress Address of the memory block.
+   * @param size Size of the memory block.
+   */
+  void Allocate(void *pAddress, size_t size);
 
-    /**
-     * Called to remove tracking on a memory block/
-     * @param pAddress Address of the memory block.
-     */
-    void Deallocate(void *pAddress);
+  /**
+   * Called to remove tracking on a memory block/
+   * @param pAddress Address of the memory block.
+   */
+  void Deallocate(void *pAddress);
 
-    /**
-     * Gets basic statistics on the memory usage.
-     * @param allocationCount How many blocks of memory are allocated.
-     * @param heapSize Size of the heap in bytes (size of all allocations).
-     */
-    void GetStats(uint64_t& allocationCount, size_t& heapSize);
+  /**
+   * Gets basic statistics on the memory usage.
+   * @param allocationCount How many blocks of memory are allocated.
+   * @param heapSize Size of the heap in bytes (size of all allocations).
+   */
+  void GetStats(uint64_t &allocationCount, size_t &heapSize);
 
-private:
-    /**
-     * Add an allocation to the collection during the snapshot progress. This
-     * will follow the tree until all allocations are collected. A checksum for
-     * the allocation backtrace is generated and used to group allocations made
-     * in the same code location.
-     * @param collection Collection to add the allocations to.
-     * @param node Node to add to the collection (and child notes).
-     */
-    void CollectAllocation(std::unordered_map<uint32_t,
-        std::list<MemoryAllocation*>>& collection, rbtree_node node);
+ private:
+  /**
+   * Add an allocation to the collection during the snapshot progress. This
+   * will follow the tree until all allocations are collected. A checksum for
+   * the allocation backtrace is generated and used to group allocations made
+   * in the same code location.
+   * @param collection Collection to add the allocations to.
+   * @param node Node to add to the collection (and child notes).
+   */
+  void CollectAllocation(
+      std::unordered_map<uint32_t, std::list<MemoryAllocation *>> &collection,
+      rbtree_node node);
 
-    /// How many blocks of memory are allocated.
-    uint64_t mAllocationCount;
+  /// How many blocks of memory are allocated.
+  uint64_t mAllocationCount;
 
-    /// Size of the heap in bytes (size of all allocations).
-    size_t mHeapSize;
+  /// Size of the heap in bytes (size of all allocations).
+  size_t mHeapSize;
 
-    /// Red-black tree holding the memory allocations.
-    rbtree mAllocations;
+  /// Red-black tree holding the memory allocations.
+  rbtree mAllocations;
 
-    /// Indicates that a snapshot is in progress and we should not
-    /// track new allocations.
-    bool mSnapshotInProgress;
+  /// Indicates that a snapshot is in progress and we should not
+  /// track new allocations.
+  bool mSnapshotInProgress;
 
-    /// Mutex to protect access to the data structure.
-    std::mutex *mLock;
+  /// Mutex to protect access to the data structure.
+  std::mutex *mLock;
 };
 
 /**
@@ -172,9 +171,8 @@ void TriggerMemorySnapshot();
  * @param allocationCount How many blocks of memory are allocated.
  * @param heapSize Size of the heap in bytes (size of all allocations).
  */
-void GetMemoryStats(uint64_t& allocationCount, size_t& heapSize);
+void GetMemoryStats(uint64_t &allocationCount, size_t &heapSize);
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MEMORYMANAGER_H
-
+#endif  // LIBCOMP_SRC_MEMORYMANAGER_H

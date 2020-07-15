@@ -25,55 +25,54 @@
  */
 
 #include "PacketException.h"
+
 #include "Log.h"
 
 using namespace libcomp;
 
 PacketException::PacketException(const String& msg,
-    const ReadOnlyPacket *pPacket, const String& _file, int _line) :
-    Exception(msg, _file, _line)
-{
-    // Copy the packet so it may be modified and read without changing the
-    // original.
-    if(pPacket && pPacket->mSize > 0)
-    {
-        mPacket.WriteArray(pPacket->mData, pPacket->mSize);
-        mPacket.mPosition = pPacket->mPosition;
-    }
+                                 const ReadOnlyPacket* pPacket,
+                                 const String& _file, int _line)
+    : Exception(msg, _file, _line) {
+  // Copy the packet so it may be modified and read without changing the
+  // original.
+  if (pPacket && pPacket->mSize > 0) {
+    mPacket.WriteArray(pPacket->mData, pPacket->mSize);
+    mPacket.mPosition = pPacket->mPosition;
+  }
 }
 
-Packet& PacketException::GetPacket()
-{
-    // Return the packet.
-    return mPacket;
+Packet& PacketException::GetPacket() {
+  // Return the packet.
+  return mPacket;
 }
 
-const Packet& PacketException::GetPacket() const
-{
-    // Return the packet.
-    return mPacket;
+const Packet& PacketException::GetPacket() const {
+  // Return the packet.
+  return mPacket;
 }
 
-void PacketException::Log() const
-{
-    // Log the exception and include a dump of the packet data.
-    LogGeneralError([&]()
-    {
-        return String(
-            "Packet exception at %1:%2\n"
-            "========================================"
-            "========================================\n"
-            "%3\n"
-            "----------------------------------------"
-            "----------------------------------------\n"
-            "Packet:\n"
-            "%4\n"
-            "\n"
-            "Backtrace:\n"
-            "%5\n"
-            "========================================"
-            "========================================\n"
-        ).Arg(File()).Arg(Line()).Arg(Message()).Arg(
-            GetPacket().Dump()).Arg(String::Join(Backtrace(), "\n"));
-    });
+void PacketException::Log() const {
+  // Log the exception and include a dump of the packet data.
+  LogGeneralError([&]() {
+    return String(
+               "Packet exception at %1:%2\n"
+               "========================================"
+               "========================================\n"
+               "%3\n"
+               "----------------------------------------"
+               "----------------------------------------\n"
+               "Packet:\n"
+               "%4\n"
+               "\n"
+               "Backtrace:\n"
+               "%5\n"
+               "========================================"
+               "========================================\n")
+        .Arg(File())
+        .Arg(Line())
+        .Arg(Message())
+        .Arg(GetPacket().Dump())
+        .Arg(String::Join(Backtrace(), "\n"));
+  });
 }

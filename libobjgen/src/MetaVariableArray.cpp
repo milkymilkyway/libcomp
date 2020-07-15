@@ -36,499 +36,441 @@
 using namespace libobjgen;
 
 MetaVariableArray::MetaVariableArray(
-    const std::shared_ptr<MetaVariable>& elementType) : MetaVariable(),
-    mElementCount(0), mElementType(elementType)
-{
-}
+    const std::shared_ptr<MetaVariable>& elementType)
+    : MetaVariable(), mElementCount(0), mElementType(elementType) {}
 
-MetaVariableArray::~MetaVariableArray()
-{
-}
+MetaVariableArray::~MetaVariableArray() {}
 
-size_t MetaVariableArray::GetSize() const
-{
-    if(mElementType)
-    {
-        return mElementType->GetSize() * mElementCount;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint16_t MetaVariableArray::GetDynamicSizeCount() const
-{
+size_t MetaVariableArray::GetSize() const {
+  if (mElementType) {
+    return mElementType->GetSize() * mElementCount;
+  } else {
     return 0;
+  }
 }
 
-std::shared_ptr<MetaVariable> MetaVariableArray::GetElementType() const
-{
-    return mElementType;
+uint16_t MetaVariableArray::GetDynamicSizeCount() const { return 0; }
+
+std::shared_ptr<MetaVariable> MetaVariableArray::GetElementType() const {
+  return mElementType;
 }
 
-size_t MetaVariableArray::GetElementCount() const
-{
-    return mElementCount;
+size_t MetaVariableArray::GetElementCount() const { return mElementCount; }
+
+void MetaVariableArray::SetElementCount(size_t elementCount) {
+  mElementCount = elementCount;
 }
 
-void MetaVariableArray::SetElementCount(size_t elementCount)
-{
-    mElementCount = elementCount;
+MetaVariable::MetaVariableType_t MetaVariableArray::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_ARRAY;
 }
 
-MetaVariable::MetaVariableType_t MetaVariableArray::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_ARRAY;
+std::string MetaVariableArray::GetType() const { return "array"; }
+
+bool MetaVariableArray::IsCoreType() const { return false; }
+
+bool MetaVariableArray::IsScriptAccessible() const {
+  return mElementType && mElementType->IsScriptAccessible();
 }
 
-std::string MetaVariableArray::GetType() const
-{
-    return "array";
+bool MetaVariableArray::IsValid() const {
+  return 0 != mElementCount && mElementType && mElementType->IsValid() &&
+         !IsLookupKey();
 }
 
-bool MetaVariableArray::IsCoreType() const
-{
-    return false;
+bool MetaVariableArray::Load(std::istream& stream) {
+  MetaVariable::Load(stream);
+
+  stream.read(reinterpret_cast<char*>(&mElementCount), sizeof(mElementCount));
+
+  return stream.good() && mElementType->Load(stream) && IsValid();
 }
 
-bool MetaVariableArray::IsScriptAccessible() const
-{
-    return mElementType && mElementType->IsScriptAccessible();
-}
+bool MetaVariableArray::Save(std::ostream& stream) const {
+  bool result = false;
 
-bool MetaVariableArray::IsValid() const
-{
-    return 0 != mElementCount && mElementType && mElementType->IsValid() &&
-        !IsLookupKey();
-}
+  if (IsValid() && MetaVariable::Save(stream)) {
+    stream.write(reinterpret_cast<const char*>(&mElementCount),
+                 sizeof(mElementCount));
 
-bool MetaVariableArray::Load(std::istream& stream)
-{
-    MetaVariable::Load(stream);
+    result = stream.good();
+  }
 
-    stream.read(reinterpret_cast<char*>(&mElementCount),
-        sizeof(mElementCount));
-
-    return stream.good() && mElementType->Load(stream) && IsValid();
-}
-
-bool MetaVariableArray::Save(std::ostream& stream) const
-{
-    bool result = false;
-
-    if(IsValid() && MetaVariable::Save(stream))
-    {
-        stream.write(reinterpret_cast<const char*>(&mElementCount),
-            sizeof(mElementCount));
-
-        result = stream.good();
-    }
-
-    return result && mElementType->Save(stream);
+  return result && mElementType->Save(stream);
 }
 
 bool MetaVariableArray::Load(const tinyxml2::XMLDocument& doc,
-    const tinyxml2::XMLElement& root)
-{
-    (void)doc;
+                             const tinyxml2::XMLElement& root) {
+  (void)doc;
 
-    bool status = true;
+  bool status = true;
 
-    const char *szSize = root.Attribute("size");
+  const char* szSize = root.Attribute("size");
 
-    if(nullptr != szSize)
-    {
-        std::stringstream ss(szSize);
+  if (nullptr != szSize) {
+    std::stringstream ss(szSize);
 
-        size_t elementCount = 0;
-        ss >> elementCount;
+    size_t elementCount = 0;
+    ss >> elementCount;
 
-        if(ss && 0 < elementCount)
-        {
-            SetElementCount(elementCount);
-        }
-        else
-        {
-            status = false;
-        }
+    if (ss && 0 < elementCount) {
+      SetElementCount(elementCount);
+    } else {
+      status = false;
     }
-    else
-    {
-        SetElementCount(0);
+  } else {
+    SetElementCount(0);
 
-        status = false;
-    }
+    status = false;
+  }
 
-    return status && BaseLoad(root) && IsValid();
+  return status && BaseLoad(root) && IsValid();
 }
 
 bool MetaVariableArray::Save(tinyxml2::XMLDocument& doc,
-    tinyxml2::XMLElement& parent, const char* elementName) const
-{
-    tinyxml2::XMLElement *pVariableElement = doc.NewElement(elementName);
-    pVariableElement->SetAttribute("type", GetType().c_str());
-    pVariableElement->SetAttribute("name", GetName().c_str());
+                             tinyxml2::XMLElement& parent,
+                             const char* elementName) const {
+  tinyxml2::XMLElement* pVariableElement = doc.NewElement(elementName);
+  pVariableElement->SetAttribute("type", GetType().c_str());
+  pVariableElement->SetAttribute("name", GetName().c_str());
 
-    if(GetElementCount() != 0)
-    {
-        pVariableElement->SetAttribute("size", std::to_string(GetElementCount()).c_str());
-    }
-    
-    if(!mElementType)
-    {
-        return false;
-    }
+  if (GetElementCount() != 0) {
+    pVariableElement->SetAttribute("size",
+                                   std::to_string(GetElementCount()).c_str());
+  }
 
-    mElementType->Save(doc, *pVariableElement, "element");
+  if (!mElementType) {
+    return false;
+  }
 
-    parent.InsertEndChild(pVariableElement);
+  mElementType->Save(doc, *pVariableElement, "element");
 
-    return BaseSave(*pVariableElement);
+  parent.InsertEndChild(pVariableElement);
+
+  return BaseSave(*pVariableElement);
 }
 
-std::string MetaVariableArray::GetCodeType() const
-{
-    if(mElementType)
-    {
-        std::stringstream ss;
-        ss << "std::array<" << mElementType->GetCodeType() << ", "
-            << mElementCount << ">";
+std::string MetaVariableArray::GetCodeType() const {
+  if (mElementType) {
+    std::stringstream ss;
+    ss << "std::array<" << mElementType->GetCodeType() << ", " << mElementCount
+       << ">";
 
-        return ss.str();
-    }
-    else
-    {
-        return std::string();
-    }
+    return ss.str();
+  } else {
+    return std::string();
+  }
 }
 
-std::string MetaVariableArray::GetConstructValue() const
-{
-    if(mElementType)
-    {
-        std::string value = mElementType->GetConstructValue();
+std::string MetaVariableArray::GetConstructValue() const {
+  if (mElementType) {
+    std::string value = mElementType->GetConstructValue();
 
-        if(!value.empty() && 0 < mElementCount)
-        {
-            std::stringstream ss;
-            ss << "{{ " << value;
+    if (!value.empty() && 0 < mElementCount) {
+      std::stringstream ss;
+      ss << "{{ " << value;
 
-            for(size_t i = 1; i < mElementCount; ++i)
-            {
-                ss << ", " << value;
-            }
+      for (size_t i = 1; i < mElementCount; ++i) {
+        ss << ", " << value;
+      }
 
-            ss << " }}";
+      ss << " }}";
 
-            value = ss.str();
-        }
-
-        return value;
+      value = ss.str();
     }
-    else
-    {
-        return std::string();
-    }
+
+    return value;
+  } else {
+    return std::string();
+  }
 }
 
 std::string MetaVariableArray::GetValidCondition(const Generator& generator,
-    const std::string& name, bool recursive) const
-{
-    std::string code;
+                                                 const std::string& name,
+                                                 bool recursive) const {
+  std::string code;
 
-    if(mElementType)
-    {
-        code = mElementType->GetValidCondition(generator, "value", recursive);
+  if (mElementType) {
+    code = mElementType->GetValidCondition(generator, "value", recursive);
 
-        if(!code.empty())
-        {
-            std::map<std::string, std::string> replacements;
-            replacements["@VAR_NAME@"] = name;
-            replacements["@VAR_VALID_CODE@"] = code;
+    if (!code.empty()) {
+      std::map<std::string, std::string> replacements;
+      replacements["@VAR_NAME@"] = name;
+      replacements["@VAR_VALID_CODE@"] = code;
 
-            code = generator.ParseTemplate(0, "VariableArrayValidCondition",
-                replacements);
-        }
+      code = generator.ParseTemplate(0, "VariableArrayValidCondition",
+                                     replacements);
     }
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetLoadCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    (void)generator;
+                                           const std::string& name,
+                                           const std::string& stream) const {
+  (void)generator;
 
-    std::string code;
+  std::string code;
 
-    if(mElementType && MetaObject::IsValidIdentifier(name) &&
-        MetaObject::IsValidIdentifier(stream))
-    {
-        code = mElementType->GetLoadCode(generator, "element", stream);
+  if (mElementType && MetaObject::IsValidIdentifier(name) &&
+      MetaObject::IsValidIdentifier(stream)) {
+    code = mElementType->GetLoadCode(generator, "element", stream);
 
-        if(!code.empty())
-        {
-            std::map<std::string, std::string> replacements;
-            replacements["@VAR_NAME@"] = name;
-            replacements["@VAR_LOAD_CODE@"] = code;
-            replacements["@STREAM@"] = stream + std::string(".stream");
-            replacements["@PERSIST_COPY@"] =
-                generator.GetPersistentRefCopyCode(mElementType, name);
+    if (!code.empty()) {
+      std::map<std::string, std::string> replacements;
+      replacements["@VAR_NAME@"] = name;
+      replacements["@VAR_LOAD_CODE@"] = code;
+      replacements["@STREAM@"] = stream + std::string(".stream");
+      replacements["@PERSIST_COPY@"] =
+          generator.GetPersistentRefCopyCode(mElementType, name);
 
-            code = generator.ParseTemplate(0, "VariableArrayLoad",
-                replacements);
-        }
+      code = generator.ParseTemplate(0, "VariableArrayLoad", replacements);
     }
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetSaveCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    (void)generator;
+                                           const std::string& name,
+                                           const std::string& stream) const {
+  (void)generator;
 
-    std::string code;
+  std::string code;
 
-    if(mElementType && MetaObject::IsValidIdentifier(name) &&
-        MetaObject::IsValidIdentifier(stream))
-    {
-        code = mElementType->GetSaveCode(generator, "element", stream);
+  if (mElementType && MetaObject::IsValidIdentifier(name) &&
+      MetaObject::IsValidIdentifier(stream)) {
+    code = mElementType->GetSaveCode(generator, "element", stream);
 
-        if(!code.empty())
-        {
-            std::map<std::string, std::string> replacements;
-            replacements["@VAR_NAME@"] = name;
-            replacements["@VAR_SAVE_CODE@"] = code;
-            replacements["@STREAM@"] = stream + std::string(".stream");
+    if (!code.empty()) {
+      std::map<std::string, std::string> replacements;
+      replacements["@VAR_NAME@"] = name;
+      replacements["@VAR_SAVE_CODE@"] = code;
+      replacements["@STREAM@"] = stream + std::string(".stream");
 
-            code = generator.ParseTemplate(0, "VariableArraySave",
-                replacements);
-        }
+      code = generator.ParseTemplate(0, "VariableArraySave", replacements);
     }
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetLoadRawCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    (void)generator;
+                                              const std::string& name,
+                                              const std::string& stream) const {
+  (void)generator;
 
-    std::string code;
+  std::string code;
 
-    if(mElementType && MetaObject::IsValidIdentifier(name) &&
-        MetaObject::IsValidIdentifier(stream))
-    {
-        code = mElementType->GetLoadRawCode(generator, "element", stream);
+  if (mElementType && MetaObject::IsValidIdentifier(name) &&
+      MetaObject::IsValidIdentifier(stream)) {
+    code = mElementType->GetLoadRawCode(generator, "element", stream);
 
-        if(!code.empty())
-        {
-            std::map<std::string, std::string> replacements;
-            replacements["@VAR_NAME@"] = name;
-            replacements["@VAR_LOAD_CODE@"] = code;
-            replacements["@STREAM@"] = stream;
-            replacements["@PERSIST_COPY@"] =
-                generator.GetPersistentRefCopyCode(mElementType, name);
+    if (!code.empty()) {
+      std::map<std::string, std::string> replacements;
+      replacements["@VAR_NAME@"] = name;
+      replacements["@VAR_LOAD_CODE@"] = code;
+      replacements["@STREAM@"] = stream;
+      replacements["@PERSIST_COPY@"] =
+          generator.GetPersistentRefCopyCode(mElementType, name);
 
-            code = generator.ParseTemplate(0, "VariableArrayLoad",
-                replacements);
-        }
+      code = generator.ParseTemplate(0, "VariableArrayLoad", replacements);
     }
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetSaveRawCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    (void)generator;
+                                              const std::string& name,
+                                              const std::string& stream) const {
+  (void)generator;
 
-    std::string code;
+  std::string code;
 
-    if(mElementType && MetaObject::IsValidIdentifier(name) &&
-        MetaObject::IsValidIdentifier(stream))
-    {
-        code = mElementType->GetSaveRawCode(generator, "element", stream);
+  if (mElementType && MetaObject::IsValidIdentifier(name) &&
+      MetaObject::IsValidIdentifier(stream)) {
+    code = mElementType->GetSaveRawCode(generator, "element", stream);
 
-        if(!code.empty())
-        {
-            std::map<std::string, std::string> replacements;
-            replacements["@VAR_NAME@"] = name;
-            replacements["@VAR_SAVE_CODE@"] = code;
-            replacements["@STREAM@"] = stream;
+    if (!code.empty()) {
+      std::map<std::string, std::string> replacements;
+      replacements["@VAR_NAME@"] = name;
+      replacements["@VAR_SAVE_CODE@"] = code;
+      replacements["@STREAM@"] = stream;
 
-            code = generator.ParseTemplate(0, "VariableArraySave",
-                replacements);
-        }
+      code = generator.ParseTemplate(0, "VariableArraySave", replacements);
     }
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetXmlLoadCode(const Generator& generator,
-    const std::string& name, const std::string& doc,
-    const std::string& node, size_t tabLevel) const
-{
-    (void)name;
+                                              const std::string& name,
+                                              const std::string& doc,
+                                              const std::string& node,
+                                              size_t tabLevel) const {
+  (void)name;
 
-    std::string code;
+  std::string code;
 
-    if(mElementType)
-    {
-        std::string elemCode = mElementType->GetXmlLoadCode(generator,
-            generator.GetMemberName(mElementType), doc, "element", tabLevel + 1);
+  if (mElementType) {
+    std::string elemCode = mElementType->GetXmlLoadCode(
+        generator, generator.GetMemberName(mElementType), doc, "element",
+        tabLevel + 1);
 
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_CODE_TYPE@"] = GetCodeType();
-        replacements["@NODE@"] = node;
-        replacements["@ELEMENT_ACCESS_CODE@"] = elemCode;
-        replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
-        replacements["@DEFAULT_VALUE@"] = GetConstructValue();
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_CODE_TYPE@"] = GetCodeType();
+    replacements["@NODE@"] = node;
+    replacements["@ELEMENT_ACCESS_CODE@"] = elemCode;
+    replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
+    replacements["@DEFAULT_VALUE@"] = GetConstructValue();
 
-        code = generator.ParseTemplate(tabLevel, "VariableArrayXmlLoad",
-            replacements);
-    }
+    code =
+        generator.ParseTemplate(tabLevel, "VariableArrayXmlLoad", replacements);
+  }
 
-    return code;
+  return code;
 }
 
-std::string MetaVariableArray::GetXmlSaveCode(const Generator& generator,
-    const std::string& name, const std::string& doc,
-    const std::string& parent, size_t tabLevel, const std::string elemName) const
-{
-    std::string code;
+std::string MetaVariableArray::GetXmlSaveCode(
+    const Generator& generator, const std::string& name, const std::string& doc,
+    const std::string& parent, size_t tabLevel,
+    const std::string elemName) const {
+  std::string code;
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@GETTER@"] = GetInternalGetterCode(generator, name);
-        replacements["@VAR_NAME@"] = generator.Escape(GetName());
-        replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
-        replacements["@VAR_XML_SAVE_CODE@"] = mElementType->GetXmlSaveCode(
-            generator, "element", doc, parent, tabLevel + 1, "element");
-        replacements["@PARENT@"] = parent;
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@GETTER@"] = GetInternalGetterCode(generator, name);
+    replacements["@VAR_NAME@"] = generator.Escape(GetName());
+    replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
+    replacements["@VAR_XML_SAVE_CODE@"] = mElementType->GetXmlSaveCode(
+        generator, "element", doc, parent, tabLevel + 1, "element");
+    replacements["@PARENT@"] = parent;
 
-        code = generator.ParseTemplate(0, "VariableArrayXmlSave",
-            replacements);
-    }
+    code = generator.ParseTemplate(0, "VariableArrayXmlSave", replacements);
+  }
 
-    return code;
+  return code;
 }
 
 std::string MetaVariableArray::GetAccessDeclarations(const Generator& generator,
-    const MetaObject& object, const std::string& name, size_t tabLevel) const
-{
-    std::stringstream ss;
-    ss << MetaVariable::GetAccessDeclarations(generator,
-        object, name, tabLevel);
+                                                     const MetaObject& object,
+                                                     const std::string& name,
+                                                     size_t tabLevel) const {
+  std::stringstream ss;
+  ss << MetaVariable::GetAccessDeclarations(generator, object, name, tabLevel);
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_NAME@"] = name;
-        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
-        replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
-        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+    replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
 
-        ss << generator.ParseTemplate(tabLevel,
-            "VariableArrayAccessDeclarations", replacements) << std::endl;
-    }
+    ss << generator.ParseTemplate(tabLevel, "VariableArrayAccessDeclarations",
+                                  replacements)
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
-std::string MetaVariableArray::GetAccessFunctions(const Generator& generator,
-    const MetaObject& object, const std::string& name) const
-{
-    std::stringstream ss;
-    ss << MetaVariable::GetAccessFunctions(generator, object, name);
+std::string MetaVariableArray::GetAccessFunctions(
+    const Generator& generator, const MetaObject& object,
+    const std::string& name) const {
+  std::stringstream ss;
+  ss << MetaVariable::GetAccessFunctions(generator, object, name);
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_NAME@"] = name;
-        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
-        replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
-        replacements["@OBJECT_NAME@"] = object.GetName();
-        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
-        replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
-        replacements["@PERSISTENT_CODE@"] = object.IsPersistent() ?
-            ("mDirtyFields.insert(\"" + GetName() + "\");") : "";
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+    replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
+    replacements["@OBJECT_NAME@"] = object.GetName();
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+    replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
+    replacements["@PERSISTENT_CODE@"] =
+        object.IsPersistent() ? ("mDirtyFields.insert(\"" + GetName() + "\");")
+                              : "";
 
-        ss << std::endl << generator.ParseTemplate(0, "VariableArrayAccessFunctions",
-            replacements) << std::endl;
-    }
+    ss << std::endl
+       << generator.ParseTemplate(0, "VariableArrayAccessFunctions",
+                                  replacements)
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
-std::string MetaVariableArray::GetUtilityDeclarations(const Generator& generator,
-    const std::string& name, size_t tabLevel) const
-{
-    std::stringstream ss;
+std::string MetaVariableArray::GetUtilityDeclarations(
+    const Generator& generator, const std::string& name,
+    size_t tabLevel) const {
+  std::stringstream ss;
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_NAME@"] = name;
-        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
-        replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
-        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+    replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
 
-        ss << generator.ParseTemplate(tabLevel,
-            "VariableArrayUtilityDeclarations", replacements) << std::endl;
-    }
+    ss << generator.ParseTemplate(tabLevel, "VariableArrayUtilityDeclarations",
+                                  replacements)
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
-std::string MetaVariableArray::GetUtilityFunctions(const Generator& generator,
-    const MetaObject& object, const std::string& name) const
-{
-    std::stringstream ss;
+std::string MetaVariableArray::GetUtilityFunctions(
+    const Generator& generator, const MetaObject& object,
+    const std::string& name) const {
+  std::stringstream ss;
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_NAME@"] = name;
-        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
-        replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
-        replacements["@OBJECT_NAME@"] = object.GetName();
-        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
-        replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+    replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
+    replacements["@OBJECT_NAME@"] = object.GetName();
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+    replacements["@ELEMENT_COUNT@"] = std::to_string(mElementCount);
 
-        auto entryValidation = mElementType->GetValidCondition(generator, "val", false);
+    auto entryValidation =
+        mElementType->GetValidCondition(generator, "val", false);
 
-        replacements["@ELEMENT_VALIDATION_CODE@"] = entryValidation.length() > 0
-            ? entryValidation : "([&]() { (void)val; return true; })()";
+    replacements["@ELEMENT_VALIDATION_CODE@"] =
+        entryValidation.length() > 0 ? entryValidation
+                                     : "([&]() { (void)val; return true; })()";
 
-        ss << std::endl << generator.ParseTemplate(0, "VariableArrayUtilityFunctions",
-            replacements) << std::endl;
-    }
+    ss << std::endl
+       << generator.ParseTemplate(0, "VariableArrayUtilityFunctions",
+                                  replacements)
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
-std::string MetaVariableArray::GetAccessScriptBindings(const Generator& generator,
-    const MetaObject& object, const std::string& name,
-    size_t tabLevel) const
-{
-    std::stringstream ss;
+std::string MetaVariableArray::GetAccessScriptBindings(
+    const Generator& generator, const MetaObject& object,
+    const std::string& name, size_t tabLevel) const {
+  std::stringstream ss;
 
-    if(mElementType)
-    {
-        std::map<std::string, std::string> replacements;
-        replacements["@VAR_NAME@"] = name;
-        replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
-        replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
-        replacements["@OBJECT_NAME@"] = object.GetName();
-        replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
+  if (mElementType) {
+    std::map<std::string, std::string> replacements;
+    replacements["@VAR_NAME@"] = name;
+    replacements["@VAR_TYPE@"] = mElementType->GetCodeType();
+    replacements["@VAR_ARG_TYPE@"] = mElementType->GetArgumentType();
+    replacements["@OBJECT_NAME@"] = object.GetName();
+    replacements["@VAR_CAMELCASE_NAME@"] = generator.GetCapitalName(*this);
 
-        ss << generator.ParseTemplate(tabLevel,
-            "VariableArrayAccessScriptBindings", replacements) << std::endl;
-    }
+    ss << generator.ParseTemplate(tabLevel, "VariableArrayAccessScriptBindings",
+                                  replacements)
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }

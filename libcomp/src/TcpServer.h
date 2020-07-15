@@ -31,9 +31,13 @@
 #include "CString.h"
 #include "Crypto.h"
 
-// Boost ASIO Includes
+// Ignore warnings
 #include "PushIgnore.h"
+
+// Boost ASIO Includes
 #include <asio.hpp>
+
+// Stop ignoring warnings
 #include "PopIgnore.h"
 
 // Standard C++ Includes
@@ -41,8 +45,7 @@
 #include <mutex>
 #include <thread>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class TcpConnection;
 
@@ -53,123 +56,121 @@ class TcpConnection;
  * @ref CreateConnection function should be overridden if a subclass of
  * @ref TcpConnection is required or additional setup should be performed.
  */
-class TcpServer
-{
-public:
-    /**
-     * Create a TCP server to listen on a specific address and port.
-     * @param listenAddress Listen on the specified IP address. If blank or
-     * "any" this will listen on all network adapters.
-     * @param port Port to listen for incoming connections.
-     */
-    TcpServer(const String& listenAddress, uint16_t port);
+class TcpServer {
+ public:
+  /**
+   * Create a TCP server to listen on a specific address and port.
+   * @param listenAddress Listen on the specified IP address. If blank or
+   * "any" this will listen on all network adapters.
+   * @param port Port to listen for incoming connections.
+   */
+  TcpServer(const String& listenAddress, uint16_t port);
 
-    /**
-     * Cleanup the server and stop listening for new connections.
-     */
-    virtual ~TcpServer();
+  /**
+   * Cleanup the server and stop listening for new connections.
+   */
+  virtual ~TcpServer();
 
-    /**
-     * Start a thread that listens for incoming network connections. This call
-     * will block until the server is stopped. This will call @ref Run for the
-     * main loop. In the @ref BaseServer implementation this will run a main
-     * worker thread.
-     * @sa BaseServer
-     * @sa Worker
-     * @param delayReady Optional parameter to delay ready notification to
-     *  be called manually at a later point. Defaults to false.
-     * @return Code indicating the exit status.
-     */
-    virtual int Start(bool delayReady = false);
+  /**
+   * Start a thread that listens for incoming network connections. This call
+   * will block until the server is stopped. This will call @ref Run for the
+   * main loop. In the @ref BaseServer implementation this will run a main
+   * worker thread.
+   * @sa BaseServer
+   * @sa Worker
+   * @param delayReady Optional parameter to delay ready notification to
+   *  be called manually at a later point. Defaults to false.
+   * @return Code indicating the exit status.
+   */
+  virtual int Start(bool delayReady = false);
 
-    /**
-     * Remove a connection from the list of client connections.
-     * @param connection Connection to remove.
-     */
-    void RemoveConnection(std::shared_ptr<TcpConnection>& connection);
+  /**
+   * Remove a connection from the list of client connections.
+   * @param connection Connection to remove.
+   */
+  void RemoveConnection(std::shared_ptr<TcpConnection>& connection);
 
-    /**
-     * Generate a Diffie-Hellman key pair.
-     * @return Generated key pair or nullptr on failure.
-     */
-    static std::shared_ptr<Crypto::DiffieHellman> GenerateDiffieHellman();
+  /**
+   * Generate a Diffie-Hellman key pair.
+   * @return Generated key pair or nullptr on failure.
+   */
+  static std::shared_ptr<Crypto::DiffieHellman> GenerateDiffieHellman();
 
-    /**
-     * Create a Diffie-Helman key pair given the hex encoded prime.
-     * @param prime Hex encoded string representing the prime.
-     * @return Generated key pair or nullptr on failure.
-     */
-    static std::shared_ptr<Crypto::DiffieHellman> LoadDiffieHellman(
-        const String& prime);
+  /**
+   * Create a Diffie-Helman key pair given the hex encoded prime.
+   * @param prime Hex encoded string representing the prime.
+   * @return Generated key pair or nullptr on failure.
+   */
+  static std::shared_ptr<Crypto::DiffieHellman> LoadDiffieHellman(
+      const String& prime);
 
-    /**
-     * Called when the server has started.
-     */
-    virtual void ServerReady();
+  /**
+   * Called when the server has started.
+   */
+  virtual void ServerReady();
 
-protected:
-    /**
-     * Main loop for the server.
-     * @return Code indicating the exit status.
-     */
-    virtual int Run();
+ protected:
+  /**
+   * Main loop for the server.
+   * @return Code indicating the exit status.
+   */
+  virtual int Run();
 
-    /**
-     * Create a connection to a newly active socket.
-     * @param socket A new socket connection.
-     * @return Pointer to the newly created connection
-     */
-    virtual std::shared_ptr<TcpConnection> CreateConnection(
-        asio::ip::tcp::socket& socket);
+  /**
+   * Create a connection to a newly active socket.
+   * @param socket A new socket connection.
+   * @return Pointer to the newly created connection
+   */
+  virtual std::shared_ptr<TcpConnection> CreateConnection(
+      asio::ip::tcp::socket& socket);
 
-    /**
-     * Get the Diffie-Hellman key pair used by this server.
-     * @return Key pair or nullptr if one is not set.
-     */
-    std::shared_ptr<Crypto::DiffieHellman> GetDiffieHellman() const;
+  /**
+   * Get the Diffie-Hellman key pair used by this server.
+   * @return Key pair or nullptr if one is not set.
+   */
+  std::shared_ptr<Crypto::DiffieHellman> GetDiffieHellman() const;
 
-    /**
-     * Set the Diffie-Hellman key pair used by this server.
-     * @param diffieHellman Pointer to the key pair to use.
-     */
-    void SetDiffieHellman(const std::shared_ptr<
-        Crypto::DiffieHellman>& diffieHellman);
+  /**
+   * Set the Diffie-Hellman key pair used by this server.
+   * @param diffieHellman Pointer to the key pair to use.
+   */
+  void SetDiffieHellman(
+      const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman);
 
-    /**
-     * Called to handle a new connection to the server. This will call
-     * @ref CreateConnection and then add the connection to the list.
-     * @param errorCode Error code of the last accept operation.
-     * @param socket Socket that was bound to the new connection.
-     */
-    void AcceptHandler(asio::error_code errorCode,
-        asio::ip::tcp::socket& socket);
+  /**
+   * Called to handle a new connection to the server. This will call
+   * @ref CreateConnection and then add the connection to the list.
+   * @param errorCode Error code of the last accept operation.
+   * @param socket Socket that was bound to the new connection.
+   */
+  void AcceptHandler(asio::error_code errorCode, asio::ip::tcp::socket& socket);
 
-    /// Lock for the connection list.
-    std::mutex mConnectionsLock;
+  /// Lock for the connection list.
+  std::mutex mConnectionsLock;
 
-    /// List of connections managed by this server.
-    std::list<std::shared_ptr<TcpConnection>> mConnections;
+  /// List of connections managed by this server.
+  std::list<std::shared_ptr<TcpConnection>> mConnections;
 
-    /// ASIO service used to handle network operations.
-    asio::io_service mService;
+  /// ASIO service used to handle network operations.
+  asio::io_service mService;
 
-private:
-    /// Asynchronous acceptor for new connections.
-    asio::ip::tcp::acceptor mAcceptor;
+ private:
+  /// Asynchronous acceptor for new connections.
+  asio::ip::tcp::acceptor mAcceptor;
 
-    /// Thread that runs the ASIO service.
-    std::thread mServiceThread;
+  /// Thread that runs the ASIO service.
+  std::thread mServiceThread;
 
-    /// Diffie-Hellman key pair used to encrypt connections.
-    std::shared_ptr<Crypto::DiffieHellman> mDiffieHellman;
+  /// Diffie-Hellman key pair used to encrypt connections.
+  std::shared_ptr<Crypto::DiffieHellman> mDiffieHellman;
 
-    /// Address the server is listening on.
-    String mListenAddress;
+  /// Address the server is listening on.
+  String mListenAddress;
 
-    /// Port the address is listening on.
-    uint16_t mPort;
+  /// Port the address is listening on.
+  uint16_t mPort;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_TCPSERVER_H
+#endif  // LIBCOMP_SRC_TCPSERVER_H

@@ -30,8 +30,7 @@
 #include "Exception.h"
 #include "Packet.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Exception in reading to or writing from a Packet object. This class is
@@ -67,44 +66,43 @@ namespace libcomp
  * To see the current state of the packet use the @ref packet method or
  * output it to the log using @ref log.
  */
-class PacketException : public Exception
-{
-public:
-    /**
-     * Construct a packet exception. It's better to use @ref PACKET_EXCEPTION
-     * instead of throwing this constructor.
-     * @param msg Message describing the packet exception.
-     * @param packet Packet that caused the exception.
-     * @param file File the exception was thrown from.
-     * @param line Line in the file the exception was thrown from.
-     */
-    PacketException(const String& msg, const ReadOnlyPacket *pPacket,
-        const String& file, int line);
+class PacketException : public Exception {
+ public:
+  /**
+   * Construct a packet exception. It's better to use @ref PACKET_EXCEPTION
+   * instead of throwing this constructor.
+   * @param msg Message describing the packet exception.
+   * @param packet Packet that caused the exception.
+   * @param file File the exception was thrown from.
+   * @param line Line in the file the exception was thrown from.
+   */
+  PacketException(const String& msg, const ReadOnlyPacket* pPacket,
+                  const String& file, int line);
 
-    /**
-     * Copy of the packet in which the exception occured.
-     * @returns Copy of the packet.
-     */
-    Packet& GetPacket();
+  /**
+   * Copy of the packet in which the exception occured.
+   * @returns Copy of the packet.
+   */
+  Packet& GetPacket();
 
-    /**
-     * Immutable copy of the packet in which the exception occured.
-     * @returns Copy of the packet.
-     */
-    const Packet& GetPacket() const;
+  /**
+   * Immutable copy of the packet in which the exception occured.
+   * @returns Copy of the packet.
+   */
+  const Packet& GetPacket() const;
 
-    /**
-     * Log the exception. This will include a dump of the packet when the
-     * exception occured.
-     */
-    virtual void Log() const;
+  /**
+   * Log the exception. This will include a dump of the packet when the
+   * exception occured.
+   */
+  virtual void Log() const;
 
-private:
-    /// Copy of the packet in which the exception occured.
-    Packet mPacket;
+ private:
+  /// Copy of the packet in which the exception occured.
+  Packet mPacket;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
 /**
  * Throw a packet exception. This macro will include the current file and line
@@ -113,7 +111,7 @@ private:
  * @param msg Message describing the exception.
  * @param packet Packet that caused the exception.
  */
-#define PACKET_EXCEPTION(msg, packet) throw libcomp::PacketException(msg, \
-    packet, __FILE__, __LINE__)
+#define PACKET_EXCEPTION(msg, packet) \
+  throw libcomp::PacketException(msg, packet, __FILE__, __LINE__)
 
-#endif // LIBCOMP_SRC_PACKETEXCEPTION_H
+#endif  // LIBCOMP_SRC_PACKETEXCEPTION_H

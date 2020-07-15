@@ -27,11 +27,9 @@
 #ifndef LIBCOMP_SRC_CONFIG_H
 #define LIBCOMP_SRC_CONFIG_H
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Config
-{
+namespace Config {
 
 /// 4-byte magic at the beginning of an encrypted file.
 extern const char *ENCRYPTED_FILE_MAGIC;
@@ -48,8 +46,8 @@ extern const char *ENCRYPTED_FILE_IV;
  */
 void LogVersion(const char *szServerName);
 
-} // namespace Config
+}  // namespace Config
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_CONFIG_H
+#endif  // LIBCOMP_SRC_CONFIG_H

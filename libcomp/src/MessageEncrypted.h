@@ -33,49 +33,46 @@
 // Standard C++11 Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class TcpConnection;
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message signifying that a connection has been encrypted.  This
  * acts as a signal to start sending messages between servers.
  */
-class Encrypted : public ConnectionMessage
-{
-public:
-    /**
-     * Create the message.
-     * @param connection The encrypted connection
-     */
-    Encrypted(const std::shared_ptr<TcpConnection>& connection);
+class Encrypted : public ConnectionMessage {
+ public:
+  /**
+   * Create the message.
+   * @param connection The encrypted connection
+   */
+  Encrypted(const std::shared_ptr<TcpConnection>& connection);
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~Encrypted();
+  /**
+   * Cleanup the message.
+   */
+  virtual ~Encrypted();
 
-    /**
-     * Get the encrypted connection.
-     * @return The encrypted connection
-     */
-    std::shared_ptr<TcpConnection> GetConnection() const;
+  /**
+   * Get the encrypted connection.
+   * @return The encrypted connection
+   */
+  std::shared_ptr<TcpConnection> GetConnection() const;
 
-    virtual ConnectionMessageType GetConnectionMessageType() const;
+  virtual ConnectionMessageType GetConnectionMessageType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 
-private:
-    /// The encrypted connection
-    std::shared_ptr<TcpConnection> mConnection;
+ private:
+  /// The encrypted connection
+  std::shared_ptr<TcpConnection> mConnection;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGEENCRYPTED_H
+#endif  // LIBCOMP_SRC_MESSAGEENCRYPTED_H

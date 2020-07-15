@@ -27,10 +27,10 @@
 #include "Child.h"
 
 // Linux Includes
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // Standard C Includes
 #include <cstring>
@@ -40,135 +40,112 @@
 
 using namespace libcomp;
 
-static pid_t CreateProcess(const char *szProgram,
-    char * const szArguments[], bool redirectOutput = true)
-{
-    pid_t pid = fork();
+static pid_t CreateProcess(const char* szProgram, char* const szArguments[],
+                           bool redirectOutput = true) {
+  pid_t pid = fork();
 
-    if(0 == pid)
-    {
-        if(redirectOutput)
-        {
-            dup2(open("/dev/null", O_WRONLY), STDOUT_FILENO);
-            dup2(open("/dev/null", O_WRONLY), STDERR_FILENO);
-        }
-
-        (void)execv(szProgram, szArguments);
-
-        pid = 0;
+  if (0 == pid) {
+    if (redirectOutput) {
+      dup2(open("/dev/null", O_WRONLY), STDOUT_FILENO);
+      dup2(open("/dev/null", O_WRONLY), STDERR_FILENO);
     }
 
-    return pid;
+    (void)execv(szProgram, szArguments);
+
+    pid = 0;
+  }
+
+  return pid;
 }
 
 static pid_t CreateProcess(const std::string& program,
-    const std::list<std::string>& arguments, bool redirectOutput = true)
-{
-    char **szArguments = new char*[arguments.size() + 2];
+                           const std::list<std::string>& arguments,
+                           bool redirectOutput = true) {
+  char** szArguments = new char*[arguments.size() + 2];
 
-    szArguments[0] = strdup(program.c_str());
+  szArguments[0] = strdup(program.c_str());
 
-    int i = 1;
+  int i = 1;
 
-    for(auto arg : arguments)
-    {
-        szArguments[i++] = strdup(arg.c_str());
-    }
+  for (auto arg : arguments) {
+    szArguments[i++] = strdup(arg.c_str());
+  }
 
-    szArguments[i] = 0;
+  szArguments[i] = 0;
 
-    pid_t pid = CreateProcess(szArguments[0], szArguments, redirectOutput);
+  pid_t pid = CreateProcess(szArguments[0], szArguments, redirectOutput);
 
-    delete[] szArguments;
+  delete[] szArguments;
 
-    return pid;
+  return pid;
 }
 
 Child::Child(const std::string& program,
-    const std::list<std::string>& arguments,
-    int bootTimeout, bool restart, bool displayOutput) :
-    mProgram(program), mArguments(arguments), mPID(0),
-    mBootTimeout(bootTimeout), mRestart(restart),
-    mDisplayOutput(displayOutput)
-{
+             const std::list<std::string>& arguments, int bootTimeout,
+             bool restart, bool displayOutput)
+    : mProgram(program),
+      mArguments(arguments),
+      mPID(0),
+      mBootTimeout(bootTimeout),
+      mRestart(restart),
+      mDisplayOutput(displayOutput) {}
+
+Child::~Child() {
+  if (0 != mPID) {
+    int status;
+    Kill();
+    waitpid(mPID, &status, 0);
+  }
 }
 
-Child::~Child()
-{
-    if(0 != mPID)
-    {
-        int status;
-        Kill();
-        waitpid(mPID, &status, 0);
-    }
+void Child::Kill() {
+  if (0 != mPID) {
+    kill(mPID, SIGTERM);
+  }
 }
 
-void Child::Kill()
-{
-    if(0 != mPID)
-    {
-        kill(mPID, SIGTERM);
-    }
+void Child::Interrupt() {
+  if (0 != mPID) {
+    kill(mPID, SIGINT);
+  }
 }
 
-void Child::Interrupt()
-{
-    if(0 != mPID)
-    {
-        kill(mPID, SIGINT);
-    }
-}
+bool Child::Start(bool notify) {
+  if (0 != mPID) {
+    printf("Restarting %d: %s\n", mPID, GetCommandLine().c_str());
 
-bool Child::Start(bool notify)
-{
-    if(0 != mPID)
-    {
-        printf("Restarting %d: %s\n", mPID, GetCommandLine().c_str());
+    int status;
+    Kill();
+    waitpid(mPID, &status, 0);
+  }
 
-        int status;
-        Kill();
-        waitpid(mPID, &status, 0);
-    }
+  std::list<std::string> arguments = mArguments;
 
-    std::list<std::string> arguments = mArguments;
-
-    if(notify)
-    {
-        std::stringstream ss;
-        ss << "--notify=" << (int)getpid();
-
-        arguments.push_front(ss.str());
-    }
-
-    mPID = CreateProcess(mProgram, arguments, !mDisplayOutput);
-
-    return 0 != mPID;
-}
-
-std::string Child::GetCommandLine() const
-{
+  if (notify) {
     std::stringstream ss;
-    ss << mProgram;
+    ss << "--notify=" << (int)getpid();
 
-    for(auto arg : mArguments)
-    {
-        ss << " " << arg;
-    }
+    arguments.push_front(ss.str());
+  }
 
-    return ss.str();
+  mPID = CreateProcess(mProgram, arguments, !mDisplayOutput);
+
+  return 0 != mPID;
 }
 
-pid_t Child::GetPID() const
-{
-    return mPID;
+std::string Child::GetCommandLine() const {
+  std::stringstream ss;
+  ss << mProgram;
+
+  for (auto arg : mArguments) {
+    ss << " " << arg;
+  }
+
+  return ss.str();
 }
 
-bool Child::ShouldRestart() const
-{
-    return mRestart;
-}
+pid_t Child::GetPID() const { return mPID; }
 
-int Child::GetBootTimeout() const
-{
-    return mBootTimeout;
-}
+bool Child::ShouldRestart() const { return mRestart; }
+
+int Child::GetBootTimeout() const { return mBootTimeout; }

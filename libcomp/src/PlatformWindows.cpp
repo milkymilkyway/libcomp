@@ -29,37 +29,33 @@
 #ifdef _WIN32
 #include <windows.h>
 
-libcomp::String libcomp::Platform::GetLastErrorString()
-{
-    libcomp::String error; // String to return.
-    LPTSTR errorText = NULL; // Temporary Windows string.
-    DWORD errorCode = GetLastError(); // Error code of the last error.
+libcomp::String libcomp::Platform::GetLastErrorString() {
+  libcomp::String error;             // String to return.
+  LPTSTR errorText = NULL;           // Temporary Windows string.
+  DWORD errorCode = GetLastError();  // Error code of the last error.
 
-    // Format the error code into a string.
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER
-        | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorCode,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR)&errorText, 0, NULL);
+  // Format the error code into a string.
+  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR)&errorText, 0, NULL);
 
-    if(errorText)
-    {
-        // Convert the Windows string to a QString.
+  if (errorText) {
+    // Convert the Windows string to a QString.
 #ifdef UNICODE
-        error = libcomp::String::FromUtf16(errorText);
+    error = libcomp::String::FromUtf16(errorText);
 #else
-        error = libcomp::String(errorText);
-#endif // UNICODE
+    error = libcomp::String(errorText);
+#endif  // UNICODE
 
-        // Free the Windows string.
-        LocalFree(errorText);
-    }
-    else
-    {
-        // The error message didn't format right so just return a string
-        // with the error code.
-        error = libcomp::String("0x%1").Arg((uint32_t)errorCode, 8, 16, '0');
-    }
+    // Free the Windows string.
+    LocalFree(errorText);
+  } else {
+    // The error message didn't format right so just return a string
+    // with the error code.
+    error = libcomp::String("0x%1").Arg((uint32_t)errorCode, 8, 16, '0');
+  }
 
-    return error;
+  return error;
 }
-#endif // _WIN32
+#endif  // _WIN32

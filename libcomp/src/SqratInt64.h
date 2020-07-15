@@ -35,63 +35,60 @@
 // libcomp Includes
 #include "CString.h"
 
-namespace Sqrat
-{
+namespace Sqrat {
 
-class s64
-{
-private:
-    int64_t mValue;
+class s64 {
+ private:
+  int64_t mValue;
 
-public:
-    s64();
-    s64(int32_t value);
-    s64(const s64& other);
+ public:
+  s64();
+  s64(int32_t value);
+  s64(const s64& other);
 
-    static SQInteger _cmp(HSQUIRRELVM vm);
-    static SQInteger _add(HSQUIRRELVM vm);
-    static SQInteger _sub(HSQUIRRELVM vm);
-    static SQInteger _mul(HSQUIRRELVM vm);
-    static SQInteger _div(HSQUIRRELVM vm);
-    static SQInteger _mod(HSQUIRRELVM vm);
+  static SQInteger _cmp(HSQUIRRELVM vm);
+  static SQInteger _add(HSQUIRRELVM vm);
+  static SQInteger _sub(HSQUIRRELVM vm);
+  static SQInteger _mul(HSQUIRRELVM vm);
+  static SQInteger _div(HSQUIRRELVM vm);
+  static SQInteger _mod(HSQUIRRELVM vm);
 
-    libcomp::String _tostring() const;
+  libcomp::String _tostring() const;
 
-    void set(int64_t value);
-    int64_t value() const;
-    int32_t valueTruncated() const;
+  void set(int64_t value);
+  int64_t value() const;
+  int32_t valueTruncated() const;
 
-    static SQInteger equal(HSQUIRRELVM vm);
+  static SQInteger equal(HSQUIRRELVM vm);
 };
 
-class u64
-{
-private:
-    uint64_t mValue;
+class u64 {
+ private:
+  uint64_t mValue;
 
-public:
-    u64();
-    u64(int32_t value);
-    u64(const u64& other);
+ public:
+  u64();
+  u64(int32_t value);
+  u64(const u64& other);
 
-    static SQInteger _cmp(HSQUIRRELVM vm);
-    static SQInteger _add(HSQUIRRELVM vm);
-    static SQInteger _sub(HSQUIRRELVM vm);
-    static SQInteger _mul(HSQUIRRELVM vm);
-    static SQInteger _div(HSQUIRRELVM vm);
-    static SQInteger _mod(HSQUIRRELVM vm);
+  static SQInteger _cmp(HSQUIRRELVM vm);
+  static SQInteger _add(HSQUIRRELVM vm);
+  static SQInteger _sub(HSQUIRRELVM vm);
+  static SQInteger _mul(HSQUIRRELVM vm);
+  static SQInteger _div(HSQUIRRELVM vm);
+  static SQInteger _mod(HSQUIRRELVM vm);
 
-    libcomp::String _tostring() const;
+  libcomp::String _tostring() const;
 
-    void set(uint64_t value);
-    uint64_t value() const;
-    int32_t valueTruncated() const;
+  void set(uint64_t value);
+  uint64_t value() const;
+  int32_t valueTruncated() const;
 
-    static SQInteger equal(HSQUIRRELVM vm);
+  static SQInteger equal(HSQUIRRELVM vm);
 };
 
-} // namespace Sqrat
+}  // namespace Sqrat
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
-#endif // LIBCOMP_SRC_SQRATINT64_H
+#endif  // LIBCOMP_SRC_SQRATINT64_H

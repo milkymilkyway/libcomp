@@ -34,35 +34,32 @@
 // Standard C++11 Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that signifies a connection has timed out.
  */
-class Timeout : public Message
-{
-public:
-    /**
-     * Create the message.
-     */
-    Timeout();
+class Timeout : public Message {
+ public:
+  /**
+   * Create the message.
+   */
+  Timeout();
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~Timeout();
+  /**
+   * Cleanup the message.
+   */
+  virtual ~Timeout();
 
-    virtual MessageType GetType() const;
+  virtual MessageType GetType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGETIMEOUT_H
+#endif  // LIBCOMP_SRC_MESSAGETIMEOUT_H

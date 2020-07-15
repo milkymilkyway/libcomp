@@ -30,19 +30,20 @@
 // libobjgen Includes
 #include "Generator.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class GeneratorSource : public Generator
-{
-public:
-    virtual std::string Generate(const MetaObject& obj);
+class GeneratorSource : public Generator {
+ public:
+  virtual std::string Generate(const MetaObject& obj);
 
-private:
-    bool GeneratePersistentObjectFunctions(const MetaObject& obj, std::stringstream& ss);
-    std::string GetBaseBooleanReturnValue(const MetaObject& obj, std::string function, std::string defaultValue = "true");
+ private:
+  bool GeneratePersistentObjectFunctions(const MetaObject& obj,
+                                         std::stringstream& ss);
+  std::string GetBaseBooleanReturnValue(const MetaObject& obj,
+                                        std::string function,
+                                        std::string defaultValue = "true");
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_GENERATORSOURCE_H
+#endif  // LIBOBJGEN_SRC_GENERATORSOURCE_H

@@ -31,97 +31,90 @@
 #include <streambuf>
 #include <vector>
 
-namespace libcomp
-{
+namespace libcomp {
 
-template<typename CharT, typename TraitsT = std::char_traits<CharT>>
-class VectorStream : public std::basic_streambuf<CharT, TraitsT>
-{
-private:
-    std::vector<CharT>& mData;
+template <typename CharT, typename TraitsT = std::char_traits<CharT>>
+class VectorStream : public std::basic_streambuf<CharT, TraitsT> {
+ private:
+  std::vector<CharT>& mData;
 
-public:
-    VectorStream(std::vector<CharT>& data) : mData(data)
-    {
-        this->setg(data.data(), data.data(), data.data() + data.size());
+ public:
+  VectorStream(std::vector<CharT>& data) : mData(data) {
+    this->setg(data.data(), data.data(), data.data() + data.size());
+  }
+
+ protected:
+  virtual typename std::basic_streambuf<CharT, TraitsT>::int_type overflow(
+      typename std::basic_streambuf<CharT, TraitsT>::int_type c =
+          std::basic_streambuf<CharT, TraitsT>::traits_type::eof()) {
+    if (std::basic_streambuf<CharT, TraitsT>::traits_type::eof() != c) {
+      mData.push_back(static_cast<CharT>(c));
     }
 
-protected:
-    virtual typename std::basic_streambuf<CharT, TraitsT>::int_type overflow(
-        typename std::basic_streambuf<CharT, TraitsT>::int_type c =
-            std::basic_streambuf<CharT, TraitsT>::traits_type::eof())
-    {
-        if(std::basic_streambuf<CharT, TraitsT>::traits_type::eof() != c)
-        {
-            mData.push_back(static_cast<CharT>(c));
-        }
+    return c;
+  }
 
-        return c;
+  virtual typename std::basic_streambuf<CharT, TraitsT>::pos_type seekoff(
+      typename std::basic_streambuf<CharT, TraitsT>::off_type off,
+      std::ios_base::seekdir dir,
+      std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) {
+    (void)which;
+
+    typename std::basic_streambuf<CharT, TraitsT>::pos_type pos;
+
+    if (std::ios_base::beg == dir) {
+      pos =
+          static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
+              off);
+    } else if (std::ios_base::end == dir) {
+      pos =
+          static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
+              (std::basic_streambuf<CharT, TraitsT>::egptr() -
+               std::basic_streambuf<CharT, TraitsT>::eback()) +
+              off);
+    } else  // std::ios_base::cur == dir
+    {
+      pos =
+          static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
+              (std::basic_streambuf<CharT, TraitsT>::gptr() -
+               std::basic_streambuf<CharT, TraitsT>::eback()) +
+              off);
     }
 
-    virtual typename std::basic_streambuf<CharT, TraitsT>::pos_type
-        seekoff(typename std::basic_streambuf<CharT, TraitsT>::off_type off,
-            std::ios_base::seekdir dir,
-            std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
-    {
-        (void)which;
-
-        typename std::basic_streambuf<CharT, TraitsT>::pos_type pos;
-
-        if(std::ios_base::beg == dir)
-        {
-            pos = static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(off);
-        }
-        else if(std::ios_base::end == dir)
-        {
-            pos = static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
-                (std::basic_streambuf<CharT, TraitsT>::egptr() -
-                    std::basic_streambuf<CharT, TraitsT>::eback()) + off);
-        }
-        else // std::ios_base::cur == dir
-        {
-            pos = static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
-                (std::basic_streambuf<CharT, TraitsT>::gptr() -
-                    std::basic_streambuf<CharT, TraitsT>::eback()) + off);
-        }
-
-        if(static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
+    if (static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
             std::basic_streambuf<CharT, TraitsT>::egptr() -
-            std::basic_streambuf<CharT, TraitsT>::eback()) < pos)
-        {
-            return typename std::basic_streambuf<CharT, TraitsT>::pos_type(
-                typename std::basic_streambuf<CharT, TraitsT>::off_type(-1));
-        }
-
-        this->setg(std::basic_streambuf<CharT, TraitsT>::eback(),
-            std::basic_streambuf<CharT, TraitsT>::eback() + pos,
-            std::basic_streambuf<CharT, TraitsT>::egptr());
-
-        return pos;
+            std::basic_streambuf<CharT, TraitsT>::eback()) < pos) {
+      return typename std::basic_streambuf<CharT, TraitsT>::pos_type(
+          typename std::basic_streambuf<CharT, TraitsT>::off_type(-1));
     }
 
-    virtual typename std::basic_streambuf<CharT, TraitsT>::pos_type seekpos(
-        typename std::basic_streambuf<CharT, TraitsT>::pos_type pos,
-        std::ios_base::openmode which = std::ios_base::in | std::ios_base::out)
-    {
-        (void)which;
+    this->setg(std::basic_streambuf<CharT, TraitsT>::eback(),
+               std::basic_streambuf<CharT, TraitsT>::eback() + pos,
+               std::basic_streambuf<CharT, TraitsT>::egptr());
 
-        if(static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
+    return pos;
+  }
+
+  virtual typename std::basic_streambuf<CharT, TraitsT>::pos_type seekpos(
+      typename std::basic_streambuf<CharT, TraitsT>::pos_type pos,
+      std::ios_base::openmode which = std::ios_base::in | std::ios_base::out) {
+    (void)which;
+
+    if (static_cast<typename std::basic_streambuf<CharT, TraitsT>::pos_type>(
             std::basic_streambuf<CharT, TraitsT>::egptr() -
-            std::basic_streambuf<CharT, TraitsT>::eback()) < pos)
-        {
-            return typename std::basic_streambuf<CharT, TraitsT>::pos_type(
-                typename std::basic_streambuf<CharT, TraitsT>::off_type(-1));
-        }
-
-        this->setg(std::basic_streambuf<CharT, TraitsT>::eback(),
-            std::basic_streambuf<CharT, TraitsT>::eback() + pos,
-            std::basic_streambuf<CharT, TraitsT>::egptr());
-
-        return pos;
+            std::basic_streambuf<CharT, TraitsT>::eback()) < pos) {
+      return typename std::basic_streambuf<CharT, TraitsT>::pos_type(
+          typename std::basic_streambuf<CharT, TraitsT>::off_type(-1));
     }
+
+    this->setg(std::basic_streambuf<CharT, TraitsT>::eback(),
+               std::basic_streambuf<CharT, TraitsT>::eback() + pos,
+               std::basic_streambuf<CharT, TraitsT>::egptr());
+
+    return pos;
+  }
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_VECTORSTREAM_H
+#endif  // LIBCOMP_SRC_VECTORSTREAM_H

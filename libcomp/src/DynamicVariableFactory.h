@@ -36,38 +36,37 @@
 // libobjgen Includes
 #include <MetaVariable.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Factory class used to build a @ref DynamicVariable from a MetaVariable
  * definition.
  */
-class DynamicVariableFactory
-{
-public:
-    /**
-     * Create the factory and set up all of its allocator functions.
-     */
-    DynamicVariableFactory();
+class DynamicVariableFactory {
+ public:
+  /**
+   * Create the factory and set up all of its allocator functions.
+   */
+  DynamicVariableFactory();
 
-    /**
-     * Create a @ref DynamicVariable from a MetaVariable definition.
-     * @param metaVariable Pointer to a MetaVariable definition
-     * @return
-     */
-    std::shared_ptr<DynamicVariable> Create(const std::shared_ptr<
-        libobjgen::MetaVariable>& metaVariable) const;
+  /**
+   * Create a @ref DynamicVariable from a MetaVariable definition.
+   * @param metaVariable Pointer to a MetaVariable definition
+   * @return
+   */
+  std::shared_ptr<DynamicVariable> Create(
+      const std::shared_ptr<libobjgen::MetaVariable>& metaVariable) const;
 
-private:
-    /// Map of MetaVariable types to factory functions for that type
-    EnumMap<libobjgen::MetaVariable::MetaVariableType_t,
-        std::function<std::shared_ptr<DynamicVariable>(const std::shared_ptr<
-        libobjgen::MetaVariable>& metaVariable)>> mAllocators;
+ private:
+  /// Map of MetaVariable types to factory functions for that type
+  EnumMap<libobjgen::MetaVariable::MetaVariableType_t,
+          std::function<std::shared_ptr<DynamicVariable>(
+              const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)>>
+      mAllocators;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
-#endif // LIBCOMP_SRC_DYNAMICVARIABLEFACTORY_H
+#endif  // LIBCOMP_SRC_DYNAMICVARIABLEFACTORY_H

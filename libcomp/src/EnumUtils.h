@@ -33,10 +33,9 @@
 /**
  * Casting utility to maintain an enum type when passed as a parameter.
  */
-template<typename T>
-constexpr typename std::underlying_type<T>::type to_underlying(T val)
-{
-    return static_cast<typename std::underlying_type<T>::type>(val);
+template <typename T>
+constexpr typename std::underlying_type<T>::type to_underlying(T val) {
+  return static_cast<typename std::underlying_type<T>::type>(val);
 }
 
-#endif // LIBCOMP_SRC_ENUMUTILS_H
+#endif  // LIBCOMP_SRC_ENUMUTILS_H

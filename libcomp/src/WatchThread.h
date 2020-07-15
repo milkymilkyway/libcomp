@@ -34,25 +34,23 @@
 // Standard C++11 Includes
 #include <thread>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class DayCare;
 
-class WatchThread
-{
-public:
-    explicit WatchThread(DayCare *pJuvy);
-    ~WatchThread();
+class WatchThread {
+ public:
+  explicit WatchThread(DayCare *pJuvy);
+  ~WatchThread();
 
-    void Run();
-    void WaitForExit();
+  void Run();
+  void WaitForExit();
 
-private:
-    DayCare *mDayCare;
-    std::thread *mThread;
+ private:
+  DayCare *mDayCare;
+  std::thread *mThread;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_WATCHTHREAD_H
+#endif  // LIBCOMP_SRC_WATCHTHREAD_H

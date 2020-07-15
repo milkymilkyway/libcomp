@@ -30,8 +30,7 @@
 // Standard C++11 Includes
 #include <unordered_map>
 
-namespace libcomp
-{
+namespace libcomp {
 
 // Source: http://stackoverflow.com/questions/18837857/
 
@@ -39,40 +38,38 @@ namespace libcomp
  * Helper class to convert an enum value into its numeric
  * representation so it can be used in sortable collections.
  */
-class EnumClassHash
-{
-public:
-    /**
-     * Constructer to convert an enum to its numeric representation.
-     * @param t Enum type to convert
-     * @return Enum numeric representation
-     */
-    template<typename T>
-    std::size_t operator()(T t) const
-    {
-        return static_cast<std::size_t>(t);
-    }
+class EnumClassHash {
+ public:
+  /**
+   * Constructer to convert an enum to its numeric representation.
+   * @param t Enum type to convert
+   * @return Enum numeric representation
+   */
+  template <typename T>
+  std::size_t operator()(T t) const {
+    return static_cast<std::size_t>(t);
+  }
 };
 
 /**
  * Validator that we are actually using an enum for the @ref EnumMap.
  */
-template<typename Key>
+template <typename Key>
 using HashType = typename std::conditional<std::is_enum<Key>::value,
-    EnumClassHash, std::hash<Key>>::type;
+                                           EnumClassHash, std::hash<Key>>::type;
 
 /**
  * Replacement for map with a enum key type and a templated value.
  */
-template<typename Key, typename T>
+template <typename Key, typename T>
 using EnumMap = std::unordered_map<Key, T, HashType<Key>>;
 
 /**
  * Replacement for map with a enum key type and a templated value.
  */
-template<typename Key, typename T>
+template <typename Key, typename T>
 using EnumMultiMap = std::unordered_multimap<Key, T, HashType<Key>>;
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_ENUMMAP_H
+#endif  // LIBCOMP_SRC_ENUMMAP_H

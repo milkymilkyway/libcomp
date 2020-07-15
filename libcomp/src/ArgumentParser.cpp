@@ -31,235 +31,180 @@
 
 using namespace libcomp;
 
-ArgumentParser::ArgumentParser()
-{
+ArgumentParser::ArgumentParser() {}
+
+ArgumentParser::~ArgumentParser() {
+  mShortParsers.clear();
+  mLongParsers.clear();
+
+  for (auto pArg : mArgumentParsers) {
+    delete pArg;
+  }
+
+  mArgumentParsers.clear();
 }
 
-ArgumentParser::~ArgumentParser()
-{
-    mShortParsers.clear();
-    mLongParsers.clear();
+bool ArgumentParser::Parse(int argc, const char* const argv[]) {
+  std::vector<String> arguments;
 
-    for(auto pArg : mArgumentParsers)
-    {
-        delete pArg;
+  for (int i = 1; i < argc; ++i) {
+    String arg(argv[i]);
+
+    if (!arg.IsEmpty()) {
+      arguments.push_back(arg);
     }
+  }
 
-    mArgumentParsers.clear();
+  return Parse(arguments);
 }
 
-bool ArgumentParser::Parse(int argc, const char * const argv[])
-{
-    std::vector<String> arguments;
+bool ArgumentParser::Parse(const std::vector<String>& arguments) {
+  std::vector<String> standardArgs;
 
-    for(int i = 1; i < argc; ++i)
-    {
-        String arg(argv[i]);
+  std::vector<String>::size_type argc = arguments.size();
 
-        if(!arg.IsEmpty())
-        {
-            arguments.push_back(arg);
+  for (std::vector<String>::size_type i = 0; i < argc; ++i) {
+    const String& arg = arguments[i];
+
+    std::vector<String> matches;
+
+    if (arg.Matches("^--([^=]+)=(.+)$", matches)) {
+      auto match = mLongParsers.find(matches[1]);
+
+      if (mLongParsers.end() == match) {
+        LogGeneralError([&]() {
+          return String("Unknown command line option %1\n").Arg(matches[1]);
+        });
+
+        return false;
+      }
+
+      auto pArg = match->second;
+
+      if (ArgumentType::NONE == pArg->argType) {
+        LogGeneralError([&]() {
+          return String("Command line option %1 can't have an argument.\n")
+              .Arg(matches[1]);
+        });
+
+        return false;
+      }
+
+      if (pArg->handler && !pArg->handler(pArg, matches[2])) {
+        return false;
+      }
+    } else if (2 <= arg.Length() && "--" == arg.Left(2)) {
+      auto match = mLongParsers.find(arg.Mid(2));
+
+      if (mLongParsers.end() == match) {
+        LogGeneralError([&]() {
+          return String("Unknown command line option %1\n").Arg(arg);
+        });
+
+        return false;
+      }
+
+      auto pArg = match->second;
+
+      if (ArgumentType::OPTIONAL == pArg->argType && i < (argc - 1)) {
+        if (pArg->handler && !pArg->handler(pArg, arguments[++i])) {
+          return false;
         }
-    }
+      } else if (ArgumentType::REQUIRED == pArg->argType) {
+        if (i >= (argc - 1)) {
+          LogGeneralError([&]() {
+            return String("Command line option %1 requires an argument.\n")
+                .Arg(arg);
+          });
 
-    return Parse(arguments);
+          return false;
+        }
+
+        if (pArg->handler && !pArg->handler(pArg, arguments[++i])) {
+          return false;
+        }
+      } else if (pArg->handler && !pArg->handler(pArg, String())) {
+        return false;
+      }
+    } else if (!arg.IsEmpty() && '-' == arg.At(0)) {
+      for (auto opt : arg.Mid(1).ToUtf8()) {
+        auto match = mShortParsers.find(opt);
+
+        if (mShortParsers.end() == match) {
+          LogGeneralError([&]() {
+            return String("Unknown command line option -%1\n")
+                .Arg(std::string(1, opt));
+          });
+
+          return false;
+        }
+
+        auto pArg = match->second;
+
+        if (ArgumentType::NONE != pArg->argType && 2 < arg.Length()) {
+          LogGeneralError([&]() {
+            return String(
+                       "Multiple short arguments can't be specified together "
+                       "if any of them can have an argument: %1\n")
+                .Arg(arg);
+          });
+
+          return false;
+        }
+
+        if (ArgumentType::OPTIONAL == pArg->argType && i < (argc - 1)) {
+          if (pArg->handler && !pArg->handler(pArg, arguments[++i])) {
+            return false;
+          }
+        } else if (ArgumentType::REQUIRED == pArg->argType) {
+          if (i >= (argc - 1)) {
+            LogGeneralError([&]() {
+              return String("Command line option -%1 requires an argument.\n")
+                  .Arg(std::string(1, opt));
+            });
+
+            return false;
+          }
+
+          if (pArg->handler && !pArg->handler(pArg, arguments[++i])) {
+            return false;
+          }
+        } else if (pArg->handler && !pArg->handler(pArg, String())) {
+          return false;
+        }
+      }
+    } else {
+      standardArgs.push_back(arg);
+    }
+  }
+
+  return ParseStandardArguments(standardArgs);
 }
 
-bool ArgumentParser::Parse(const std::vector<String>& arguments)
-{
-    std::vector<String> standardArgs;
+void ArgumentParser::RegisterArgument(
+    char shortName, const String& longName, ArgumentType argType,
+    std::function<bool(Argument*, const String&)> handler) {
+  Argument* pArg = new Argument;
+  pArg->shortName = shortName;
+  pArg->longName = longName;
+  pArg->argType = argType;
+  pArg->handler = handler;
 
-    std::vector<String>::size_type argc = arguments.size();
+  mArgumentParsers.push_back(pArg);
+  mShortParsers[shortName] = pArg;
 
-    for(std::vector<String>::size_type i = 0; i < argc; ++i)
-    {
-        const String& arg = arguments[i];
-
-        std::vector<String> matches;
-
-        if(arg.Matches("^--([^=]+)=(.+)$", matches))
-        {
-            auto match = mLongParsers.find(matches[1]);
-
-            if(mLongParsers.end() == match)
-            {
-                LogGeneralError([&]()
-                {
-                    return String("Unknown command line option %1\n")
-                        .Arg(matches[1]);
-                });
-
-                return false;
-            }
-
-            auto pArg = match->second;
-
-            if(ArgumentType::NONE == pArg->argType)
-            {
-                LogGeneralError([&]()
-                {
-                    return String("Command line option %1 can't have an "
-                        "argument.\n").Arg(matches[1]);
-                });
-
-                return false;
-            }
-
-            if(pArg->handler && !pArg->handler(pArg, matches[2]))
-            {
-                return false;
-            }
-        }
-        else if(2 <= arg.Length() && "--" == arg.Left(2))
-        {
-            auto match = mLongParsers.find(arg.Mid(2));
-
-            if(mLongParsers.end() == match)
-            {
-                LogGeneralError([&]()
-                {
-                    return String("Unknown command line option %1\n").Arg(arg);
-                });
-
-                return false;
-            }
-
-            auto pArg = match->second;
-
-            if(ArgumentType::OPTIONAL == pArg->argType && i < (argc - 1))
-            {
-                if(pArg->handler && !pArg->handler(pArg,
-                    arguments[++i]))
-                {
-                    return false;
-                }
-            }
-            else if(ArgumentType::REQUIRED == pArg->argType)
-            {
-                if(i >= (argc - 1))
-                {
-                    LogGeneralError([&]()
-                    {
-                        return String("Command line option %1 requires "
-                            "an argument.\n").Arg(arg);
-                    });
-
-                    return false;
-                }
-
-                if(pArg->handler && !pArg->handler(pArg,
-                    arguments[++i]))
-                {
-                    return false;
-                }
-            }
-            else if(pArg->handler && !pArg->handler(pArg, String()))
-            {
-                return false;
-            }
-        }
-        else if(!arg.IsEmpty() && '-' == arg.At(0))
-        {
-            for(auto opt : arg.Mid(1).ToUtf8())
-            {
-                auto match = mShortParsers.find(opt);
-
-                if(mShortParsers.end() == match)
-                {
-                    LogGeneralError([&]()
-                    {
-                        return String("Unknown command line option -%1\n")
-                            .Arg(std::string(1, opt));
-                    });
-
-                    return false;
-                }
-
-                auto pArg = match->second;
-
-                if(ArgumentType::NONE != pArg->argType && 2 < arg.Length())
-                {
-                    LogGeneralError([&]()
-                    {
-                        return String("Multiple short arguments can't be "
-                            "specified together if any of them can have "
-                            "an argument: %1\n").Arg(arg);
-                    });
-
-                    return false;
-                }
-
-                if(ArgumentType::OPTIONAL == pArg->argType && i < (argc - 1))
-                {
-                    if(pArg->handler && !pArg->handler(pArg,
-                        arguments[++i]))
-                    {
-                        return false;
-                    }
-                }
-                else if(ArgumentType::REQUIRED == pArg->argType)
-                {
-                    if(i >= (argc - 1))
-                    {
-                        LogGeneralError([&]()
-                        {
-                            return String("Command line option -%1 requires "
-                                "an argument.\n").Arg(std::string(1, opt));
-                        });
-
-                        return false;
-                    }
-
-                    if(pArg->handler && !pArg->handler(pArg,
-                        arguments[++i]))
-                    {
-                        return false;
-                    }
-                }
-                else if(pArg->handler && !pArg->handler(pArg,
-                    String()))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            standardArgs.push_back(arg);
-        }
-    }
-
-    return ParseStandardArguments(standardArgs);
-}
-
-void ArgumentParser::RegisterArgument(char shortName, const String& longName,
-    ArgumentType argType, std::function<bool(Argument*,
-        const String&)> handler)
-{
-    Argument *pArg = new Argument;
-    pArg->shortName = shortName;
-    pArg->longName = longName;
-    pArg->argType = argType;
-    pArg->handler = handler;
-
-    mArgumentParsers.push_back(pArg);
-    mShortParsers[shortName] = pArg;
-
-    if(!longName.IsEmpty())
-    {
-        mLongParsers[longName] = pArg;
-    }
+  if (!longName.IsEmpty()) {
+    mLongParsers[longName] = pArg;
+  }
 }
 
 bool ArgumentParser::ParseStandardArguments(
-    const std::vector<String>& arguments)
-{
-    mStandardArguments = arguments;
+    const std::vector<String>& arguments) {
+  mStandardArguments = arguments;
 
-    return true;
+  return true;
 }
 
-std::vector<String> ArgumentParser::GetStandardArguments() const
-{
-    return mStandardArguments;
+std::vector<String> ArgumentParser::GetStandardArguments() const {
+  return mStandardArguments;
 }

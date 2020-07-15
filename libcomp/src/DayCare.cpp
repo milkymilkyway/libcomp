@@ -25,6 +25,7 @@
  */
 
 #include "DayCare.h"
+
 #include "SpawnThread.h"
 #include "WatchThread.h"
 
@@ -33,256 +34,214 @@
 
 using namespace libcomp;
 
-DayCare::DayCare(bool printDetails, std::function<void()> onDetain) :
-    mRunning(true), mPrintDetails(printDetails),
-    mSpawnThread(new SpawnThread(this, printDetails, onDetain)),
-    mWatchThread(new WatchThread(this))
-{
+DayCare::DayCare(bool printDetails, std::function<void()> onDetain)
+    : mRunning(true),
+      mPrintDetails(printDetails),
+      mSpawnThread(new SpawnThread(this, printDetails, onDetain)),
+      mWatchThread(new WatchThread(this)) {}
+
+DayCare::~DayCare() {
+  CloseDoors(true);
+  WaitForExit();
+
+  delete mSpawnThread;
+  mSpawnThread = nullptr;
+
+  delete mWatchThread;
+  mWatchThread = nullptr;
 }
 
-DayCare::~DayCare()
-{
-    CloseDoors(true);
-    WaitForExit();
+bool DayCare::DetainMonsters(const std::string &path) {
+  tinyxml2::XMLDocument doc;
 
-    delete mSpawnThread;
-    mSpawnThread = nullptr;
+  if (tinyxml2::XML_SUCCESS == doc.LoadFile(path.c_str())) {
+    return LoadProcessDoc(doc);
+  }
 
-    delete mWatchThread;
-    mWatchThread = nullptr;
+  return false;
 }
 
-bool DayCare::DetainMonsters(const std::string& path)
-{
-    tinyxml2::XMLDocument doc;
+bool DayCare::LoadProcessXml(const std::string &xml) {
+  tinyxml2::XMLDocument doc;
 
-    if(tinyxml2::XML_SUCCESS == doc.LoadFile(path.c_str()))
-    {
-        return LoadProcessDoc(doc);
+  if (tinyxml2::XML_SUCCESS == doc.Parse(xml.c_str())) {
+    return LoadProcessDoc(doc);
+  }
+
+  return false;
+}
+
+bool DayCare::LoadProcessDoc(tinyxml2::XMLDocument &doc) {
+  std::list<std::shared_ptr<Child>> children;
+
+  tinyxml2::XMLElement *pRoot = doc.FirstChildElement("programs");
+
+  if (nullptr == pRoot) {
+    return false;
+  }
+
+  tinyxml2::XMLElement *pProgram = pRoot->FirstChildElement("program");
+
+  while (nullptr != pProgram) {
+    const char *szOutput = pProgram->Attribute("output");
+
+    bool displayOutput = false;
+
+    if (nullptr != szOutput) {
+      std::string s(szOutput);
+      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+
+      if (s == "true" || s == "on" || s == "1" || s == "yes") {
+        displayOutput = true;
+      }
     }
 
-    return false;
-}
+    tinyxml2::XMLElement *pPath = pProgram->FirstChildElement("path");
 
-bool DayCare::LoadProcessXml(const std::string& xml)
-{
-    tinyxml2::XMLDocument doc;
-
-    if(tinyxml2::XML_SUCCESS == doc.Parse(xml.c_str()))
-    {
-        return LoadProcessDoc(doc);
+    if (nullptr == pPath) {
+      return false;
     }
 
-    return false;
-}
+    const char *szPath = pPath->GetText();
 
-bool DayCare::LoadProcessDoc(tinyxml2::XMLDocument& doc)
-{
-    std::list<std::shared_ptr<Child>> children;
+    if (nullptr == szPath) {
+      return false;
+    }
 
-    tinyxml2::XMLElement *pRoot = doc.FirstChildElement("programs");
+    tinyxml2::XMLElement *pArg = pProgram->FirstChildElement("arg");
 
-    if(nullptr == pRoot)
-    {
+    std::list<std::string> arguments;
+
+    while (nullptr != pArg) {
+      const char *szArg = pArg->GetText();
+
+      if (nullptr == szArg) {
         return false;
+      }
+
+      arguments.push_back(szArg);
+
+      pArg = pArg->NextSiblingElement("arg");
     }
 
-    tinyxml2::XMLElement *pProgram = pRoot->FirstChildElement("program");
+    int timeout = 0;
+    bool restart = false;
 
-    while(nullptr != pProgram)
-    {
-        const char *szOutput = pProgram->Attribute("output");
+    const char *szTimeout = pProgram->Attribute("timeout");
+    const char *szRestart = pProgram->Attribute("restart");
 
-        bool displayOutput = false;
-
-        if(nullptr != szOutput)
-        {
-            std::string s(szOutput);
-            std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-
-            if(s == "true" || s == "on" || s == "1" || s == "yes")
-            {
-                displayOutput = true;
-            }
-        }
-
-        tinyxml2::XMLElement *pPath = pProgram->FirstChildElement("path");
-
-        if(nullptr == pPath)
-        {
-            return false;
-        }
-
-        const char *szPath = pPath->GetText();
-
-        if(nullptr == szPath)
-        {
-            return false;
-        }
-
-        tinyxml2::XMLElement *pArg = pProgram->FirstChildElement("arg");
-
-        std::list<std::string> arguments;
-
-        while(nullptr != pArg)
-        {
-            const char *szArg = pArg->GetText();
-
-            if(nullptr == szArg)
-            {
-                return false;
-            }
-
-            arguments.push_back(szArg);
-
-            pArg = pArg->NextSiblingElement("arg");
-        }
-
-        int timeout = 0;
-        bool restart = false;
-
-        const char *szTimeout = pProgram->Attribute("timeout");
-        const char *szRestart = pProgram->Attribute("restart");
-
-        if(nullptr != szTimeout)
-        {
-            timeout = atoi(szTimeout);
-        }
-
-        if(nullptr != szRestart)
-        {
-            std::string s(szRestart);
-            std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-
-            if(s == "true" || s == "on" || s == "1" || s == "yes")
-            {
-                restart = true;
-            }
-        }
-
-        auto child = std::make_shared<Child>(szPath, arguments,
-            timeout, restart, displayOutput);
-        children.push_back(child);
-
-        pProgram = pProgram->NextSiblingElement("program");
+    if (nullptr != szTimeout) {
+      timeout = atoi(szTimeout);
     }
 
+    if (nullptr != szRestart) {
+      std::string s(szRestart);
+      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+
+      if (s == "true" || s == "on" || s == "1" || s == "yes") {
+        restart = true;
+      }
+    }
+
+    auto child = std::make_shared<Child>(szPath, arguments, timeout, restart,
+                                         displayOutput);
+    children.push_back(child);
+
+    pProgram = pProgram->NextSiblingElement("program");
+  }
+
+  std::lock_guard<std::mutex> guard(mChildrenShackles);
+
+  mChildren = children;
+
+  for (auto child : children) {
+    mSpawnThread->QueueChild(child);
+  }
+
+  return true;
+}
+
+bool DayCare::IsRunning() const { return mRunning; }
+
+bool DayCare::HaveChildren() {
+  bool isEmpty;
+
+  {
     std::lock_guard<std::mutex> guard(mChildrenShackles);
 
-    mChildren = children;
+    isEmpty = mChildren.empty();
+  }
 
-    for(auto child : children)
-    {
-        mSpawnThread->QueueChild(child);
-    }
-
-    return true;
+  return !isEmpty;
 }
 
-bool DayCare::IsRunning() const
-{
-    return mRunning;
+void DayCare::PrintStatus() {
+  std::lock_guard<std::mutex> guard(mChildrenShackles);
+
+  for (auto child : mChildren) {
+    printf("%d is runnning: %s\n", child->GetPID(),
+           child->GetCommandLine().c_str());
+  }
 }
 
-bool DayCare::HaveChildren()
-{
-    bool isEmpty;
+void DayCare::NotifyExit(pid_t pid, int status) {
+  std::shared_ptr<Child> child;
 
-    {
-        std::lock_guard<std::mutex> guard(mChildrenShackles);
+  std::lock_guard<std::mutex> guard(mChildrenShackles);
 
-        isEmpty = mChildren.empty();
+  for (auto c : mChildren) {
+    if (pid == c->GetPID()) {
+      child = c;
+      break;
+    }
+  }
+
+  if (child) {
+    if (mPrintDetails || 0 != status) {
+      printf("%d exit with status %d: %s\n", pid, status,
+             child->GetCommandLine().c_str());
     }
 
-    return !isEmpty;
-}
-
-void DayCare::PrintStatus()
-{
-    std::lock_guard<std::mutex> guard(mChildrenShackles);
-
-    for(auto child : mChildren)
-    {
-        printf("%d is runnning: %s\n", child->GetPID(),
-            child->GetCommandLine().c_str());
+    if (mRunning && child->ShouldRestart()) {
+      mSpawnThread->QueueChild(child);
+    } else {
+      mChildren.remove(child);
     }
-}
-
-void DayCare::NotifyExit(pid_t pid, int status)
-{
-    std::shared_ptr<Child> child;
-
-    std::lock_guard<std::mutex> guard(mChildrenShackles);
-
-    for(auto c : mChildren)
-    {
-        if(pid == c->GetPID())
-        {
-            child = c;
-            break;
-        }
-    }
-
-    if(child)
-    {
-        if(mPrintDetails || 0 != status)
-        {
-            printf("%d exit with status %d: %s\n", pid, status,
-                child->GetCommandLine().c_str());
-        }
-
-        if(mRunning && child->ShouldRestart())
-        {
-            mSpawnThread->QueueChild(child);
-        }
-        else
-        {
-            mChildren.remove(child);
-        }
-    }
+  }
 }
 
 std::list<std::shared_ptr<Child>> DayCare::OrderChildren(
-    const std::list<std::shared_ptr<Child>>& children)
-{
-    std::list<std::shared_ptr<Child>> ordered;
+    const std::list<std::shared_ptr<Child>> &children) {
+  std::list<std::shared_ptr<Child>> ordered;
 
-    std::lock_guard<std::mutex> guard(mChildrenShackles);
+  std::lock_guard<std::mutex> guard(mChildrenShackles);
 
-    for(auto c : mChildren)
-    {
-        if(children.end() != std::find(children.begin(), children.end(), c))
-        {
-            ordered.push_back(c);
-        }
+  for (auto c : mChildren) {
+    if (children.end() != std::find(children.begin(), children.end(), c)) {
+      ordered.push_back(c);
     }
+  }
 
-    return ordered;
+  return ordered;
 }
 
-void DayCare::CloseDoors(bool kill)
-{
-    mRunning = false;
+void DayCare::CloseDoors(bool kill) {
+  mRunning = false;
 
-    std::lock_guard<std::mutex> guard(mChildrenShackles);
+  std::lock_guard<std::mutex> guard(mChildrenShackles);
 
-    for(auto child : mChildren)
-    {
-        if(kill)
-        {
-            child->Kill();
-        }
-        else
-        {
-            child->Interrupt();
-        }
+  for (auto child : mChildren) {
+    if (kill) {
+      child->Kill();
+    } else {
+      child->Interrupt();
     }
+  }
 
-    mSpawnThread->RequestExit();
+  mSpawnThread->RequestExit();
 }
 
-void DayCare::WaitForExit()
-{
-    mSpawnThread->WaitForExit();
-    mWatchThread->WaitForExit();
+void DayCare::WaitForExit() {
+  mSpawnThread->WaitForExit();
+  mWatchThread->WaitForExit();
 }

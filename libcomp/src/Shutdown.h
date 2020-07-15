@@ -31,13 +31,11 @@
 
 void ShutdownSignalHandler(int sig);
 
-namespace libcomp
-{
+namespace libcomp {
 
 class BaseServer;
 
-namespace Shutdown
-{
+namespace Shutdown {
 
 /**
  * Configure a server at runtime to to handle any type of termination
@@ -52,10 +50,10 @@ void Configure(libcomp::BaseServer *pServer);
  */
 void Complete();
 
-} // namespace Shutdown
+}  // namespace Shutdown
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
-#endif // LIBCOMP_SRC_SHUTDOWN_H
+#endif  // LIBCOMP_SRC_SHUTDOWN_H

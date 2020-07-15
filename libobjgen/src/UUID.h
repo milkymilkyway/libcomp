@@ -36,31 +36,29 @@
 
 #define NULLUUID libobjgen::UUID()
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class UUID
-{
-public:
-    UUID();
-    UUID(const std::string& other);
-    UUID(const std::vector<char>& data);
+class UUID {
+ public:
+  UUID();
+  UUID(const std::string& other);
+  UUID(const std::vector<char>& data);
 
-    static UUID Random();
+  static UUID Random();
 
-    std::string ToString() const;
-    std::vector<char> ToData() const;
+  std::string ToString() const;
+  std::vector<char> ToData() const;
 
-    bool IsNull() const;
+  bool IsNull() const;
 
-    bool operator==(UUID other) const;
-    bool operator!=(UUID other) const;
+  bool operator==(UUID other) const;
+  bool operator!=(UUID other) const;
 
-private:
-    uint64_t mTimeAndVersion;
-    uint64_t mClockSequenceAndNode;
+ private:
+  uint64_t mTimeAndVersion;
+  uint64_t mClockSequenceAndNode;
 };
 
-} // namespace libcomp
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_UUID_H
+#endif  // LIBOBJGEN_SRC_UUID_H

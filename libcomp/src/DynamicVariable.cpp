@@ -28,11 +28,8 @@
 
 using namespace libcomp;
 
-DynamicVariable::DynamicVariable(const std::shared_ptr<
-    libobjgen::MetaVariable>& metaVariable) : mMetaData(metaVariable)
-{
-}
+DynamicVariable::DynamicVariable(
+    const std::shared_ptr<libobjgen::MetaVariable>& metaVariable)
+    : mMetaData(metaVariable) {}
 
-DynamicVariable::~DynamicVariable()
-{
-}
+DynamicVariable::~DynamicVariable() {}

@@ -36,7 +36,6 @@
 #include "PlatformWindows.h"
 #else
 #include "PlatformLinux.h"
-#endif // _WIN32
+#endif  // _WIN32
 
-
-#endif // LIBCOMP_SRC_PLATFORM_H
+#endif  // LIBCOMP_SRC_PLATFORM_H

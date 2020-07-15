@@ -26,6 +26,7 @@
 
 // libcomp Includes
 #include "DataFile.h"
+
 #include "Log.h"
 
 // PhysFS Includes
@@ -33,180 +34,142 @@
 
 using namespace libcomp;
 
-DataFile::DataFile(const libcomp::String& path, DataStore::FileMode_t mode) :
-    mFile(nullptr)
-{
-    SetPath(path);
+DataFile::DataFile(const libcomp::String& path, DataStore::FileMode_t mode)
+    : mFile(nullptr) {
+  SetPath(path);
 
-    (void)Open(mode);
+  (void)Open(mode);
 }
 
-DataFile::~DataFile()
-{
-    (void)Close();
+DataFile::~DataFile() { (void)Close(); }
+
+bool DataFile::IsOpen() const { return nullptr != mFile; }
+
+bool DataFile::Open(DataStore::FileMode_t mode) {
+  if (IsOpen()) {
+    return false;
+  }
+
+  switch (mode) {
+    case DataStore::FileMode_t::READ:
+      mFile = PHYSFS_openRead(mPath.C());
+      break;
+    case DataStore::FileMode_t::WRITE:
+      mFile = PHYSFS_openWrite(mPath.C());
+      break;
+    case DataStore::FileMode_t::APPEND:
+      mFile = PHYSFS_openAppend(mPath.C());
+      break;
+    default:
+      mFile = nullptr;
+      break;
+  }
+
+  return IsOpen();
 }
 
-bool DataFile::IsOpen() const
-{
-    return nullptr != mFile;
+bool DataFile::Close() {
+  if (nullptr == mFile) {
+    return false;
+  }
+
+  if (0 == PHYSFS_close(mFile)) {
+    return false;
+  }
+
+  mFile = nullptr;
+
+  return true;
 }
 
-bool DataFile::Open(DataStore::FileMode_t mode)
-{
-    if(IsOpen())
-    {
-        return false;
-    }
+bool DataFile::Flush() {
+  if (nullptr == mFile) {
+    return false;
+  }
 
-    switch(mode)
-    {
-        case DataStore::FileMode_t::READ:
-            mFile = PHYSFS_openRead(mPath.C());
-            break;
-        case DataStore::FileMode_t::WRITE:
-            mFile = PHYSFS_openWrite(mPath.C());
-            break;
-        case DataStore::FileMode_t::APPEND:
-            mFile = PHYSFS_openAppend(mPath.C());
-            break;
-        default:
-            mFile = nullptr;
-            break;
-    }
-
-    return IsOpen();
+  return 0 != PHYSFS_flush(mFile);
 }
 
-bool DataFile::Close()
-{
-    if(nullptr == mFile)
-    {
-        return false;
-    }
+libcomp::String DataFile::GetPath() const { return mPath; }
 
-    if(0 == PHYSFS_close(mFile))
-    {
-        return false;
-    }
+void DataFile::SetPath(const libcomp::String& path) { mPath = path; }
 
-    mFile = nullptr;
+int64_t DataFile::GetSize() const {
+  if (nullptr == mFile) {
+    return -1;
+  }
 
+  return PHYSFS_fileLength(mFile);
+}
+
+bool DataFile::AtEOF() const {
+  if (nullptr == mFile) {
     return true;
+  }
+
+  return 0 != PHYSFS_eof(mFile);
 }
 
-bool DataFile::Flush()
-{
-    if(nullptr == mFile)
-    {
-        return false;
-    }
+int64_t DataFile::GetPosition() const {
+  if (nullptr == mFile) {
+    return -1;
+  }
 
-    return 0 != PHYSFS_flush(mFile);
+  return PHYSFS_tell(mFile);
 }
 
-libcomp::String DataFile::GetPath() const
-{
-    return mPath;
+bool DataFile::SetPosition(int64_t pos, Whence_t whence) {
+  if (nullptr == mFile) {
+    return false;
+  }
+
+  switch (whence) {
+    case Whence_t::BEGIN:
+      break;
+    case Whence_t::CURRENT:
+      pos += GetPosition();
+      break;
+    case Whence_t::END:
+      pos += GetSize();
+      break;
+    default:
+      return false;
+  }
+
+  if (0 > pos || pos > GetSize()) {
+    return false;
+  }
+
+  return 0 != PHYSFS_seek(mFile, static_cast<uint64_t>(pos));
 }
 
-void DataFile::SetPath(const libcomp::String& path)
-{
-    mPath = path;
+bool DataFile::Read(void* pBuffer, uint32_t bufferSize) {
+  if (nullptr == mFile) {
+    return false;
+  }
+
+  return 1 == PHYSFS_read(mFile, pBuffer, bufferSize, 1);
 }
 
-int64_t DataFile::GetSize() const
-{
-    if(nullptr == mFile)
-    {
-        return -1;
-    }
+std::vector<char> DataFile::Read(uint32_t size) {
+  std::vector<char> buffer;
+  buffer.resize(size);
 
-    return PHYSFS_fileLength(mFile);
+  if (static_cast<uint32_t>(buffer.size()) == size && Read(&buffer[0], size)) {
+    return buffer;
+  }
+
+  return {};
 }
 
-bool DataFile::AtEOF() const
-{
-    if(nullptr == mFile)
-    {
-        return true;
-    }
+bool DataFile::Write(const void* pBuffer, uint32_t bufferSize) {
+  if (nullptr == mFile) {
+    return false;
+  }
 
-    return 0 != PHYSFS_eof(mFile);
+  return 1 == PHYSFS_write(mFile, pBuffer, bufferSize, 1);
 }
 
-int64_t DataFile::GetPosition() const
-{
-    if(nullptr == mFile)
-    {
-        return -1;
-    }
-
-    return PHYSFS_tell(mFile);
-}
-
-bool DataFile::SetPosition(int64_t pos, Whence_t whence)
-{
-    if(nullptr == mFile)
-    {
-        return false;
-    }
-
-    switch(whence)
-    {
-        case Whence_t::BEGIN:
-            break;
-        case Whence_t::CURRENT:
-            pos += GetPosition();
-            break;
-        case Whence_t::END:
-            pos += GetSize();
-            break;
-        default:
-            return false;
-    }
-
-    if(0 > pos || pos > GetSize())
-    {
-        return false;
-    }
-
-    return 0 != PHYSFS_seek(mFile, static_cast<uint64_t>(pos));
-}
-
-bool DataFile::Read(void *pBuffer, uint32_t bufferSize)
-{
-    if(nullptr == mFile)
-    {
-        return false;
-    }
-
-    return 1 == PHYSFS_read(mFile, pBuffer, bufferSize, 1);
-}
-
-std::vector<char> DataFile::Read(uint32_t size)
-{
-    std::vector<char> buffer;
-    buffer.resize(size);
-
-    if(static_cast<uint32_t>(buffer.size()) == size && Read(&buffer[0], size))
-    {
-        return buffer;
-    }
-
-    return {};
-}
-
-bool DataFile::Write(const void *pBuffer, uint32_t bufferSize)
-{
-    if(nullptr == mFile)
-    {
-        return false;
-    }
-
-    return 1 == PHYSFS_write(mFile, pBuffer, bufferSize, 1);
-}
-
-bool DataFile::Write(const std::vector<char>& buffer)
-{
-    return Write(&buffer[0], static_cast<uint32_t>(buffer.size()));
+bool DataFile::Write(const std::vector<char>& buffer) {
+  return Write(&buffer[0], static_cast<uint32_t>(buffer.size()));
 }

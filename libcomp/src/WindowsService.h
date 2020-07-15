@@ -35,31 +35,29 @@
 // Standard C++11 Includes
 #include <functional>
 
-namespace libcomp
-{
+namespace libcomp {
 
 extern char *SERVICE_NAME;
 
-class WindowsService
-{
-public:
-    WindowsService(const std::function<int(int, const char**)>& func);
+class WindowsService {
+ public:
+  WindowsService(const std::function<int(int, const char **)> &func);
 
-    int Run(int argc, const char *argv[]);
-    void HandleCtrlCode(DWORD CtrlCode);
-    void Started();
+  int Run(int argc, const char *argv[]);
+  void HandleCtrlCode(DWORD CtrlCode);
+  void Started();
 
-private:
-    SERVICE_STATUS mStatus = {0};
-    SERVICE_STATUS_HANDLE mStatusHandle;
+ private:
+  SERVICE_STATUS mStatus = {0};
+  SERVICE_STATUS_HANDLE mStatusHandle;
 
-    std::function<int(int, const char**)> mMain;
+  std::function<int(int, const char **)> mMain;
 };
 
 extern WindowsService *gService;
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // defined(_WIN32) && defined(WIN32_SERV)
+#endif  // defined(_WIN32) && defined(WIN32_SERV)
 
-#endif // LIBCOMP_SRC_WINDOWSSERVICE_H
+#endif  // LIBCOMP_SRC_WINDOWSSERVICE_H

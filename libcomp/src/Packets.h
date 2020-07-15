@@ -30,16 +30,14 @@
 // libcomp Includes
 #include "PacketParser.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Parsers
-{
+namespace Parsers {
 
 PACKET_PARSER_DECL(Placeholder);
 
-} // namespace Parsers
+}  // namespace Parsers
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_PACKETS_H
+#endif  // LIBCOMP_SRC_PACKETS_H

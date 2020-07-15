@@ -24,33 +24,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PushIgnore.h>
-#include <gtest/gtest.h>
+// Ignore warnings
 #include <PopIgnore.h>
 
+// Google Test Includes
+#include <gtest/gtest.h>
+
+// Stop ignoring warnings
 #include <DatabaseSQLite3.h>
+#include <PushIgnore.h>
 
 using namespace libcomp;
 
-TEST(SQLite3, OpenCloseDatabase)
-{
-    DatabaseSQLite3 db;
+TEST(SQLite3, OpenCloseDatabase) {
+  DatabaseSQLite3 db;
 
-    ASSERT_TRUE(db.Open(":memory:"));
-    ASSERT_TRUE(db.IsOpen());
-    ASSERT_TRUE(db.Close());
+  ASSERT_TRUE(db.Open(":memory:"));
+  ASSERT_TRUE(db.IsOpen());
+  ASSERT_TRUE(db.Close());
 }
 
-int main(int argc, char *argv[])
-{
-    try
-    {
-        ::testing::InitGoogleTest(&argc, argv);
+int main(int argc, char *argv[]) {
+  try {
+    ::testing::InitGoogleTest(&argc, argv);
 
-        return RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
-        return EXIT_FAILURE;
-    }
+    return RUN_ALL_TESTS();
+  } catch (...) {
+    return EXIT_FAILURE;
+  }
 }

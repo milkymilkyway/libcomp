@@ -35,51 +35,44 @@
 
 struct PHYSFS_File;
 
-namespace libcomp
-{
+namespace libcomp {
 
-class DataFile
-{
-    friend class DataStore;
+class DataFile {
+  friend class DataStore;
 
-public:
-    bool IsOpen() const;
+ public:
+  bool IsOpen() const;
 
-    bool Open(DataStore::FileMode_t mode = DataStore::FileMode_t::READ);
-    bool Close();
-    bool Flush();
+  bool Open(DataStore::FileMode_t mode = DataStore::FileMode_t::READ);
+  bool Close();
+  bool Flush();
 
-    libcomp::String GetPath() const;
-    void SetPath(const libcomp::String& path);
+  libcomp::String GetPath() const;
+  void SetPath(const libcomp::String& path);
 
-    int64_t GetSize() const;
-    bool AtEOF() const;
+  int64_t GetSize() const;
+  bool AtEOF() const;
 
-    enum class Whence_t
-    {
-        BEGIN,
-        CURRENT,
-        END
-    };
+  enum class Whence_t { BEGIN, CURRENT, END };
 
-    bool Read(void *pBuffer, uint32_t bufferSize);
-    std::vector<char> Read(uint32_t size);
+  bool Read(void* pBuffer, uint32_t bufferSize);
+  std::vector<char> Read(uint32_t size);
 
-    bool Write(const void *pBuffer, uint32_t bufferSize);
-    bool Write(const std::vector<char>& buffer);
+  bool Write(const void* pBuffer, uint32_t bufferSize);
+  bool Write(const std::vector<char>& buffer);
 
-    int64_t GetPosition() const;
-    bool SetPosition(int64_t pos, Whence_t whence = Whence_t::BEGIN);
+  int64_t GetPosition() const;
+  bool SetPosition(int64_t pos, Whence_t whence = Whence_t::BEGIN);
 
-protected:
-    DataFile(const libcomp::String& path, DataStore::FileMode_t mode);
-    ~DataFile();
+ protected:
+  DataFile(const libcomp::String& path, DataStore::FileMode_t mode);
+  ~DataFile();
 
-private:
-    libcomp::String mPath;
-    PHYSFS_File *mFile;
+ private:
+  libcomp::String mPath;
+  PHYSFS_File* mFile;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DATAFILE_H
+#endif  // LIBCOMP_SRC_DATAFILE_H

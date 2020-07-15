@@ -36,209 +36,162 @@
 
 using namespace libcomp;
 
-Worker::Worker() : mRunning(false), mMessageQueue(new MessageQueue<
-    Message::Message*>()), mThread(nullptr)
-{
+Worker::Worker()
+    : mRunning(false),
+      mMessageQueue(new MessageQueue<Message::Message*>()),
+      mThread(nullptr) {}
+
+Worker::~Worker() { Cleanup(); }
+
+void Worker::AddManager(const std::shared_ptr<Manager>& manager) {
+  for (auto messageType : manager->GetSupportedTypes()) {
+    mManagers.insert(std::make_pair(messageType, manager));
+  }
 }
 
-Worker::~Worker()
-{
-    Cleanup();
-}
+void Worker::RemoveAllManagers() { mManagers.clear(); }
 
-void Worker::AddManager(const std::shared_ptr<Manager>& manager)
-{
-    for(auto messageType : manager->GetSupportedTypes())
-    {
-        mManagers.insert(std::make_pair(messageType, manager));
-    }
-}
+void Worker::Start(const libcomp::String& name, bool blocking) {
+  mWorkerName = name;
 
-void Worker::RemoveAllManagers()
-{
-    mManagers.clear();
-}
-
-void Worker::Start(const libcomp::String& name, bool blocking)
-{
-    mWorkerName = name;
-
-    if(blocking)
-    {
-        mRunning = true;
-        Run(mMessageQueue.get());
-        mRunning = false;
-    }
-    else
-    {
-        mThread = new std::thread([this](std::shared_ptr<MessageQueue<
-            Message::Message*>> messageQueue, const libcomp::String& _name)
-        {
-            (void)_name;
+  if (blocking) {
+    mRunning = true;
+    Run(mMessageQueue.get());
+    mRunning = false;
+  } else {
+    mThread = new std::thread(
+        [this](std::shared_ptr<MessageQueue<Message::Message*>> messageQueue,
+               const libcomp::String& _name) {
+          (void)_name;
 
 #if !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
-            pthread_setname_np(pthread_self(), _name.C());
-#endif // !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
+          pthread_setname_np(pthread_self(), _name.C());
+#endif  // !defined(EXOTIC_PLATFORM) && !defined(_WIN32) && !defined(__APPLE__)
 
-            libcomp::Exception::RegisterSignalHandler();
+          libcomp::Exception::RegisterSignalHandler();
 
-            mRunning = true;
-            Run(messageQueue.get());
-            mRunning = false;
-        }, mMessageQueue, name);
-    }
+          mRunning = true;
+          Run(messageQueue.get());
+          mRunning = false;
+        },
+        mMessageQueue, name);
+  }
 }
 
-void Worker::Run(MessageQueue<Message::Message*> *pMessageQueue)
-{
-    while(mRunning)
-    {
-        std::list<libcomp::Message::Message*> msgs;
-        pMessageQueue->DequeueAll(msgs);
+void Worker::Run(MessageQueue<Message::Message*>* pMessageQueue) {
+  while (mRunning) {
+    std::list<libcomp::Message::Message*> msgs;
+    pMessageQueue->DequeueAll(msgs);
 
-        for(auto pMessage : msgs)
-        {
-            HandleMessage(pMessage);
-        }
+    for (auto pMessage : msgs) {
+      HandleMessage(pMessage);
     }
+  }
 }
 
-void Worker::HandleMessage(libcomp::Message::Message *pMessage)
-{
-    // Check for a shutdown message.
-    libcomp::Message::Shutdown *pShutdown = dynamic_cast<
-        libcomp::Message::Shutdown*>(pMessage);
+void Worker::HandleMessage(libcomp::Message::Message* pMessage) {
+  // Check for a shutdown message.
+  libcomp::Message::Shutdown* pShutdown =
+      dynamic_cast<libcomp::Message::Shutdown*>(pMessage);
 
-    // Check for an execute message.
-    libcomp::Message::Execute *pExecute = dynamic_cast<
-        libcomp::Message::Execute*>(pMessage);
+  // Check for an execute message.
+  libcomp::Message::Execute* pExecute =
+      dynamic_cast<libcomp::Message::Execute*>(pMessage);
 
-    // Do not handle any more messages if a shutdown was sent.
-    if(nullptr != pShutdown || !mRunning)
-    {
-        mRunning = false;
-    }
-    else if(nullptr != pExecute)
-    {
-        // Run the code now.
-        pExecute->Run();
-    }
-    else
-    {
-        bool didProcess = false;
+  // Do not handle any more messages if a shutdown was sent.
+  if (nullptr != pShutdown || !mRunning) {
+    mRunning = false;
+  } else if (nullptr != pExecute) {
+    // Run the code now.
+    pExecute->Run();
+  } else {
+    bool didProcess = false;
 
-        // Attempt to find a manager to process this message.
-        auto range = mManagers.equal_range(pMessage->GetType());
+    // Attempt to find a manager to process this message.
+    auto range = mManagers.equal_range(pMessage->GetType());
 
-        // List of managers to process for.
-        std::list<std::shared_ptr<Manager>> managers;
+    // List of managers to process for.
+    std::list<std::shared_ptr<Manager>> managers;
 
-        // Get the list of managers to process.
-        for(auto it = range.first; it != range.second; ++it)
-        {
-            auto manager = it->second;
+    // Get the list of managers to process.
+    for (auto it = range.first; it != range.second; ++it) {
+      auto manager = it->second;
 
-            if(!manager)
-            {
-                LogGeneralErrorMsg("Manager is null!\n");
-            }
-            else
-            {
-                managers.push_back(manager);
-            }
-        }
-
-        // Process the message with the list of managers.
-        for(auto manager : managers)
-        {
-            if(manager->ProcessMessage(pMessage))
-            {
-                didProcess = true;
-            }
-        }
-
-        if(!didProcess)
-        {
-            LogGeneralError([&]()
-            {
-                return String("Failed to process message in worker '%1':\n%2\n")
-                    .Arg(mWorkerName).Arg(pMessage->Dump());
-            });
-        }
+      if (!manager) {
+        LogGeneralErrorMsg("Manager is null!\n");
+      } else {
+        managers.push_back(manager);
+      }
     }
 
-    // Grab the next worker.
-    auto nextWorker = mNextWorker.lock();
-
-    // Either forward the message to the next worker or free it.
-    if(nextWorker)
-    {
-        nextWorker->GetMessageQueue()->Enqueue(pMessage);
-    }
-    else
-    {
-        delete pMessage;
-    }
-}
-
-void Worker::Shutdown()
-{
-    mMessageQueue->Enqueue(new libcomp::Message::Shutdown());
-}
-
-void Worker::Join()
-{
-    if(nullptr != mThread)
-    {
-        mThread->join();
-    }
-}
-
-void Worker::Cleanup()
-{
-    // Delete the main thread (if it exists).
-    if(nullptr != mThread)
-    {
-        delete mThread;
-        mThread = nullptr;
+    // Process the message with the list of managers.
+    for (auto manager : managers) {
+      if (manager->ProcessMessage(pMessage)) {
+        didProcess = true;
+      }
     }
 
-    if(nullptr != mMessageQueue)
-    {
-        // Empty the message queue.
-        std::list<libcomp::Message::Message*> msgs;
-        mMessageQueue->DequeueAny(msgs);
-
-        for(auto pMessage : msgs)
-        {
-            delete pMessage;
-        }
-
-        mMessageQueue.reset();
+    if (!didProcess) {
+      LogGeneralError([&]() {
+        return String("Failed to process message in worker '%1':\n%2\n")
+            .Arg(mWorkerName)
+            .Arg(pMessage->Dump());
+      });
     }
+  }
+
+  // Grab the next worker.
+  auto nextWorker = mNextWorker.lock();
+
+  // Either forward the message to the next worker or free it.
+  if (nextWorker) {
+    nextWorker->GetMessageQueue()->Enqueue(pMessage);
+  } else {
+    delete pMessage;
+  }
 }
 
-bool Worker::IsRunning() const
-{
-    return mRunning;
+void Worker::Shutdown() {
+  mMessageQueue->Enqueue(new libcomp::Message::Shutdown());
 }
 
-String Worker::GetWorkerName() const
-{
-    return mWorkerName;
+void Worker::Join() {
+  if (nullptr != mThread) {
+    mThread->join();
+  }
 }
 
-void Worker::SetNextWorker(const std::weak_ptr<Worker>& nextWorker)
-{
-    mNextWorker = nextWorker;
+void Worker::Cleanup() {
+  // Delete the main thread (if it exists).
+  if (nullptr != mThread) {
+    delete mThread;
+    mThread = nullptr;
+  }
+
+  if (nullptr != mMessageQueue) {
+    // Empty the message queue.
+    std::list<libcomp::Message::Message*> msgs;
+    mMessageQueue->DequeueAny(msgs);
+
+    for (auto pMessage : msgs) {
+      delete pMessage;
+    }
+
+    mMessageQueue.reset();
+  }
 }
 
-std::shared_ptr<MessageQueue<Message::Message*>> Worker::GetMessageQueue() const
-{
-    return mMessageQueue;
+bool Worker::IsRunning() const { return mRunning; }
+
+String Worker::GetWorkerName() const { return mWorkerName; }
+
+void Worker::SetNextWorker(const std::weak_ptr<Worker>& nextWorker) {
+  mNextWorker = nextWorker;
 }
 
-long Worker::AssignmentCount() const
-{
-    return mMessageQueue.use_count();
+std::shared_ptr<MessageQueue<Message::Message*>> Worker::GetMessageQueue()
+    const {
+  return mMessageQueue;
 }
+
+long Worker::AssignmentCount() const { return mMessageQueue.use_count(); }

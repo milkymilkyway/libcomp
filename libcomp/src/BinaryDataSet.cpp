@@ -35,277 +35,233 @@
 
 using namespace libcomp;
 
-BinaryDataSet::BinaryDataSet(std::function<std::shared_ptr<
-    libcomp::Object>()> allocator, std::function<uint32_t(
-    const std::shared_ptr<libcomp::Object>&)> mapper) :
-    mObjectAllocator(allocator), mObjectMapper(mapper)
-{
+BinaryDataSet::BinaryDataSet(
+    std::function<std::shared_ptr<libcomp::Object>()> allocator,
+    std::function<uint32_t(const std::shared_ptr<libcomp::Object>&)> mapper)
+    : mObjectAllocator(allocator), mObjectMapper(mapper) {}
+
+BinaryDataSet::~BinaryDataSet() {}
+
+bool BinaryDataSet::Load(std::istream& file, bool loadMore) {
+  auto objs = libcomp::Object::LoadBinaryData(file, mObjectAllocator);
+
+  if (loadMore) {
+    for (auto obj : objs) {
+      mObjects.push_back(obj);
+    }
+  } else {
+    mObjects = objs;
+    mObjectMap.clear();
+  }
+
+  for (auto obj : objs) {
+    mObjectMap[mObjectMapper(obj)] = obj;
+  }
+
+  return !mObjects.empty();
 }
 
-BinaryDataSet::~BinaryDataSet()
-{
+bool BinaryDataSet::Save(std::ostream& file) const {
+  return libcomp::Object::SaveBinaryData(file, mObjects);
 }
 
-bool BinaryDataSet::Load(std::istream& file, bool loadMore)
-{
-    auto objs = libcomp::Object::LoadBinaryData(file,
-        mObjectAllocator);
+bool BinaryDataSet::LoadXml(tinyxml2::XMLDocument& doc, bool loadMore) {
+  std::list<std::shared_ptr<libcomp::Object>> objs;
 
-    if(loadMore)
-    {
-        for(auto obj : objs)
-        {
-            mObjects.push_back(obj);
-        }
-    }
-    else
-    {
-        mObjects = objs;
-        mObjectMap.clear();
-    }
+  auto pRoot = doc.RootElement();
 
-    for(auto obj : objs)
-    {
-        mObjectMap[mObjectMapper(obj)] = obj;
+  if (nullptr == pRoot) {
+    return false;
+  }
+
+  auto objElement = pRoot->FirstChildElement("object");
+
+  while (nullptr != objElement) {
+    auto obj = mObjectAllocator();
+
+    if (!obj->Load(doc, *objElement)) {
+      return false;
     }
 
-    return !mObjects.empty();
+    objs.push_back(obj);
+
+    objElement = objElement->NextSiblingElement("object");
+  }
+
+  if (loadMore) {
+    for (auto obj : objs) {
+      mObjects.push_back(obj);
+    }
+  } else {
+    mObjects = objs;
+    mObjectMap.clear();
+  }
+
+  for (auto obj : mObjects) {
+    mObjectMap[mObjectMapper(obj)] = obj;
+  }
+
+  return !mObjects.empty();
 }
 
-bool BinaryDataSet::Save(std::ostream& file) const
-{
-    return libcomp::Object::SaveBinaryData(file, mObjects);
+std::string BinaryDataSet::GetXml() const {
+  tinyxml2::XMLDocument doc;
+
+  tinyxml2::XMLElement* pRoot = doc.NewElement("objects");
+  doc.InsertEndChild(pRoot);
+
+  for (auto obj : mObjects) {
+    if (!obj->Save(doc, *pRoot)) {
+      return {};
+    }
+  }
+
+  tinyxml2::XMLPrinter printer;
+  doc.Print(&printer);
+
+  return printer.CStr();
 }
 
-bool BinaryDataSet::LoadXml(tinyxml2::XMLDocument& doc,
-    bool loadMore)
-{
-    std::list<std::shared_ptr<libcomp::Object>> objs;
+std::string BinaryDataSet::GetTabular() const {
+  tinyxml2::XMLDocument doc;
 
-    auto pRoot = doc.RootElement();
+  tinyxml2::XMLElement* pRoot = doc.NewElement("objects");
+  doc.InsertEndChild(pRoot);
 
-    if(nullptr == pRoot)
-    {
-        return false;
+  for (auto obj : mObjects) {
+    if (!obj->Save(doc, *pRoot)) {
+      return {};
+    }
+  }
+
+  std::stringstream ss;
+
+  tinyxml2::XMLNode* pNode = doc.FirstChild()->FirstChild();
+
+  if (pNode != nullptr) {
+    for (auto d : ReadNodes(pNode->FirstChildElement(), 1)) {
+      ss << d << "\t";
     }
 
-    auto objElement = pRoot->FirstChildElement("object");
+    ss << std::endl;
+  }
 
-    while(nullptr != objElement)
-    {
-        auto obj = mObjectAllocator();
+  while (pNode != nullptr) {
+    std::list<tinyxml2::XMLElement*> nodes;
 
-        if(!obj->Load(doc, *objElement))
-        {
-            return false;
-        }
-
-        objs.push_back(obj);
-
-        objElement = objElement->NextSiblingElement("object");
-    }
-    
-    if(loadMore)
-    {
-        for(auto obj : objs)
-        {
-            mObjects.push_back(obj);
-        }
-    }
-    else
-    {
-        mObjects = objs;
-        mObjectMap.clear();
+    tinyxml2::XMLElement* cNode = pNode->FirstChildElement();
+    auto data = ReadNodes(cNode, 2);
+    for (auto d : data) {
+      ss << d << "\t";
     }
 
-    for(auto obj : mObjects)
-    {
-        mObjectMap[mObjectMapper(obj)] = obj;
-    }
+    ss << std::endl;
+    pNode = pNode->NextSiblingElement();
+  }
 
-    return !mObjects.empty();
+  return ss.str();
 }
 
-std::string BinaryDataSet::GetXml() const
-{
-    tinyxml2::XMLDocument doc;
-
-    tinyxml2::XMLElement *pRoot = doc.NewElement("objects");
-    doc.InsertEndChild(pRoot);
-
-    for(auto obj : mObjects)
-    {
-        if(!obj->Save(doc, *pRoot))
-        {
-            return {};
-        }
-    }
-
-    tinyxml2::XMLPrinter printer;
-    doc.Print(&printer);
-
-    return printer.CStr();
-}
-
-std::string BinaryDataSet::GetTabular() const
-{
-    tinyxml2::XMLDocument doc;
-
-    tinyxml2::XMLElement *pRoot = doc.NewElement("objects");
-    doc.InsertEndChild(pRoot);
-
-    for(auto obj : mObjects)
-    {
-        if(!obj->Save(doc, *pRoot))
-        {
-            return {};
-        }
-    }
-
-    std::stringstream ss;
-
-    tinyxml2::XMLNode *pNode = doc.FirstChild()->FirstChild();
-
-    if(pNode != nullptr)
-    {
-        for(auto d : ReadNodes(pNode->FirstChildElement(), 1))
-        {
-            ss << d << "\t";
-        }
-
-        ss << std::endl;
-    }
-
-    while(pNode != nullptr)
-    {
-        std::list<tinyxml2::XMLElement*> nodes;
-
-        tinyxml2::XMLElement *cNode = pNode->FirstChildElement();
-        auto data = ReadNodes(cNode, 2);
-        for(auto d : data)
-        {
-            ss << d << "\t";
-        }
-
-        ss << std::endl;
-        pNode = pNode->NextSiblingElement();
-    }
-
-    return ss.str();
-}
-
-std::list<std::shared_ptr<libcomp::Object>> BinaryDataSet::GetObjects() const
-{
-    return mObjects;
+std::list<std::shared_ptr<libcomp::Object>> BinaryDataSet::GetObjects() const {
+  return mObjects;
 }
 
 std::shared_ptr<libcomp::Object> BinaryDataSet::GetObjectByID(
-    uint32_t id) const
-{
-    auto it = mObjectMap.find(id);
+    uint32_t id) const {
+  auto it = mObjectMap.find(id);
 
-    if(mObjectMap.end() != it)
-    {
-        return it->second;
-    }
+  if (mObjectMap.end() != it) {
+    return it->second;
+  }
 
-    return {};
+  return {};
 }
 
-std::list<std::string> BinaryDataSet::ReadNodes(tinyxml2::XMLElement *node,
-    int16_t dataMode) const
-{
-    std::list<std::string> data;
-    std::list<tinyxml2::XMLElement*> nodes;
-    while(node != nullptr)
-    {
-        if(node->FirstChildElement() != nullptr)
-        {
-            nodes.push_back(node);
-            node = node->FirstChildElement();
+std::list<std::string> BinaryDataSet::ReadNodes(tinyxml2::XMLElement* node,
+                                                int16_t dataMode) const {
+  std::list<std::string> data;
+  std::list<tinyxml2::XMLElement*> nodes;
 
-            //Doesn't handle map
-            if(std::string(node->Name()) == "element")
-            {
-                if(dataMode > 1)
-                {
-                    std::list<std::string> nData;
-                    while(node != nullptr)
-                    {
-                        std::list<std::string> sData;
-                        if(node->FirstChildElement() != nullptr)
-                        {
-                            sData = ReadNodes(node->FirstChildElement(), 3);
-                        }
-                        else
-                        {
-                            const char* txt = node->GetText();
-                            auto str = txt != 0 ? std::string(txt) : std::string();
-                            sData.push_back(str);
-                        }
+  while (node != nullptr) {
+    if (node->FirstChildElement() != nullptr) {
+      nodes.push_back(node);
+      node = node->FirstChildElement();
 
-                        std::stringstream ss;
-                        ss << "{ ";
-                        bool first = true;
-                        for(auto d : sData)
-                        {
-                            if(!first) ss << ", ";
-                            ss << d;
-                            first = false;
-                        }
-                        ss << " }";
-                        nData.push_back(ss.str());
+      // Doesn't handle map
+      if (std::string(node->Name()) == "element") {
+        if (dataMode > 1) {
+          std::list<std::string> nData;
 
-                        node = node->NextSiblingElement();
-                    }
+          while (node != nullptr) {
+            std::list<std::string> sData;
 
-                    std::stringstream ss;
-                    bool first = true;
-                    for(auto d : nData)
-                    {
-                        if(!first) ss << ", ";
-                        ss << d;
-                        first = false;
-                    }
-                    data.push_back(ss.str());
-                }
-                else
-                {
-                    //Pull the name and skip
-                    data.push_back(std::string(nodes.back()->Attribute("name")));
-                    node = nullptr;
-                }
-            }
-        }
-        else
-        {
-            const char* txt = node->GetText();
-            auto name = std::string(node->Attribute("name"));
-            auto val = txt != 0 ? std::string(txt) : std::string();
-            val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
-            switch(dataMode)
-            {
-                case 1:
-                    data.push_back(name);
-                    break;
-                case 2:
-                    data.push_back(val);
-                    break;
-                default:
-                    data.push_back(name + ": " + val);
-                    break;
+            if (node->FirstChildElement() != nullptr) {
+              sData = ReadNodes(node->FirstChildElement(), 3);
+            } else {
+              const char* txt = node->GetText();
+              auto str = txt != 0 ? std::string(txt) : std::string();
+              sData.push_back(str);
             }
 
-            node = node->NextSiblingElement();
-        }
+            std::stringstream ss;
+            ss << "{ ";
+            bool first = true;
 
-        while(node == nullptr && nodes.size() > 0)
-        {
-            node = nodes.back();
-            nodes.pop_back();
+            for (auto d : sData) {
+              if (!first) ss << ", ";
+              ss << d;
+              first = false;
+            }
+
+            ss << " }";
+            nData.push_back(ss.str());
+
             node = node->NextSiblingElement();
+          }
+
+          std::stringstream ss;
+          bool first = true;
+
+          for (auto d : nData) {
+            if (!first) ss << ", ";
+            ss << d;
+            first = false;
+          }
+
+          data.push_back(ss.str());
+        } else {
+          // Pull the name and skip
+          data.push_back(std::string(nodes.back()->Attribute("name")));
+          node = nullptr;
         }
+      }
+    } else {
+      const char* txt = node->GetText();
+      auto name = std::string(node->Attribute("name"));
+      auto val = txt != 0 ? std::string(txt) : std::string();
+      val.erase(std::remove(val.begin(), val.end(), '\n'), val.end());
+
+      switch (dataMode) {
+        case 1:
+          data.push_back(name);
+          break;
+        case 2:
+          data.push_back(val);
+          break;
+        default:
+          data.push_back(name + ": " + val);
+          break;
+      }
+
+      node = node->NextSiblingElement();
     }
 
-    return data;
+    while (node == nullptr && nodes.size() > 0) {
+      node = nodes.back();
+      nodes.pop_back();
+      node = node->NextSiblingElement();
+    }
+  }
+
+  return data;
 }

@@ -35,652 +35,530 @@
 
 using namespace libobjgen;
 
-MetaVariableReference::MetaVariableReference()
-    : MetaVariable()
-{
-    mNamespace = "objects";
-    mPersistentReference = false;
-    mScriptReference = false;
-    mNullDefault = false;
-    mDynamicSizeCount = 0;
+MetaVariableReference::MetaVariableReference() : MetaVariable() {
+  mNamespace = "objects";
+  mPersistentReference = false;
+  mScriptReference = false;
+  mNullDefault = false;
+  mDynamicSizeCount = 0;
 }
 
-MetaVariableReference::~MetaVariableReference()
-{
+MetaVariableReference::~MetaVariableReference() {}
+
+size_t MetaVariableReference::GetSize() const {
+  return 16u;  // Size of a UUID.
 }
 
-size_t MetaVariableReference::GetSize() const
-{
-    return 16u; // Size of a UUID.
+MetaVariable::MetaVariableType_t MetaVariableReference::GetMetaType() const {
+  return MetaVariable::MetaVariableType_t::TYPE_REF;
 }
 
-MetaVariable::MetaVariableType_t MetaVariableReference::GetMetaType() const
-{
-    return MetaVariable::MetaVariableType_t::TYPE_REF;
+std::string MetaVariableReference::GetType() const {
+  return mReferenceType + "*";
 }
 
-std::string MetaVariableReference::GetType() const
-{
-    return mReferenceType + "*";
+std::string MetaVariableReference::GetReferenceType(
+    bool includeNamespace) const {
+  return (includeNamespace ? (mNamespace + "::") : "") + mReferenceType;
 }
 
-std::string MetaVariableReference::GetReferenceType(bool includeNamespace) const
-{
-    return (includeNamespace ? (mNamespace + "::") : "") + mReferenceType;
+bool MetaVariableReference::SetReferenceType(const std::string& referenceType) {
+  bool status = false;
+
+  if (MetaObject::IsValidIdentifier(referenceType)) {
+    status = true;
+    mReferenceType = referenceType;
+  }
+
+  return status;
 }
 
-bool MetaVariableReference::SetReferenceType(const std::string& referenceType)
-{
-    bool status = false;
+std::string MetaVariableReference::GetNamespace() const { return mNamespace; }
 
-    if(MetaObject::IsValidIdentifier(referenceType))
-    {
-        status = true;
-        mReferenceType = referenceType;
-    }
-
-    return status;
-}
-
-std::string MetaVariableReference::GetNamespace() const
-{
-    return mNamespace;
-}
-
-bool MetaVariableReference::SetNamespace(const std::string& ns)
-{
-    if(!ns.empty() && MetaObject::IsValidIdentifier(ns))
-    {
-        mNamespace = ns;
-        return true;
-    }
-
-    return false;
-}
-
-bool MetaVariableReference::IsPersistentReference() const
-{
-    return mPersistentReference;
-}
-
-bool MetaVariableReference::SetPersistentReference(bool persistentReference)
-{
-    mPersistentReference = persistentReference;
+bool MetaVariableReference::SetNamespace(const std::string& ns) {
+  if (!ns.empty() && MetaObject::IsValidIdentifier(ns)) {
+    mNamespace = ns;
     return true;
+  }
+
+  return false;
 }
 
-bool MetaVariableReference::IsScriptReference() const
-{
-    return mScriptReference;
+bool MetaVariableReference::IsPersistentReference() const {
+  return mPersistentReference;
 }
 
-bool MetaVariableReference::SetScriptReference(bool scriptReference)
-{
-    mScriptReference = scriptReference;
-    return true;
+bool MetaVariableReference::SetPersistentReference(bool persistentReference) {
+  mPersistentReference = persistentReference;
+  return true;
 }
 
-bool MetaVariableReference::IsGeneric() const
-{
-    return mNamespace == "libcomp" &&
-        (mReferenceType == "Object" || mReferenceType == "PersistentObject");
+bool MetaVariableReference::IsScriptReference() const {
+  return mScriptReference;
 }
 
-void MetaVariableReference::SetGeneric()
-{
-    mNamespace = "libcomp";
-    if(mPersistentReference)
-    {
-        mReferenceType = "PersistentObject";
-    }
-    else
-    {
-        mReferenceType = "Object";
-    }
+bool MetaVariableReference::SetScriptReference(bool scriptReference) {
+  mScriptReference = scriptReference;
+  return true;
 }
 
-bool MetaVariableReference::IsIndirect() const
-{
-    return IsGeneric() && IsPersistentReference();
+bool MetaVariableReference::IsGeneric() const {
+  return mNamespace == "libcomp" &&
+         (mReferenceType == "Object" || mReferenceType == "PersistentObject");
 }
 
-bool MetaVariableReference::GetNullDefault() const
-{
-    return mNullDefault;
+void MetaVariableReference::SetGeneric() {
+  mNamespace = "libcomp";
+  if (mPersistentReference) {
+    mReferenceType = "PersistentObject";
+  } else {
+    mReferenceType = "Object";
+  }
 }
 
-bool MetaVariableReference::SetNullDefault(bool nullDefault)
-{
-    mNullDefault = nullDefault;
-    return true;
+bool MetaVariableReference::IsIndirect() const {
+  return IsGeneric() && IsPersistentReference();
 }
 
-void MetaVariableReference::AddDefaultedVariable(std::shared_ptr<MetaVariable>& var)
-{
-    mDefaultedVariables.push_back(var);
+bool MetaVariableReference::GetNullDefault() const { return mNullDefault; }
+
+bool MetaVariableReference::SetNullDefault(bool nullDefault) {
+  mNullDefault = nullDefault;
+  return true;
 }
 
-const std::list<std::shared_ptr<MetaVariable>> MetaVariableReference::GetDefaultedVariables() const
-{
-    return mDefaultedVariables;
+void MetaVariableReference::AddDefaultedVariable(
+    std::shared_ptr<MetaVariable>& var) {
+  mDefaultedVariables.push_back(var);
 }
 
-bool MetaVariableReference::IsCoreType() const
-{
-    return false;
+const std::list<std::shared_ptr<MetaVariable>>
+MetaVariableReference::GetDefaultedVariables() const {
+  return mDefaultedVariables;
 }
 
-bool MetaVariableReference::IsScriptAccessible() const
-{
-    return mScriptReference;
+bool MetaVariableReference::IsCoreType() const { return false; }
+
+bool MetaVariableReference::IsScriptAccessible() const {
+  return mScriptReference;
 }
 
-bool MetaVariableReference::IsValid() const
-{
-    // Validating that the object exists happens elsewhere
-    return MetaObject::IsValidIdentifier(mReferenceType) &&
-        (mNamespace.empty() || MetaObject::IsValidIdentifier(mNamespace)) &&
-        (!mNullDefault || !IsPersistentReference());
+bool MetaVariableReference::IsValid() const {
+  // Validating that the object exists happens elsewhere
+  return MetaObject::IsValidIdentifier(mReferenceType) &&
+         (mNamespace.empty() || MetaObject::IsValidIdentifier(mNamespace)) &&
+         (!mNullDefault || !IsPersistentReference());
 }
 
-bool MetaVariableReference::Load(std::istream& stream)
-{
-    MetaVariable::Load(stream);
+bool MetaVariableReference::Load(std::istream& stream) {
+  MetaVariable::Load(stream);
 
-    Generator::LoadString(stream, mReferenceType);
-    Generator::LoadString(stream, mNamespace);
-    stream.read(reinterpret_cast<char*>(&mDynamicSizeCount),
-        sizeof(mDynamicSizeCount));
-    stream.read(reinterpret_cast<char*>(&mPersistentReference),
-        sizeof(mPersistentReference));
-    stream.read(reinterpret_cast<char*>(&mScriptReference),
-        sizeof(mScriptReference));
-    stream.read(reinterpret_cast<char*>(&mNullDefault),
-        sizeof(mNullDefault));
+  Generator::LoadString(stream, mReferenceType);
+  Generator::LoadString(stream, mNamespace);
+  stream.read(reinterpret_cast<char*>(&mDynamicSizeCount),
+              sizeof(mDynamicSizeCount));
+  stream.read(reinterpret_cast<char*>(&mPersistentReference),
+              sizeof(mPersistentReference));
+  stream.read(reinterpret_cast<char*>(&mScriptReference),
+              sizeof(mScriptReference));
+  stream.read(reinterpret_cast<char*>(&mNullDefault), sizeof(mNullDefault));
 
-    if(stream.good())
-    {
-        mDefaultedVariables.clear();
-        MetaVariable::LoadVariableList(stream, mDefaultedVariables);
-    }
+  if (stream.good()) {
+    mDefaultedVariables.clear();
+    MetaVariable::LoadVariableList(stream, mDefaultedVariables);
+  }
 
-    return stream.good() && IsValid();
+  return stream.good() && IsValid();
 }
 
-bool MetaVariableReference::Save(std::ostream& stream) const
-{
-    bool result = false;
+bool MetaVariableReference::Save(std::ostream& stream) const {
+  bool result = false;
 
-    if(IsValid() && MetaVariable::Save(stream))
-    {
-        Generator::SaveString(stream, mReferenceType);
-        Generator::SaveString(stream, mNamespace);
-        stream.write(reinterpret_cast<const char*>(&mDynamicSizeCount),
-            sizeof(mDynamicSizeCount));
-        stream.write(reinterpret_cast<const char*>(&mPersistentReference),
-            sizeof(mPersistentReference));
-        stream.write(reinterpret_cast<const char*>(&mScriptReference),
-            sizeof(mScriptReference));
-        stream.write(reinterpret_cast<const char*>(&mNullDefault),
-            sizeof(mNullDefault));
+  if (IsValid() && MetaVariable::Save(stream)) {
+    Generator::SaveString(stream, mReferenceType);
+    Generator::SaveString(stream, mNamespace);
+    stream.write(reinterpret_cast<const char*>(&mDynamicSizeCount),
+                 sizeof(mDynamicSizeCount));
+    stream.write(reinterpret_cast<const char*>(&mPersistentReference),
+                 sizeof(mPersistentReference));
+    stream.write(reinterpret_cast<const char*>(&mScriptReference),
+                 sizeof(mScriptReference));
+    stream.write(reinterpret_cast<const char*>(&mNullDefault),
+                 sizeof(mNullDefault));
 
-        MetaVariable::SaveVariableList(stream, mDefaultedVariables);
+    MetaVariable::SaveVariableList(stream, mDefaultedVariables);
 
-        result = stream.good();
-    }
+    result = stream.good();
+  }
 
-    return result;
+  return result;
 }
 
 bool MetaVariableReference::Load(const tinyxml2::XMLDocument& doc,
-    const tinyxml2::XMLElement& root)
-{
-    (void)doc;
+                                 const tinyxml2::XMLElement& root) {
+  (void)doc;
 
-    bool status = true;
+  bool status = true;
 
-    // Reference type and namespace should be set and verified
-    // elsewhere before this point
+  // Reference type and namespace should be set and verified
+  // elsewhere before this point
 
-    auto nullVal = root.Attribute("nulldefault");
+  auto nullVal = root.Attribute("nulldefault");
 
-    if(nullVal)
-    {
-        mNullDefault = Generator::GetXmlAttributeBoolean(nullVal);
-    }
+  if (nullVal) {
+    mNullDefault = Generator::GetXmlAttributeBoolean(nullVal);
+  }
 
-    return status && BaseLoad(root) && IsValid();
+  return status && BaseLoad(root) && IsValid();
 }
 
 bool MetaVariableReference::Save(tinyxml2::XMLDocument& doc,
-    tinyxml2::XMLElement& parent, const char* elementName) const
-{
-    tinyxml2::XMLElement *pVariableElement = doc.NewElement(elementName);
-    pVariableElement->SetAttribute("type", (GetReferenceType() + "*").c_str());
-    pVariableElement->SetAttribute("name", GetName().c_str());
+                                 tinyxml2::XMLElement& parent,
+                                 const char* elementName) const {
+  tinyxml2::XMLElement* pVariableElement = doc.NewElement(elementName);
+  pVariableElement->SetAttribute("type", (GetReferenceType() + "*").c_str());
+  pVariableElement->SetAttribute("name", GetName().c_str());
 
-    if(!mNamespace.empty() && mNamespace != "objects")
-    {
-        pVariableElement->SetAttribute("namespace", mNamespace.c_str());
-    }
+  if (!mNamespace.empty() && mNamespace != "objects") {
+    pVariableElement->SetAttribute("namespace", mNamespace.c_str());
+  }
 
-    pVariableElement->SetAttribute("nulldefault", GetNullDefault());
+  pVariableElement->SetAttribute("nulldefault", GetNullDefault());
 
-    parent.InsertEndChild(pVariableElement);
+  parent.InsertEndChild(pVariableElement);
 
-    return BaseSave(*pVariableElement);
+  return BaseSave(*pVariableElement);
 }
 
-uint16_t MetaVariableReference::GetDynamicSizeCount() const
-{
-    return mDynamicSizeCount;
+uint16_t MetaVariableReference::GetDynamicSizeCount() const {
+  return mDynamicSizeCount;
 }
 
-bool MetaVariableReference::SetDynamicSizeCount(uint16_t dynamicSizeCount)
-{
-    mDynamicSizeCount = dynamicSizeCount;
-    return true;
+bool MetaVariableReference::SetDynamicSizeCount(uint16_t dynamicSizeCount) {
+  mDynamicSizeCount = dynamicSizeCount;
+  return true;
 }
 
-std::string MetaVariableReference::GetCodeType() const
-{
-    if(IsIndirect())
-    {
-        return "libobjgen::UUID";
-    }
-    else if(mPersistentReference)
-    {
-        return "libcomp::ObjectReference<" + GetReferenceType(true) + ">";
-    }
-    else
-    {
-        return "std::shared_ptr<" + GetReferenceType(true) + ">";
-    }
+std::string MetaVariableReference::GetCodeType() const {
+  if (IsIndirect()) {
+    return "libobjgen::UUID";
+  } else if (mPersistentReference) {
+    return "libcomp::ObjectReference<" + GetReferenceType(true) + ">";
+  } else {
+    return "std::shared_ptr<" + GetReferenceType(true) + ">";
+  }
 }
 
-std::string MetaVariableReference::GetConstructValue() const
-{
-    std::stringstream defaultVal;
-    if(mPersistentReference)
-    {
-        defaultVal << GetCodeType() << "()";
+std::string MetaVariableReference::GetConstructValue() const {
+  std::stringstream defaultVal;
+  if (mPersistentReference) {
+    defaultVal << GetCodeType() << "()";
+  } else if (mNullDefault) {
+    return "nullptr";
+  } else {
+    defaultVal << GetCodeType() << "(";
+    if (!IsGeneric()) {
+      defaultVal << "new " << GetReferenceType(true);
     }
-    else if(mNullDefault)
-    {
-        return "nullptr";
-    }
-    else
-    {
-        defaultVal << GetCodeType() << "(";
-        if(!IsGeneric())
-        {
-            defaultVal << "new " << GetReferenceType(true);
+    defaultVal << ")";
+  }
+
+  std::stringstream ss;
+  if (mDefaultedVariables.size() > 0) {
+    ss << "([&]() -> " << GetCodeType() << std::endl << "{" << std::endl;
+    ss << Generator::Tab(1) << "auto refDefault = " << defaultVal.str() << ";"
+       << std::endl;
+    ss << GetConstructorCodeDefaults("refDefault", "", 1);
+    ss << Generator::Tab(1) << "return refDefault;" << std::endl << "})()";
+  } else {
+    ss << defaultVal.str();
+  }
+
+  return ss.str();
+}
+
+std::string MetaVariableReference::GetConstructorCodeDefaults(
+    const std::string& varName, const std::string& parentRef,
+    size_t tabLevel) const {
+  std::stringstream ss;
+  bool topLevel = parentRef.length() == 0;
+  if (mPersistentReference) {
+    // Should always be the case
+    if (topLevel) {
+      // The only valid value at this point is a UUID for the persistent
+      // reference however we should check regardless
+      auto var = mDefaultedVariables.size() > 0 ? mDefaultedVariables.front()
+                                                : nullptr;
+      if (mDefaultedVariables.size() == 1 && var->GetName() == "UID" &&
+          var->GetMetaType() == MetaVariableType_t::TYPE_STRING) {
+        if (IsIndirect()) {
+          ss << Generator::Tab(tabLevel) << varName << " = libobjgen::UUID("
+             << var->GetDefaultValueCode() << ");" << std::endl;
+        } else {
+          ss << Generator::Tab(tabLevel) << "libobjgen::UUID uuid("
+             << var->GetDefaultValueCode() << ");" << std::endl;
+          ss << Generator::Tab(tabLevel) << varName << ".SetUUID(uuid);"
+             << std::endl;
         }
-        defaultVal << ")";
+      }
     }
+  } else if (mDefaultedVariables.size() > 0) {
+    ss << Generator::Tab(tabLevel) << "{" << std::endl;
+    for (auto var : mDefaultedVariables) {
+      std::stringstream ssVar;
+      ssVar << var->GetName() << "Value";
+      std::string localVarName = ssVar.str();
 
-    std::stringstream ss;
-    if(mDefaultedVariables.size() > 0)
-    {
-        ss << "([&]() -> " << GetCodeType() << std::endl
-            << "{" << std::endl;
-        ss << Generator::Tab(1) << "auto refDefault = " << defaultVal.str() << ";" << std::endl;
-        ss << GetConstructorCodeDefaults("refDefault", "", 1);
-        ss << Generator::Tab(1) << "return refDefault;" << std::endl
-            << "})()";
+      if (var->GetMetaType() == MetaVariableType_t::TYPE_REF) {
+        ss << Generator::Tab(tabLevel + 1) << "{" << std::endl;
+        ss << GetConstructorCodeDefaults(parentRef + "_ref", localVarName,
+                                         tabLevel + 1);
+        ss << Generator::Tab(tabLevel + 1) << "}" << std::endl;
+      } else {
+        ss << Generator::Tab(tabLevel + 1) << "auto " << localVarName << " = "
+           << var->GetConstructValue() << ";" << std::endl;
+      }
+
+      ss << Generator::Tab(tabLevel + 1) << varName << "->Set"
+         << Generator::GetCapitalName(var) << "(" << localVarName << ");"
+         << std::endl;
     }
-    else
-    {
-        ss << defaultVal.str();
-    }
-
-    return ss.str();
-}
-
-std::string MetaVariableReference::GetConstructorCodeDefaults(const std::string& varName,
-    const std::string& parentRef, size_t tabLevel) const
-{
-    std::stringstream ss;
-    bool topLevel = parentRef.length() == 0;
-    if(mPersistentReference)
-    {
-        //Should always be the case
-        if(topLevel)
-        {
-            //The only valid value at this point is a UUID for the persistent reference
-            //however we should check regardless
-            auto var = mDefaultedVariables.size() > 0 ? mDefaultedVariables.front() : nullptr;
-            if(mDefaultedVariables.size() == 1 && var->GetName() == "UID" &&
-                var->GetMetaType() == MetaVariableType_t::TYPE_STRING)
-            {
-                if(IsIndirect())
-                {
-                    ss << Generator::Tab(tabLevel) << varName <<
-                        " = libobjgen::UUID(" << var->GetDefaultValueCode() <<
-                        ");" << std::endl;
-                }
-                else
-                {
-                    ss << Generator::Tab(tabLevel) << "libobjgen::UUID uuid("
-                        << var->GetDefaultValueCode() << ");" << std::endl;
-                    ss << Generator::Tab(tabLevel) << varName <<
-                        ".SetUUID(uuid);" << std::endl;
-                }
-            }
-        }
-    }
-    else if(mDefaultedVariables.size() > 0)
-    {
-        ss << Generator::Tab(tabLevel) << "{" << std::endl;
-        for(auto var : mDefaultedVariables)
-        {
-            std::stringstream ssVar;
-            ssVar << var->GetName() << "Value";
-            std::string localVarName = ssVar.str();
-
-            if(var->GetMetaType() == MetaVariableType_t::TYPE_REF)
-            {
-                ss << Generator::Tab(tabLevel + 1) << "{" << std::endl;
-                ss << GetConstructorCodeDefaults(parentRef + "_ref",
-                    localVarName, tabLevel + 1);
-                ss << Generator::Tab(tabLevel + 1) << "}" << std::endl;
-            }
-            else
-            {
-                ss << Generator::Tab(tabLevel + 1) << "auto " << localVarName
-                    << " = " << var->GetConstructValue() << ";" << std::endl;
-            }
-
-            ss << Generator::Tab(tabLevel + 1) << varName << "->Set"
-                << Generator::GetCapitalName(var) << "(" << localVarName <<
-                ");" << std::endl;
-        }
-        ss << Generator::Tab(tabLevel) << "}" << std::endl;
-    }
-    return ss.str();
+    ss << Generator::Tab(tabLevel) << "}" << std::endl;
+  }
+  return ss.str();
 }
 
 std::string MetaVariableReference::GetValidCondition(const Generator& generator,
-    const std::string& name, bool recursive) const
-{
-    (void)generator;
+                                                     const std::string& name,
+                                                     bool recursive) const {
+  (void)generator;
 
-    if(!IsIndirect() && recursive)
-    {
-        if(mPersistentReference)
-        {
-            std::stringstream ss;
-            ss << "nullptr != " << name << ".GetCurrentReference() && (!recursive || "
-                << name << ".GetCurrentReference()->IsValid(recursive))";
-            return ss.str();
-        }
-        else
-        {
-            std::stringstream ss;
-            ss << "nullptr != " << name << " && (!recursive || "
-                << name << "->IsValid(recursive))";
-            return ss.str();
-        }
+  if (!IsIndirect() && recursive) {
+    if (mPersistentReference) {
+      std::stringstream ss;
+      ss << "nullptr != " << name << ".GetCurrentReference() && (!recursive || "
+         << name << ".GetCurrentReference()->IsValid(recursive))";
+      return ss.str();
+    } else {
+      std::stringstream ss;
+      ss << "nullptr != " << name << " && (!recursive || " << name
+         << "->IsValid(recursive))";
+      return ss.str();
     }
-    else
-    {
-        return "";
-    }
+  } else {
+    return "";
+  }
 }
 
-std::string MetaVariableReference::GetLoadCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@STREAM@"] = stream;
-    replacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
+std::string MetaVariableReference::GetLoadCode(
+    const Generator& generator, const std::string& name,
+    const std::string& stream) const {
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@STREAM@"] = stream;
+  replacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(1, "VariableIndirectReferenceLoad",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(1, "VariablePersistentReferenceLoad",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(1, "VariableReferenceLoad",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(1, "VariableIndirectReferenceLoad",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(1, "VariablePersistentReferenceLoad",
+                                   replacements);
+  } else {
+    return generator.ParseTemplate(1, "VariableReferenceLoad", replacements);
+  }
 }
 
-std::string MetaVariableReference::GetSaveCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    if(mNullDefault)
-    {
-        // Null default references do not write to or load from streams
-        return "";
-    }
+std::string MetaVariableReference::GetSaveCode(
+    const Generator& generator, const std::string& name,
+    const std::string& stream) const {
+  if (mNullDefault) {
+    // Null default references do not write to or load from streams
+    return "";
+  }
 
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@STREAM@"] = stream;
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@STREAM@"] = stream;
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(1, "VariableIndirectReferenceSave",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(1, "VariablePersistentReferenceSave",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(1, "VariableReferenceSave",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(1, "VariableIndirectReferenceSave",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(1, "VariablePersistentReferenceSave",
+                                   replacements);
+  } else {
+    return generator.ParseTemplate(1, "VariableReferenceSave", replacements);
+  }
 }
 
-std::string MetaVariableReference::GetLoadRawCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@STREAM@"] = stream;
-    replacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
+std::string MetaVariableReference::GetLoadRawCode(
+    const Generator& generator, const std::string& name,
+    const std::string& stream) const {
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@STREAM@"] = stream;
+  replacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(1, "VariableIndirectReferenceLoadRaw",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(1, "VariablePersistentReferenceLoadRaw",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(1, "VariableReferenceLoadRaw",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(1, "VariableIndirectReferenceLoadRaw",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(1, "VariablePersistentReferenceLoadRaw",
+                                   replacements);
+  } else {
+    return generator.ParseTemplate(1, "VariableReferenceLoadRaw", replacements);
+  }
 }
 
-std::string MetaVariableReference::GetSaveRawCode(const Generator& generator,
-    const std::string& name, const std::string& stream) const
-{
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@STREAM@"] = stream;
+std::string MetaVariableReference::GetSaveRawCode(
+    const Generator& generator, const std::string& name,
+    const std::string& stream) const {
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@STREAM@"] = stream;
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(1, "VariableIndirectReferenceSaveRaw",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(1, "VariablePersistentReferenceSaveRaw",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(1, "VariableReferenceSaveRaw",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(1, "VariableIndirectReferenceSaveRaw",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(1, "VariablePersistentReferenceSaveRaw",
+                                   replacements);
+  } else {
+    return generator.ParseTemplate(1, "VariableReferenceSaveRaw", replacements);
+  }
 }
 
 std::string MetaVariableReference::GetXmlLoadCode(const Generator& generator,
-    const std::string& name, const std::string& doc,
-    const std::string& node, size_t tabLevel) const
-{
-    (void)name;
-    (void)node;
+                                                  const std::string& name,
+                                                  const std::string& doc,
+                                                  const std::string& node,
+                                                  size_t tabLevel) const {
+  (void)name;
+  (void)node;
 
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_CODE_TYPE@"] = GetCodeType();
-    replacements["@DOC@"] = doc;
-    replacements["@NODE@"] = node;
-    replacements["@REF_TYPE@"] = GetReferenceType(true);
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_CODE_TYPE@"] = GetCodeType();
+  replacements["@DOC@"] = doc;
+  replacements["@NODE@"] = node;
+  replacements["@REF_TYPE@"] = GetReferenceType(true);
 
-    std::map<std::string, std::string> subReplacements;
-    subReplacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
-    subReplacements["@REF_TYPE@"] = GetReferenceType(true);
+  std::map<std::string, std::string> subReplacements;
+  subReplacements["@CONSTRUCT_VALUE@"] = GetConstructValue();
+  subReplacements["@REF_TYPE@"] = GetReferenceType(true);
 
-    if(IsGeneric())
-    {
-        replacements["@CONSTRUCT_CODE@"] = generator.ParseTemplate(tabLevel,
-            "VariableReferenceXmlConstructDefault", subReplacements);
-    }
-    else
-    {
-        replacements["@CONSTRUCT_CODE@"] = generator.ParseTemplate(tabLevel,
-            "VariableReferenceXmlConstructInherited", subReplacements);
-    }
+  if (IsGeneric()) {
+    replacements["@CONSTRUCT_CODE@"] = generator.ParseTemplate(
+        tabLevel, "VariableReferenceXmlConstructDefault", subReplacements);
+  } else {
+    replacements["@CONSTRUCT_CODE@"] = generator.ParseTemplate(
+        tabLevel, "VariableReferenceXmlConstructInherited", subReplacements);
+  }
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(tabLevel, "VariableIndirectReferenceXmlLoad",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(tabLevel, "VariablePersistentReferenceXmlLoad",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(tabLevel, "VariableReferenceXmlLoad",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(tabLevel, "VariableIndirectReferenceXmlLoad",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(
+        tabLevel, "VariablePersistentReferenceXmlLoad", replacements);
+  } else {
+    return generator.ParseTemplate(tabLevel, "VariableReferenceXmlLoad",
+                                   replacements);
+  }
 }
 
-std::string MetaVariableReference::GetXmlSaveCode(const Generator& generator,
-    const std::string& name, const std::string& doc,
-    const std::string& parent, size_t tabLevel, const std::string elemName) const
-{
-    (void)name;
+std::string MetaVariableReference::GetXmlSaveCode(
+    const Generator& generator, const std::string& name, const std::string& doc,
+    const std::string& parent, size_t tabLevel,
+    const std::string elemName) const {
+  (void)name;
 
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@VAR_XML_NAME@"] = generator.Escape(GetName());
-    replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
-    replacements["@DOC@"] = doc;
-    replacements["@PARENT@"] = parent;
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@VAR_XML_NAME@"] = generator.Escape(GetName());
+  replacements["@ELEMENT_NAME@"] = generator.Escape(elemName);
+  replacements["@DOC@"] = doc;
+  replacements["@PARENT@"] = parent;
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(tabLevel, "VariableIndirectReferenceXmlSave",
-            replacements);
-    }
-    else if(mPersistentReference)
-    {
-        return generator.ParseTemplate(tabLevel, "VariablePersistentReferenceXmlSave",
-            replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(tabLevel, "VariableReferenceXmlSave",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(tabLevel, "VariableIndirectReferenceXmlSave",
+                                   replacements);
+  } else if (mPersistentReference) {
+    return generator.ParseTemplate(
+        tabLevel, "VariablePersistentReferenceXmlSave", replacements);
+  } else {
+    return generator.ParseTemplate(tabLevel, "VariableReferenceXmlSave",
+                                   replacements);
+  }
 }
 
 std::string MetaVariableReference::GetBindValueCode(const Generator& generator,
-    const std::string& name, size_t tabLevel) const
-{
-    std::stringstream ss;
-    ss << name;
+                                                    const std::string& name,
+                                                    size_t tabLevel) const {
+  std::stringstream ss;
+  ss << name;
 
-    if(!IsIndirect())
-    {
-        ss << ".GetUUID()";
-    }
+  if (!IsIndirect()) {
+    ss << ".GetUUID()";
+  }
 
-    std::map<std::string, std::string> replacements;
-    replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
-    replacements["@VAR_NAME@"] = ss.str();
-    replacements["@TYPE@"] = "UUID";
+  std::map<std::string, std::string> replacements;
+  replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
+  replacements["@VAR_NAME@"] = ss.str();
+  replacements["@TYPE@"] = "UUID";
 
-    return generator.ParseTemplate(tabLevel, "VariableGetTypeBind",
-        replacements);
+  return generator.ParseTemplate(tabLevel, "VariableGetTypeBind", replacements);
 }
 
-std::string MetaVariableReference::GetAccessDeclarations(const Generator& generator,
-    const MetaObject& object, const std::string& name, size_t tabLevel) const
-{
-    std::stringstream ss;
-    ss << MetaVariable::GetAccessDeclarations(generator,
-        object, name, tabLevel);
+std::string MetaVariableReference::GetAccessDeclarations(
+    const Generator& generator, const MetaObject& object,
+    const std::string& name, size_t tabLevel) const {
+  std::stringstream ss;
+  ss << MetaVariable::GetAccessDeclarations(generator, object, name, tabLevel);
 
-    if(mPersistentReference && !IsIndirect())
-    {
-        ss << generator.Tab(tabLevel) << "const std::shared_ptr<"
-            << GetReferenceType(true) << "> Load" << generator.GetCapitalName(*this)
-            << "(const std::shared_ptr<libcomp::Database>& db = nullptr);" << std::endl;
-    }
+  if (mPersistentReference && !IsIndirect()) {
+    ss << generator.Tab(tabLevel) << "const std::shared_ptr<"
+       << GetReferenceType(true) << "> Load" << generator.GetCapitalName(*this)
+       << "(const std::shared_ptr<libcomp::Database>& db = nullptr);"
+       << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
-std::string MetaVariableReference::GetAccessFunctions(const Generator& generator,
-    const MetaObject& object, const std::string& name) const
-{
-    std::stringstream ss;
-    ss << MetaVariable::GetAccessFunctions(generator, object, name);
+std::string MetaVariableReference::GetAccessFunctions(
+    const Generator& generator, const MetaObject& object,
+    const std::string& name) const {
+  std::stringstream ss;
+  ss << MetaVariable::GetAccessFunctions(generator, object, name);
 
-    if(mPersistentReference && !IsIndirect())
-    {
-        ss << "const std::shared_ptr<" << GetReferenceType(true) << "> "
-            << object.GetName() << "::Load" << generator.GetCapitalName(*this)
-            << "(const std::shared_ptr<libcomp::Database>& db)" << std::endl;
-        ss << "{" << std::endl;
-        ss << generator.Tab(1) << "return " << generator.GetMemberName(*this)
-            << ".Get(db);" << std::endl;
-        ss << "}" << std::endl;
-    }
+  if (mPersistentReference && !IsIndirect()) {
+    ss << "const std::shared_ptr<" << GetReferenceType(true) << "> "
+       << object.GetName() << "::Load" << generator.GetCapitalName(*this)
+       << "(const std::shared_ptr<libcomp::Database>& db)" << std::endl;
+    ss << "{" << std::endl;
+    ss << generator.Tab(1) << "return " << generator.GetMemberName(*this)
+       << ".Get(db);" << std::endl;
+    ss << "}" << std::endl;
+  }
 
-    return ss.str();
+  return ss.str();
 }
 
 std::string MetaVariableReference::GetDatabaseLoadCode(
-    const Generator& generator, const std::string& name, size_t tabLevel) const
-{
-    (void)name;
+    const Generator& generator, const std::string& name,
+    size_t tabLevel) const {
+  (void)name;
 
-    std::map<std::string, std::string> replacements;
-    replacements["@VAR_NAME@"] = name;
-    replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
+  std::map<std::string, std::string> replacements;
+  replacements["@VAR_NAME@"] = name;
+  replacements["@COLUMN_NAME@"] = generator.Escape(GetName());
 
-    if(IsIndirect())
-    {
-        return generator.ParseTemplate(tabLevel,
-            "VariableDatabaseIndirectRefLoad", replacements);
-    }
-    else
-    {
-        return generator.ParseTemplate(tabLevel, "VariableDatabaseRefLoad",
-            replacements);
-    }
+  if (IsIndirect()) {
+    return generator.ParseTemplate(tabLevel, "VariableDatabaseIndirectRefLoad",
+                                   replacements);
+  } else {
+    return generator.ParseTemplate(tabLevel, "VariableDatabaseRefLoad",
+                                   replacements);
+  }
 }

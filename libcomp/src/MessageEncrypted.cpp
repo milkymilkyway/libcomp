@@ -31,34 +31,25 @@
 
 using namespace libcomp;
 
-Message::Encrypted::Encrypted(const std::shared_ptr<
-    TcpConnection>& connection) : mConnection(connection)
-{
+Message::Encrypted::Encrypted(const std::shared_ptr<TcpConnection>& connection)
+    : mConnection(connection) {}
+
+Message::Encrypted::~Encrypted() {}
+
+std::shared_ptr<TcpConnection> Message::Encrypted::GetConnection() const {
+  return mConnection;
 }
 
-Message::Encrypted::~Encrypted()
-{
+Message::ConnectionMessageType Message::Encrypted::GetConnectionMessageType()
+    const {
+  return ConnectionMessageType::CONNECTION_MESSAGE_ENCRYPTED;
 }
 
-std::shared_ptr<TcpConnection> Message::Encrypted::GetConnection() const
-{
-    return mConnection;
-}
-
-Message::ConnectionMessageType Message::Encrypted::GetConnectionMessageType() const
-{
-    return ConnectionMessageType::CONNECTION_MESSAGE_ENCRYPTED;
-}
-
-libcomp::String Message::Encrypted::Dump() const
-{
-    if(mConnection)
-    {
-        return libcomp::String("Message: Connection Encrypted\nConnection: %1"
-            ).Arg(mConnection->GetName());
-    }
-    else
-    {
-        return "Message: Connection Encrypted";
-    }
+libcomp::String Message::Encrypted::Dump() const {
+  if (mConnection) {
+    return libcomp::String("Message: Connection Encrypted\nConnection: %1")
+        .Arg(mConnection->GetName());
+  } else {
+    return "Message: Connection Encrypted";
+  }
 }

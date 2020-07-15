@@ -30,50 +30,48 @@
 // Standard C++11 Includes
 #include <mutex>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Mutex wrapper that checks if the mutex has already been locked. If the
  * mutex has already been locked an exception will be thrown.
  */
-class Mutex
-{
-public:
-    /**
-     * Construct a new mutex.
-     */
-    Mutex();
+class Mutex {
+ public:
+  /**
+   * Construct a new mutex.
+   */
+  Mutex();
 
-    /**
-     * You may not copy a mutex.
-     */
-    Mutex(const Mutex&) = delete;
+  /**
+   * You may not copy a mutex.
+   */
+  Mutex(const Mutex&) = delete;
 
-    /**
-     * Block until the mutex can be locked by this thread.
-     */
-    void lock();
+  /**
+   * Block until the mutex can be locked by this thread.
+   */
+  void lock();
 
-    /**
-     * Unlock the mutex.
-     */
-    void unlock();
+  /**
+   * Unlock the mutex.
+   */
+  void unlock();
 
-    /**
-     * Attempt to lock this mutex but do not block.
-     * @returns true if the mutex is locked; false otherwise.
-     */
-    bool try_lock();
+  /**
+   * Attempt to lock this mutex but do not block.
+   * @returns true if the mutex is locked; false otherwise.
+   */
+  bool try_lock();
 
-private:
-    /// If the mutex has already been locked.
-    bool mLocked;
+ private:
+  /// If the mutex has already been locked.
+  bool mLocked;
 
-    /// Underlying mutex.
-    std::recursive_mutex mMutex;
+  /// Underlying mutex.
+  std::recursive_mutex mMutex;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MUTEX_H
+#endif  // LIBCOMP_SRC_MUTEX_H

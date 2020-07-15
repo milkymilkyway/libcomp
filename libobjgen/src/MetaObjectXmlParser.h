@@ -30,68 +30,69 @@
 #include "MetaObject.h"
 #include "MetaVariableReference.h"
 
- // tinyxml2 Includes
+// Ignore warnings
 #include "PushIgnore.h"
-#include "PopIgnore.h"
+
+// tinyxml2 Includes
 #include <tinyxml2.h>
 
-namespace libobjgen
-{
+// Stop ignoring warnings
+#include "PopIgnore.h"
 
-class MetaObjectXmlParser
-{
-public:
-    MetaObjectXmlParser();
-    ~MetaObjectXmlParser();
+namespace libobjgen {
 
-    std::string GetError() const;
+class MetaObjectXmlParser {
+ public:
+  MetaObjectXmlParser();
+  ~MetaObjectXmlParser();
 
-    bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root);
-    bool LoadTypeInformation(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root);
-    bool LoadMembers(const std::string& object,
-        const tinyxml2::XMLDocument& doc, const tinyxml2::XMLElement& root);
+  std::string GetError() const;
 
-    bool FinalizeObjectAndReferences(const std::string& object);
+  bool Load(const tinyxml2::XMLDocument& doc, const tinyxml2::XMLElement& root);
+  bool LoadTypeInformation(const tinyxml2::XMLDocument& doc,
+                           const tinyxml2::XMLElement& root);
+  bool LoadMembers(const std::string& object, const tinyxml2::XMLDocument& doc,
+                   const tinyxml2::XMLElement& root);
 
-    bool SetReferenceFieldDynamicSizes(
-        const std::list<std::shared_ptr<libobjgen::MetaVariableReference>>& refs);
+  bool FinalizeObjectAndReferences(const std::string& object);
 
-    bool FinalizeClassHierarchy();
+  bool SetReferenceFieldDynamicSizes(
+      const std::list<std::shared_ptr<libobjgen::MetaVariableReference>>& refs);
 
-    std::shared_ptr<MetaObject> GetCurrentObject() const;
-    std::shared_ptr<MetaObject> GetKnownObject(const std::string& object) const;
-    std::unordered_map<std::string,
-        std::shared_ptr<MetaObject>> GetKnownObjects() const;
+  bool FinalizeClassHierarchy();
 
-protected:
-    void SetXMLDefinition(const tinyxml2::XMLElement& root);
+  std::shared_ptr<MetaObject> GetCurrentObject() const;
+  std::shared_ptr<MetaObject> GetKnownObject(const std::string& object) const;
+  std::unordered_map<std::string, std::shared_ptr<MetaObject>> GetKnownObjects()
+      const;
 
-    bool LoadMember(const tinyxml2::XMLDocument& doc, const char *szName,
-        const tinyxml2::XMLElement *pMember, bool& result);
-    std::shared_ptr<MetaVariable> GetVariable(const tinyxml2::XMLDocument& doc,
-        const char *szName, const char *szMemberName,
-        const tinyxml2::XMLElement *pMember);
+ protected:
+  void SetXMLDefinition(const tinyxml2::XMLElement& root);
 
-private:
-    const tinyxml2::XMLElement *GetChild(const tinyxml2::XMLElement *pMember,
-        const std::string name) const;
+  bool LoadMember(const tinyxml2::XMLDocument& doc, const char* szName,
+                  const tinyxml2::XMLElement* pMember, bool& result);
+  std::shared_ptr<MetaVariable> GetVariable(
+      const tinyxml2::XMLDocument& doc, const char* szName,
+      const char* szMemberName, const tinyxml2::XMLElement* pMember);
 
-    bool DefaultsSpecified(const tinyxml2::XMLElement *pMember) const;
+ private:
+  const tinyxml2::XMLElement* GetChild(const tinyxml2::XMLElement* pMember,
+                                       const std::string name) const;
 
-    bool HasCircularReference(const std::shared_ptr<MetaObject> obj,
-        const std::set<std::string>& references) const;
+  bool DefaultsSpecified(const tinyxml2::XMLElement* pMember) const;
 
-    std::unordered_map<std::string, std::shared_ptr<MetaObject>> mKnownObjects;
-    std::unordered_map<std::string, std::string> mObjectXml;
+  bool HasCircularReference(const std::shared_ptr<MetaObject> obj,
+                            const std::set<std::string>& references) const;
 
-    std::shared_ptr<MetaObject> mObject;
-    std::set<std::string> mMemberLoadedObjects;
-    std::set<std::string> mFinalizedObjects;
-    std::string mError;
+  std::unordered_map<std::string, std::shared_ptr<MetaObject>> mKnownObjects;
+  std::unordered_map<std::string, std::string> mObjectXml;
+
+  std::shared_ptr<MetaObject> mObject;
+  std::set<std::string> mMemberLoadedObjects;
+  std::set<std::string> mFinalizedObjects;
+  std::string mError;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAOBJECTXMLPARSER_H
+#endif  // LIBOBJGEN_SRC_METAOBJECTXMLPARSER_H

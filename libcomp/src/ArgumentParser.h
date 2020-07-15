@@ -38,56 +38,51 @@
 
 #if defined(_WIN32) && defined(OPTIONAL)
 #undef OPTIONAL
-#endif // defined(_WIN32) && defined(OPTIONAL)
+#endif  // defined(_WIN32) && defined(OPTIONAL)
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Class to handle parsing command line arguments for an application.
  */
-class ArgumentParser
-{
-public:
-    enum class ArgumentType
-    {
-        NONE,
-        OPTIONAL,
-        REQUIRED,
-    };
+class ArgumentParser {
+ public:
+  enum class ArgumentType {
+    NONE,
+    OPTIONAL,
+    REQUIRED,
+  };
 
-    struct Argument
-    {
-        char shortName;
-        String longName;
-        ArgumentType argType;
-        std::function<bool(Argument*, const String&)> handler;
-    };
+  struct Argument {
+    char shortName;
+    String longName;
+    ArgumentType argType;
+    std::function<bool(Argument*, const String&)> handler;
+  };
 
-    ArgumentParser();
-    virtual ~ArgumentParser();
+  ArgumentParser();
+  virtual ~ArgumentParser();
 
-    virtual bool Parse(int argc, const char * const argv[]);
+  virtual bool Parse(int argc, const char* const argv[]);
 
-    std::vector<String> GetStandardArguments() const;
+  std::vector<String> GetStandardArguments() const;
 
-protected:
-    virtual bool Parse(const std::vector<String>& arguments);
-    virtual bool ParseStandardArguments(
-        const std::vector<String>& arguments);
+ protected:
+  virtual bool Parse(const std::vector<String>& arguments);
+  virtual bool ParseStandardArguments(const std::vector<String>& arguments);
 
-    virtual void RegisterArgument(char shortName, const String& longName,
-        ArgumentType argType, std::function<bool(Argument*,
-            const String&)> handler);
+  virtual void RegisterArgument(
+      char shortName, const String& longName, ArgumentType argType,
+      std::function<bool(Argument*, const String&)> handler);
 
-private:
-    std::unordered_map<char, Argument*> mShortParsers;
-    std::unordered_map<String, Argument*> mLongParsers;
-    std::list<Argument*> mArgumentParsers;
+ private:
+  std::unordered_map<char, Argument*> mShortParsers;
+  std::unordered_map<String, Argument*> mLongParsers;
+  std::list<Argument*> mArgumentParsers;
 
-    std::vector<String> mStandardArguments;
+  std::vector<String> mStandardArguments;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_ARGUMENTPARSER_H
+#endif  // LIBCOMP_SRC_ARGUMENTPARSER_H

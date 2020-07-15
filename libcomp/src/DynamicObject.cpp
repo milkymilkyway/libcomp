@@ -33,28 +33,26 @@
 
 using namespace libcomp;
 
-DynamicObject::DynamicObject(const std::shared_ptr<
-    libobjgen::MetaObject>& metaObject) : mMetaData(metaObject)
-{
-    DynamicVariableFactory factory;
+DynamicObject::DynamicObject(
+    const std::shared_ptr<libobjgen::MetaObject>& metaObject)
+    : mMetaData(metaObject) {
+  DynamicVariableFactory factory;
 
-    for(auto it = metaObject->VariablesBegin();
-        it != metaObject->VariablesEnd(); ++it)
-    {
-        auto var = *it;
-        auto dynamicVar = factory.Create(var);
+  for (auto it = metaObject->VariablesBegin(); it != metaObject->VariablesEnd();
+       ++it) {
+    auto var = *it;
+    auto dynamicVar = factory.Create(var);
 
-        mVariables.push_back(dynamicVar);
-        mVariableLookup[var->GetName()] = dynamicVar;
-    }
+    mVariables.push_back(dynamicVar);
+    mVariableLookup[var->GetName()] = dynamicVar;
+  }
 }
 
-bool DynamicObject::IsValid(bool recursive) const
-{
-    (void)recursive;
+bool DynamicObject::IsValid(bool recursive) const {
+  (void)recursive;
 
-    /// @todo Fix.
-    return false;
+  /// @todo Fix.
+  return false;
 }
 
 /*bool DynamicObject::Load(ObjectInStream& stream)
@@ -83,9 +81,8 @@ bool DynamicObject::Save(ObjectOutStream& stream) const
     return true;
 }*/
 
-uint16_t DynamicObject::GetDynamicSizeCount() const
-{
-    return mMetaData->GetDynamicSizeCount();
+uint16_t DynamicObject::GetDynamicSizeCount() const {
+  return mMetaData->GetDynamicSizeCount();
 }
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

@@ -28,50 +28,41 @@
 
 using namespace libcomp;
 
-Mutex::Mutex() : mLocked(false)
-{
+Mutex::Mutex() : mLocked(false) {}
+
+void Mutex::lock() {
+  mMutex.lock();
+
+  if (mLocked) {
+    throw std::system_error(EDEADLK, std::generic_category(),
+                            "double lock detected");
+  }
+
+  mLocked = true;
 }
 
-void Mutex::lock()
-{
-    mMutex.lock();
+void Mutex::unlock() {
+  if (!mLocked) {
+    throw std::system_error(EDEADLK, std::generic_category(),
+                            "double unlock detected");
+  }
 
-    if(mLocked)
-    {
-        throw std::system_error(EDEADLK, std::generic_category(),
-            "double lock detected");
+  mLocked = false;
+
+  mMutex.unlock();
+}
+
+bool Mutex::try_lock() {
+  bool didLock = mMutex.try_lock();
+
+  if (didLock) {
+    if (mLocked) {
+      throw std::system_error(EDEADLK, std::generic_category(),
+                              "double lock detected");
     }
 
     mLocked = true;
-}
+  }
 
-void Mutex::unlock()
-{
-    if(!mLocked)
-    {
-        throw std::system_error(EDEADLK, std::generic_category(),
-            "double unlock detected");
-    }
-
-    mLocked = false;
-
-    mMutex.unlock();
-}
-
-bool Mutex::try_lock()
-{
-    bool didLock = mMutex.try_lock();
-
-    if(didLock)
-    {
-        if(mLocked)
-        {
-            throw std::system_error(EDEADLK, std::generic_category(),
-                "double lock detected");
-        }
-
-        mLocked = true;
-    }
-
-    return didLock;
+  return didLock;
 }

@@ -32,47 +32,36 @@
 using namespace libcomp;
 
 Message::Packet::Packet(const std::shared_ptr<TcpConnection>& connection,
-    uint16_t commandCode, ReadOnlyPacket& packet) : mPacket(packet),
-    mCommandCode(commandCode), mConnection(connection)
-{
+                        uint16_t commandCode, ReadOnlyPacket& packet)
+    : mPacket(packet), mCommandCode(commandCode), mConnection(connection) {}
+
+Message::Packet::~Packet() {}
+
+const ReadOnlyPacket& Message::Packet::GetPacket() const { return mPacket; }
+
+uint16_t Message::Packet::GetCommandCode() const { return mCommandCode; }
+
+std::shared_ptr<TcpConnection> Message::Packet::GetConnection() const {
+  return mConnection;
 }
 
-Message::Packet::~Packet()
-{
+Message::MessageType Message::Packet::GetType() const {
+  return MessageType::MESSAGE_TYPE_PACKET;
 }
 
-const ReadOnlyPacket& Message::Packet::GetPacket() const
-{
-    return mPacket;
-}
-
-uint16_t Message::Packet::GetCommandCode() const
-{
-    return mCommandCode;
-}
-
-std::shared_ptr<TcpConnection> Message::Packet::GetConnection() const
-{
-    return mConnection;
-}
-
-Message::MessageType Message::Packet::GetType() const
-{
-    return MessageType::MESSAGE_TYPE_PACKET;
-}
-
-libcomp::String Message::Packet::Dump() const
-{
-    if(mConnection)
-    {
-        return libcomp::String("Message: Packet\nConnection: %1\n"
-            "Command Code: 0x%2\n%3").Arg(mConnection->GetName()).Arg(
-            mCommandCode, 4, 16, '0').Arg(mPacket.Dump());
-    }
-    else
-    {
-        return libcomp::String("Message: Packet\nConnection: unknown\n"
-            "Command Code: 0x%1\n%2").Arg(mCommandCode, 4, 16, '0').Arg(
-            mPacket.Dump());
-    }
+libcomp::String Message::Packet::Dump() const {
+  if (mConnection) {
+    return libcomp::String(
+               "Message: Packet\nConnection: %1\n"
+               "Command Code: 0x%2\n%3")
+        .Arg(mConnection->GetName())
+        .Arg(mCommandCode, 4, 16, '0')
+        .Arg(mPacket.Dump());
+  } else {
+    return libcomp::String(
+               "Message: Packet\nConnection: unknown\n"
+               "Command Code: 0x%1\n%2")
+        .Arg(mCommandCode, 4, 16, '0')
+        .Arg(mPacket.Dump());
+  }
 }

@@ -24,66 +24,64 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PushIgnore.h>
-#include <gtest/gtest.h>
+// Ignore warnings
 #include <PopIgnore.h>
 
+// Google Test Includes
+#include <gtest/gtest.h>
+
+// Stop ignoring warnings
 #include <Packet.h>
+#include <PushIgnore.h>
 
 using namespace libcomp;
 
-TEST(Packet, MoveConstructor)
-{
-    Packet a;
-    a.WriteArray("abc", 3);
+TEST(Packet, MoveConstructor) {
+  Packet a;
+  a.WriteArray("abc", 3);
 
-    Packet b(std::move(a));
-    a.WriteArray("z", 1);
-    a.Rewind();
+  Packet b(std::move(a));
+  a.WriteArray("z", 1);
+  a.Rewind();
 
-    EXPECT_EQ(b.Size(), 3);
-    EXPECT_EQ(a.Size(), 1);
-    EXPECT_EQ(b.Tell(), 3);
-    EXPECT_EQ(a.Tell(), 0);
+  EXPECT_EQ(b.Size(), 3);
+  EXPECT_EQ(a.Size(), 1);
+  EXPECT_EQ(b.Tell(), 3);
+  EXPECT_EQ(a.Tell(), 0);
 
-    b.Rewind();
+  b.Rewind();
 
-    EXPECT_EQ(String(&b.ReadArray(3)[0], 3), "abc");
-    EXPECT_EQ(String(&a.ReadArray(1)[0], 1), "z");
+  EXPECT_EQ(String(&b.ReadArray(3)[0], 3), "abc");
+  EXPECT_EQ(String(&a.ReadArray(1)[0], 1), "z");
 }
 
-TEST(Packet, MoveAssignment)
-{
-    Packet a;
-    a.WriteArray("abc", 3);
+TEST(Packet, MoveAssignment) {
+  Packet a;
+  a.WriteArray("abc", 3);
 
-    Packet b;
-    b.WriteArray("defg", 4);
-    b = std::move(a);
-    a.WriteArray("z", 1);
-    a.Rewind();
+  Packet b;
+  b.WriteArray("defg", 4);
+  b = std::move(a);
+  a.WriteArray("z", 1);
+  a.Rewind();
 
-    EXPECT_EQ(b.Size(), 3);
-    EXPECT_EQ(a.Size(), 1);
-    EXPECT_EQ(b.Tell(), 3);
-    EXPECT_EQ(a.Tell(), 0);
+  EXPECT_EQ(b.Size(), 3);
+  EXPECT_EQ(a.Size(), 1);
+  EXPECT_EQ(b.Tell(), 3);
+  EXPECT_EQ(a.Tell(), 0);
 
-    b.Rewind();
+  b.Rewind();
 
-    EXPECT_EQ(String(&b.ReadArray(3)[0], 3), "abc");
-    EXPECT_EQ(String(&a.ReadArray(1)[0], 1), "z");
+  EXPECT_EQ(String(&b.ReadArray(3)[0], 3), "abc");
+  EXPECT_EQ(String(&a.ReadArray(1)[0], 1), "z");
 }
 
-int main(int argc, char *argv[])
-{
-    try
-    {
-        ::testing::InitGoogleTest(&argc, argv);
+int main(int argc, char *argv[]) {
+  try {
+    ::testing::InitGoogleTest(&argc, argv);
 
-        return RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
-        return EXIT_FAILURE;
-    }
+    return RUN_ALL_TESTS();
+  } catch (...) {
+    return EXIT_FAILURE;
+  }
 }

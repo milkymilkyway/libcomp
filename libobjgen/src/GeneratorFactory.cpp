@@ -31,27 +31,22 @@
 
 using namespace libobjgen;
 
-GeneratorFactory::GeneratorFactory()
-{
-    mGenerators["cpp"] = []() {
-        return std::shared_ptr<libobjgen::Generator>(new GeneratorSource);
-    };
-    mGenerators["h"] = []() {
-        return std::shared_ptr<libobjgen::Generator>(new GeneratorHeader);
-    };
+GeneratorFactory::GeneratorFactory() {
+  mGenerators["cpp"] = []() {
+    return std::shared_ptr<libobjgen::Generator>(new GeneratorSource);
+  };
+  mGenerators["h"] = []() {
+    return std::shared_ptr<libobjgen::Generator>(new GeneratorHeader);
+  };
 }
 
 std::shared_ptr<libobjgen::Generator> GeneratorFactory::Generator(
-    const std::string& extension) const
-{
-    auto generatorPair = mGenerators.find(extension);
+    const std::string& extension) const {
+  auto generatorPair = mGenerators.find(extension);
 
-    if(generatorPair != mGenerators.end())
-    {
-        return (*generatorPair->second)();
-    }
-    else
-    {
-        return std::shared_ptr<libobjgen::Generator>();
-    }
+  if (generatorPair != mGenerators.end()) {
+    return (*generatorPair->second)();
+  } else {
+    return std::shared_ptr<libobjgen::Generator>();
+  }
 }

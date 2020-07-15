@@ -34,35 +34,32 @@
 // Standard C++11 Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Message
-{
+namespace Message {
 
 /**
  * Message that acts as a check to see if a server is responding.
  */
-class Pong : public Message
-{
-public:
-    /**
-     * Create the message.
-     */
-    Pong();
+class Pong : public Message {
+ public:
+  /**
+   * Create the message.
+   */
+  Pong();
 
-    /**
-     * Cleanup the message.
-     */
-    virtual ~Pong();
+  /**
+   * Cleanup the message.
+   */
+  virtual ~Pong();
 
-    virtual MessageType GetType() const;
+  virtual MessageType GetType() const;
 
-    virtual libcomp::String Dump() const override;
+  virtual libcomp::String Dump() const override;
 };
 
-} // namespace Message
+}  // namespace Message
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_MESSAGEPONG_H
+#endif  // LIBCOMP_SRC_MESSAGEPONG_H

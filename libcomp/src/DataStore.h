@@ -33,56 +33,47 @@
 // Standard C++11 Includes
 #include <list>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class DataFile;
 
-class DataStore
-{
-public:
-    DataStore(const char *szProgram);
-    ~DataStore();
+class DataStore {
+ public:
+  DataStore(const char* szProgram);
+  ~DataStore();
 
-    libcomp::String GetError();
+  libcomp::String GetError();
 
-    std::vector<char> ReadFile(const libcomp::String& path);
-    bool WriteFile(const libcomp::String& path,
-        const std::vector<char>& data);
+  std::vector<char> ReadFile(const libcomp::String& path);
+  bool WriteFile(const libcomp::String& path, const std::vector<char>& data);
 
-    std::vector<char> DecryptFile(const libcomp::String& path);
-    bool EncryptFile(const libcomp::String& path,
-        const std::vector<char>& data);
+  std::vector<char> DecryptFile(const libcomp::String& path);
+  bool EncryptFile(const libcomp::String& path, const std::vector<char>& data);
 
-    enum class FileMode_t
-    {
-        READ,
-        WRITE,
-        APPEND
-    };
+  enum class FileMode_t { READ, WRITE, APPEND };
 
-    DataFile* Open(const libcomp::String& path,
-        FileMode_t mode = FileMode_t::READ);
+  DataFile* Open(const libcomp::String& path,
+                 FileMode_t mode = FileMode_t::READ);
 
-    bool Exists(const libcomp::String& path);
-    int64_t FileSize(const libcomp::String& path);
+  bool Exists(const libcomp::String& path);
+  int64_t FileSize(const libcomp::String& path);
 
-    libcomp::String GetHash(const libcomp::String& path);
+  libcomp::String GetHash(const libcomp::String& path);
 
-    bool Delete(const libcomp::String& path, bool recursive = false);
-    bool CreateDirectory(const libcomp::String& path);
+  bool Delete(const libcomp::String& path, bool recursive = false);
+  bool CreateDirectory(const libcomp::String& path);
 
-    bool GetListing(const libcomp::String& path,
-        std::list<libcomp::String>& files,
-        std::list<libcomp::String>& dirs,
-        std::list<libcomp::String>& symLinks,
-        bool recursive = false, bool fullPath = false);
-    bool PrintListing(const libcomp::String& path, bool recursive = false,
-        bool fullPath = false);
-    bool AddSearchPaths(const std::list<libcomp::String>& paths);
-    bool AddSearchPath(const libcomp::String& path, bool append = false);
+  bool GetListing(const libcomp::String& path,
+                  std::list<libcomp::String>& files,
+                  std::list<libcomp::String>& dirs,
+                  std::list<libcomp::String>& symLinks, bool recursive = false,
+                  bool fullPath = false);
+  bool PrintListing(const libcomp::String& path, bool recursive = false,
+                    bool fullPath = false);
+  bool AddSearchPaths(const std::list<libcomp::String>& paths);
+  bool AddSearchPath(const libcomp::String& path, bool append = false);
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DATASTORE_H
+#endif  // LIBCOMP_SRC_DATASTORE_H

@@ -30,19 +30,17 @@
 // libobjgen Includes
 #include "Generator.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class GeneratorHeader : public Generator
-{
-public:
-    virtual std::string Generate(const MetaObject& obj);
+class GeneratorHeader : public Generator {
+ public:
+  virtual std::string Generate(const MetaObject& obj);
 
-private:
-    std::string GenerateClass(const MetaObject& obj);
-    std::string GenerateHeaderDefine(const std::string& objName);
+ private:
+  std::string GenerateClass(const MetaObject& obj);
+  std::string GenerateHeaderDefine(const std::string& objName);
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_GENERATORHEADER_H
+#endif  // LIBOBJGEN_SRC_GENERATORHEADER_H

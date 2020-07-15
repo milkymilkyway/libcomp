@@ -36,169 +36,189 @@
 #include <unordered_map>
 #include <vector>
 
-// tinyxml2 Includes
+// Ignore warnings
 #include "PushIgnore.h"
+
+// tinyxml2 Includes
 #include <tinyxml2.h>
+
+// Stop ignoring warnings
 #include "PopIgnore.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
 class Generator;
 class MetaObject;
 
-class MetaVariable
-{
-public:
-    enum class MetaVariableType_t
-    {
-        TYPE_BOOL,
-        TYPE_S8,
-        TYPE_U8,
-        TYPE_S16,
-        TYPE_U16,
-        TYPE_S32,
-        TYPE_U32,
-        TYPE_S64,
-        TYPE_U64,
-        TYPE_FLOAT,
-        TYPE_DOUBLE,
-        TYPE_ENUM,
-        TYPE_STRING,
-        TYPE_ARRAY,
-        TYPE_LIST,
-        TYPE_SET,
-        TYPE_MAP,
-        TYPE_REF,
-    };
+class MetaVariable {
+ public:
+  enum class MetaVariableType_t {
+    TYPE_BOOL,
+    TYPE_S8,
+    TYPE_U8,
+    TYPE_S16,
+    TYPE_U16,
+    TYPE_S32,
+    TYPE_U32,
+    TYPE_S64,
+    TYPE_U64,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_ENUM,
+    TYPE_STRING,
+    TYPE_ARRAY,
+    TYPE_LIST,
+    TYPE_SET,
+    TYPE_MAP,
+    TYPE_REF,
+  };
 
-    MetaVariable();
-    virtual ~MetaVariable() { }
+  MetaVariable();
+  virtual ~MetaVariable() {}
 
-    std::string GetName() const;
-    void SetName(const std::string& name);
+  std::string GetName() const;
+  void SetName(const std::string& name);
 
-    std::string GetError() const;
+  std::string GetError() const;
 
-    virtual size_t GetSize() const = 0;
+  virtual size_t GetSize() const = 0;
 
-    virtual MetaVariableType_t GetMetaType() const = 0;
+  virtual MetaVariableType_t GetMetaType() const = 0;
 
-    virtual std::string GetType() const = 0;
+  virtual std::string GetType() const = 0;
 
-    virtual bool IsCoreType() const = 0;
-    virtual bool IsScriptAccessible() const = 0;
-    virtual bool IsValid() const = 0;
+  virtual bool IsCoreType() const = 0;
+  virtual bool IsScriptAccessible() const = 0;
+  virtual bool IsValid() const = 0;
 
-    bool IsCaps() const;
-    void SetCaps(bool caps);
+  bool IsCaps() const;
+  void SetCaps(bool caps);
 
-    bool IsInherited() const;
-    void SetInherited(const bool inherited);
+  bool IsInherited() const;
+  void SetInherited(const bool inherited);
 
-    bool IsLookupKey() const;
-    void SetLookupKey(const bool lookupKey);
+  bool IsLookupKey() const;
+  void SetLookupKey(const bool lookupKey);
 
-    bool IsUniqueKey() const;
-    bool SetUniqueKey(const bool uniqueKey);
+  bool IsUniqueKey() const;
+  bool SetUniqueKey(const bool uniqueKey);
 
-    unsigned char GetPadding() const;
-    bool SetPadding(const unsigned char padding);
+  unsigned char GetPadding() const;
+  bool SetPadding(const unsigned char padding);
 
-    virtual bool Load(std::istream& stream);
-    virtual bool Save(std::ostream& stream) const;
+  virtual bool Load(std::istream& stream);
+  virtual bool Save(std::ostream& stream) const;
 
-    static bool LoadVariableList(std::istream& stream,
-        std::list<std::shared_ptr<MetaVariable>>& vars);
-    static bool SaveVariableList(std::ostream& stream,
-        const std::list<std::shared_ptr<MetaVariable>>& vars);
+  static bool LoadVariableList(std::istream& stream,
+                               std::list<std::shared_ptr<MetaVariable>>& vars);
+  static bool SaveVariableList(
+      std::ostream& stream,
+      const std::list<std::shared_ptr<MetaVariable>>& vars);
 
-    virtual bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root) = 0;
-    virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& parent, const char* elementName) const = 0;
+  virtual bool Load(const tinyxml2::XMLDocument& doc,
+                    const tinyxml2::XMLElement& root) = 0;
+  virtual bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& parent,
+                    const char* elementName) const = 0;
 
-    virtual uint16_t GetDynamicSizeCount() const;
+  virtual uint16_t GetDynamicSizeCount() const;
 
-    virtual std::string GetCodeType() const = 0;
-    virtual std::string GetConstructValue() const = 0;
-    virtual std::string GetValidCondition(const Generator& generator,
-        const std::string& name, bool recursive = false) const = 0;
-    virtual std::string GetLoadCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const = 0;
-    virtual std::string GetSaveCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const = 0;
-    virtual std::string GetLoadRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const = 0;
-    virtual std::string GetSaveRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const = 0;
-    virtual std::string GetXmlLoadCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& node, size_t tabLevel = 1) const = 0;
-    virtual std::string GetXmlSaveCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& parent, size_t tabLevel = 1,
-        const std::string elemName = "member") const = 0;
-    std::string GetLoadPaddingCode(const std::string& stream, bool raw) const;
-    std::string GetSavePaddingCode(const std::string& stream, bool raw) const;
-    virtual std::string GetDeclaration(const std::string& name) const;
-    virtual std::string GetArgumentType() const;
-    virtual std::string GetArgument(const std::string& name) const;
-    virtual std::string GetDefaultValueCode() const;
-    virtual std::string GetGetterCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetBindValueCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetDatabaseLoadCode(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetInternalGetterCode(const Generator& generator,
-        const std::string& name) const;
-    virtual std::string GetSetterCode(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        const std::string argument, size_t tabLevel = 1) const;
-    virtual std::string GetAccessDeclarations(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetAccessFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetUtilityDeclarations(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetUtilityFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetAccessScriptBindings(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetConstructorCode(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetDestructorCode(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetDynamicSizeCountCode(const Generator& generator,
-        const std::string& name) const;
+  virtual std::string GetCodeType() const = 0;
+  virtual std::string GetConstructValue() const = 0;
+  virtual std::string GetValidCondition(const Generator& generator,
+                                        const std::string& name,
+                                        bool recursive = false) const = 0;
+  virtual std::string GetLoadCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const = 0;
+  virtual std::string GetSaveCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const = 0;
+  virtual std::string GetLoadRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const = 0;
+  virtual std::string GetSaveRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const = 0;
+  virtual std::string GetXmlLoadCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& doc,
+                                     const std::string& node,
+                                     size_t tabLevel = 1) const = 0;
+  virtual std::string GetXmlSaveCode(
+      const Generator& generator, const std::string& name,
+      const std::string& doc, const std::string& parent, size_t tabLevel = 1,
+      const std::string elemName = "member") const = 0;
+  std::string GetLoadPaddingCode(const std::string& stream, bool raw) const;
+  std::string GetSavePaddingCode(const std::string& stream, bool raw) const;
+  virtual std::string GetDeclaration(const std::string& name) const;
+  virtual std::string GetArgumentType() const;
+  virtual std::string GetArgument(const std::string& name) const;
+  virtual std::string GetDefaultValueCode() const;
+  virtual std::string GetGetterCode(const Generator& generator,
+                                    const std::string& name,
+                                    size_t tabLevel = 1) const;
+  virtual std::string GetBindValueCode(const Generator& generator,
+                                       const std::string& name,
+                                       size_t tabLevel = 1) const;
+  virtual std::string GetDatabaseLoadCode(const Generator& generator,
+                                          const std::string& name,
+                                          size_t tabLevel = 1) const;
+  virtual std::string GetInternalGetterCode(const Generator& generator,
+                                            const std::string& name) const;
+  virtual std::string GetSetterCode(const Generator& generator,
+                                    const MetaObject& object,
+                                    const std::string& name,
+                                    const std::string argument,
+                                    size_t tabLevel = 1) const;
+  virtual std::string GetAccessDeclarations(const Generator& generator,
+                                            const MetaObject& object,
+                                            const std::string& name,
+                                            size_t tabLevel = 1) const;
+  virtual std::string GetAccessFunctions(const Generator& generator,
+                                         const MetaObject& object,
+                                         const std::string& name) const;
+  virtual std::string GetUtilityDeclarations(const Generator& generator,
+                                             const std::string& name,
+                                             size_t tabLevel = 1) const;
+  virtual std::string GetUtilityFunctions(const Generator& generator,
+                                          const MetaObject& object,
+                                          const std::string& name) const;
+  virtual std::string GetAccessScriptBindings(const Generator& generator,
+                                              const MetaObject& object,
+                                              const std::string& name,
+                                              size_t tabLevel = 1) const;
+  virtual std::string GetConstructorCode(const Generator& generator,
+                                         const MetaObject& object,
+                                         const std::string& name,
+                                         size_t tabLevel = 1) const;
+  virtual std::string GetDestructorCode(const Generator& generator,
+                                        const MetaObject& object,
+                                        const std::string& name,
+                                        size_t tabLevel = 1) const;
+  virtual std::string GetDynamicSizeCountCode(const Generator& generator,
+                                              const std::string& name) const;
 
-    static std::shared_ptr<MetaVariable> CreateType(
-        const std::string& typeName);
+  static std::shared_ptr<MetaVariable> CreateType(const std::string& typeName);
 
-protected:
-    static std::shared_ptr<MetaVariable> CreateType(
-        const MetaVariable::MetaVariableType_t type,
-        std::vector<MetaVariable::MetaVariableType_t> subtypes = {});
+ protected:
+  static std::shared_ptr<MetaVariable> CreateType(
+      const MetaVariable::MetaVariableType_t type,
+      std::vector<MetaVariable::MetaVariableType_t> subtypes = {});
 
-    virtual bool BaseLoad(const tinyxml2::XMLElement& element);
-    virtual bool BaseSave(tinyxml2::XMLElement& element) const;
+  virtual bool BaseLoad(const tinyxml2::XMLElement& element);
+  virtual bool BaseSave(tinyxml2::XMLElement& element) const;
 
-    std::string mError;
+  std::string mError;
 
-private:
-    bool mCaps;
-    std::string mName;
-    bool mInherited;
-    bool mLookupKey;
-    bool mUniqueKey;
-    unsigned char mPadding;
+ private:
+  bool mCaps;
+  std::string mName;
+  bool mInherited;
+  bool mLookupKey;
+  bool mUniqueKey;
+  unsigned char mPadding;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLE_H
+#endif  // LIBOBJGEN_SRC_METAVARIABLE_H

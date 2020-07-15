@@ -30,31 +30,29 @@
 // libobjgen Includes
 #include <MetaVariableReference.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Represents a reference variable that can be built dynamically at runtime.
  */
-class DynamicVariableReference : public DynamicVariable
-{
-public:
-    /**
-     * Create a new dynamic reference variable.
-     * @param metaVariable Pointer to a MetaVariableReference definition
-     */
-    DynamicVariableReference(const std::shared_ptr<libobjgen::MetaVariable>&
-        metaVariable);
+class DynamicVariableReference : public DynamicVariable {
+ public:
+  /**
+   * Create a new dynamic reference variable.
+   * @param metaVariable Pointer to a MetaVariableReference definition
+   */
+  DynamicVariableReference(
+      const std::shared_ptr<libobjgen::MetaVariable>& metaVariable);
 
-    /**
-     * Clean up the variable.
-     */
-    virtual ~DynamicVariableReference();
+  /**
+   * Clean up the variable.
+   */
+  virtual ~DynamicVariableReference();
 
-    virtual bool Load(ObjectInStream& stream);
-    virtual bool Save(ObjectOutStream& stream) const;
+  virtual bool Load(ObjectInStream& stream);
+  virtual bool Save(ObjectOutStream& stream) const;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DYNAMICVARIABLEREFERENCE_H
+#endif  // LIBCOMP_SRC_DYNAMICVARIABLEREFERENCE_H

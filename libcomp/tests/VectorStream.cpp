@@ -24,52 +24,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PushIgnore.h>
-#include <gtest/gtest.h>
+// Ignore warnings
 #include <PopIgnore.h>
 
+// Google Test Includes
+#include <gtest/gtest.h>
+
+// Stop ignoring warnings
+#include <PushIgnore.h>
 #include <VectorStream.h>
 
 using namespace libcomp;
 
+TEST(VectorStream, ReadWrite) {
+  uint32_t valueA = 0xCAFEBABE;
 
-TEST(VectorStream, ReadWrite)
-{
-    uint32_t valueA = 0xCAFEBABE;
+  std::vector<char> data;
+  VectorStream<char> buffer(data);
 
-    std::vector<char> data;
-    VectorStream<char> buffer(data);
+  std::ostream out(&buffer);
+  out.write(reinterpret_cast<char *>(&valueA), sizeof(valueA));
 
-    std::ostream out(&buffer);
-    out.write(reinterpret_cast<char*>(&valueA), sizeof(valueA));
+  EXPECT_TRUE(out.good());
+  ASSERT_EQ(data.size(), sizeof(valueA));
+  EXPECT_EQ(memcmp(&valueA, &data[0], sizeof(valueA)), 0);
 
-    EXPECT_TRUE(out.good());
-    ASSERT_EQ(data.size(), sizeof(valueA));
-    EXPECT_EQ(memcmp(&valueA, &data[0], sizeof(valueA)), 0);
+  std::vector<char> data2;
+  data2.resize(sizeof(valueA));
+  memcpy(&data2[0], &valueA, sizeof(valueA));
+  VectorStream<char> buffer2(data2);
 
-    std::vector<char> data2;
-    data2.resize(sizeof(valueA));
-    memcpy(&data2[0], &valueA, sizeof(valueA));
-    VectorStream<char> buffer2(data2);
+  std::istream in(&buffer2);
+  uint32_t valueB;
+  in.read(reinterpret_cast<char *>(&valueB), sizeof(valueB));
 
-    std::istream in(&buffer2);
-    uint32_t valueB;
-    in.read(reinterpret_cast<char*>(&valueB), sizeof(valueB));
-
-    EXPECT_TRUE(in.good());
-    EXPECT_EQ(valueA, valueB);
+  EXPECT_TRUE(in.good());
+  EXPECT_EQ(valueA, valueB);
 }
 
-int main(int argc, char *argv[])
-{
-    try
-    {
-        ::testing::InitGoogleTest(&argc, argv);
+int main(int argc, char *argv[]) {
+  try {
+    ::testing::InitGoogleTest(&argc, argv);
 
-        return RUN_ALL_TESTS();
-    }
-    catch(...)
-    {
-        return EXIT_FAILURE;
-    }
+    return RUN_ALL_TESTS();
+  } catch (...) {
+    return EXIT_FAILURE;
+  }
 }

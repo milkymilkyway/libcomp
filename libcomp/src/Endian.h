@@ -34,44 +34,38 @@
 // Unix and Linux systems have these functions so just use the system version.
 #ifdef __FreeBSD__
 #include <sys/endian.h>
-#else // Q_OS_UNIX
+#else  // Q_OS_UNIX
 #include <endian.h>
-#endif // Q_OS_UNIX
+#endif  // Q_OS_UNIX
 
-#else // EXOTIC_PLATFORM || _WIN32 || __APPLE__
+#else  // EXOTIC_PLATFORM || _WIN32 || __APPLE__
 
 /// Swap the bytes of a 16-bit integer @em d.
-#define swap16 (((d & 0xFF00) >> 8) | \
-                ((d & 0x00FF) << 8))
+#define swap16 (((d & 0xFF00) >> 8) | ((d & 0x00FF) << 8))
 
 /// Swap the bytes of a 32-bit integer @em d.
-#define swap32 (((d & 0xFF000000) >> 24) | \
-                ((d & 0x00FF0000) >> 8)  | \
-                ((d & 0x0000FF00) << 8)  | \
-                ((d & 0x000000FF) << 24))
+#define swap32                                          \
+  (((d & 0xFF000000) >> 24) | ((d & 0x00FF0000) >> 8) | \
+   ((d & 0x0000FF00) << 8) | ((d & 0x000000FF) << 24))
 
 /// Swap the bytes of a 64-bit integer @em d.
-#define swap64 (((d & 0xFF00000000000000ULL) >> 56) | \
-                ((d & 0x00FF000000000000ULL) >> 40) | \
-                ((d & 0x0000FF0000000000ULL) >> 24) | \
-                ((d & 0x000000FF00000000ULL) >> 8)  | \
-                ((d & 0x00000000FF000000ULL) << 8)  | \
-                ((d & 0x0000000000FF0000ULL) << 24) | \
-                ((d & 0x000000000000FF00ULL) << 40) | \
-                ((d & 0x00000000000000FFULL) << 56))
+#define swap64                                                                 \
+  (((d & 0xFF00000000000000ULL) >> 56) | ((d & 0x00FF000000000000ULL) >> 40) | \
+   ((d & 0x0000FF0000000000ULL) >> 24) | ((d & 0x000000FF00000000ULL) >> 8) |  \
+   ((d & 0x00000000FF000000ULL) << 8) | ((d & 0x0000000000FF0000ULL) << 24) |  \
+   ((d & 0x000000000000FF00ULL) << 40) | ((d & 0x00000000000000FFULL) << 56))
 
 /**
  * Convert a 16-bit integer from the host byte order to big endian.
  * @param d Integer in host byte order.
  * @returns Integer in big endian.
  */
-static inline uint16_t htobe16(uint16_t d)
-{
+static inline uint16_t htobe16(uint16_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return (uint16_t)swap16;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return (uint16_t)swap16;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -79,13 +73,12 @@ static inline uint16_t htobe16(uint16_t d)
  * @param d Integer in host byte order.
  * @returns Integer in little endian.
  */
-static inline uint16_t htole16(uint16_t d)
-{
+static inline uint16_t htole16(uint16_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap16;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap16;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -93,13 +86,12 @@ static inline uint16_t htole16(uint16_t d)
  * @param d Integer in big endian.
  * @returns Integer in host byte order.
  */
-static inline uint16_t be16toh(uint16_t d)
-{
+static inline uint16_t be16toh(uint16_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return (uint16_t)swap16;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return (uint16_t)swap16;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -107,13 +99,12 @@ static inline uint16_t be16toh(uint16_t d)
  * @param d Integer in little endian.
  * @returns Integer in host byte order.
  */
-static inline uint16_t le16toh(uint16_t d)
-{
+static inline uint16_t le16toh(uint16_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap16;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap16;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -121,13 +112,12 @@ static inline uint16_t le16toh(uint16_t d)
  * @param d Integer in host byte order.
  * @returns Integer in big endian.
  */
-static inline uint32_t htobe32(uint32_t d)
-{
+static inline uint32_t htobe32(uint32_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap32;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return swap32;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -135,13 +125,12 @@ static inline uint32_t htobe32(uint32_t d)
  * @param d Integer in host byte order.
  * @returns Integer in little endian.
  */
-static inline uint32_t htole32(uint32_t d)
-{
+static inline uint32_t htole32(uint32_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap32;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap32;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -149,13 +138,12 @@ static inline uint32_t htole32(uint32_t d)
  * @param d Integer in big endian.
  * @returns Integer in host byte order.
  */
-static inline uint32_t be32toh(uint32_t d)
-{
+static inline uint32_t be32toh(uint32_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap32;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return swap32;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -163,13 +151,12 @@ static inline uint32_t be32toh(uint32_t d)
  * @param d Integer in little endian.
  * @returns Integer in host byte order.
  */
-static inline uint32_t le32toh(uint32_t d)
-{
+static inline uint32_t le32toh(uint32_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap32;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap32;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -177,13 +164,12 @@ static inline uint32_t le32toh(uint32_t d)
  * @param d Integer in host byte order.
  * @returns Integer in big endian.
  */
-static inline uint64_t htobe64(uint64_t d)
-{
+static inline uint64_t htobe64(uint64_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap64;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return swap64;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -191,13 +177,12 @@ static inline uint64_t htobe64(uint64_t d)
  * @param d Integer in host byte order.
  * @returns Integer in little endian.
  */
-static inline uint64_t htole64(uint64_t d)
-{
+static inline uint64_t htole64(uint64_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap64;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap64;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -205,13 +190,12 @@ static inline uint64_t htole64(uint64_t d)
  * @param d Integer in big endian.
  * @returns Integer in host byte order.
  */
-static inline uint64_t be64toh(uint64_t d)
-{
+static inline uint64_t be64toh(uint64_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return swap64;
-#else // LIBCOMP_BIGENDIAN
-    return d;
-#endif // LIBCOMP_LITTLEENDIAN
+  return swap64;
+#else   // LIBCOMP_BIGENDIAN
+  return d;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
 /**
@@ -219,15 +203,14 @@ static inline uint64_t be64toh(uint64_t d)
  * @param d Integer in little endian.
  * @returns Integer in host byte order.
  */
-static inline uint64_t le64toh(uint64_t d)
-{
+static inline uint64_t le64toh(uint64_t d) {
 #ifdef LIBCOMP_LITTLEENDIAN
-    return d;
-#else // LIBCOMP_BIGENDIAN
-    return swap64;
-#endif // LIBCOMP_LITTLEENDIAN
+  return d;
+#else   // LIBCOMP_BIGENDIAN
+  return swap64;
+#endif  // LIBCOMP_LITTLEENDIAN
 }
 
-#endif // EXOTIC_PLATFORM || _WIN32 || __APPLE__
+#endif  // EXOTIC_PLATFORM || _WIN32 || __APPLE__
 
-#endif // LIBCOMP_SRC_ENDIAN_H
+#endif  // LIBCOMP_SRC_ENDIAN_H

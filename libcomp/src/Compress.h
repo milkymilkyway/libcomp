@@ -29,14 +29,12 @@
 
 #include <stdint.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Routines to compress and decompress data using zlib.
  */
-namespace Compress
-{
+namespace Compress {
 
 /**
  * @brief %Compress an input buffer into the output buffer.
@@ -60,7 +58,7 @@ namespace Compress
  * @retval -4 Cleanup error
  */
 int32_t Compress(void *pIn, void *pOut, int32_t inSize, int32_t outSize,
-    int32_t compressionLevel = -1);
+                 int32_t compressionLevel = -1);
 
 /**
  * @brief %Decompress an input buffer into the output buffer.
@@ -81,8 +79,8 @@ int32_t Compress(void *pIn, void *pOut, int32_t inSize, int32_t outSize,
  */
 int32_t Decompress(void *pIn, void *pOut, int32_t inSize, int32_t outSize);
 
-} // namespace Compress
+}  // namespace Compress
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_COMPRESS_H
+#endif  // LIBCOMP_SRC_COMPRESS_H

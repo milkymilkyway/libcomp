@@ -28,20 +28,12 @@
 
 using namespace libcomp;
 
-Message::Init::Init()
-{
+Message::Init::Init() {}
+
+Message::Init::~Init() {}
+
+Message::MessageType Message::Init::GetType() const {
+  return MessageType::MESSAGE_TYPE_SYSTEM;
 }
 
-Message::Init::~Init()
-{
-}
-
-Message::MessageType Message::Init::GetType() const
-{
-    return MessageType::MESSAGE_TYPE_SYSTEM;
-}
-
-libcomp::String Message::Init::Dump() const
-{
-    return "Message: Init";
-}
+libcomp::String Message::Init::Dump() const { return "Message: Init"; }

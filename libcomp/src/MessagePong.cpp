@@ -28,20 +28,12 @@
 
 using namespace libcomp;
 
-Message::Pong::Pong()
-{
+Message::Pong::Pong() {}
+
+Message::Pong::~Pong() {}
+
+Message::MessageType Message::Pong::GetType() const {
+  return MessageType::MESSAGE_TYPE_CONNECTION;
 }
 
-Message::Pong::~Pong()
-{
-}
-
-Message::MessageType Message::Pong::GetType() const
-{
-    return MessageType::MESSAGE_TYPE_CONNECTION;
-}
-
-libcomp::String Message::Pong::Dump() const
-{
-    return "Message: Pong";
-}
+libcomp::String Message::Pong::Dump() const { return "Message: Pong"; }

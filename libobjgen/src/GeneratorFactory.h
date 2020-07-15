@@ -27,29 +27,28 @@
 #ifndef LIBOBJGEN_SRC_GENERATORFACTORY_H
 #define LIBOBJGEN_SRC_GENERATORFACTORY_H
 
-#include "Generator.h"
-
 #include <memory>
 #include <unordered_map>
 
-namespace libobjgen
-{
+#include "Generator.h"
+
+namespace libobjgen {
 
 class Generator;
 
-class GeneratorFactory
-{
-public:
-    GeneratorFactory();
+class GeneratorFactory {
+ public:
+  GeneratorFactory();
 
-    std::shared_ptr<libobjgen::Generator> Generator(
-        const std::string& extension) const;
+  std::shared_ptr<libobjgen::Generator> Generator(
+      const std::string& extension) const;
 
-private:
-    std::unordered_map<std::string,
-        std::shared_ptr<libobjgen::Generator> (*)(void)> mGenerators;
+ private:
+  std::unordered_map<std::string,
+                     std::shared_ptr<libobjgen::Generator> (*)(void)>
+      mGenerators;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_GENERATORFACTORY_H
+#endif  // LIBOBJGEN_SRC_GENERATORFACTORY_H

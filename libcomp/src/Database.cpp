@@ -36,357 +36,299 @@
 
 using namespace libcomp;
 
-Database::Database(const std::shared_ptr<objects::DatabaseConfig>& config)
-{
-    mConfig = config;
+Database::Database(const std::shared_ptr<objects::DatabaseConfig>& config) {
+  mConfig = config;
 }
 
-Database::~Database()
-{
+Database::~Database() {}
+
+bool Database::Execute(const String& query) { return Prepare(query).Execute(); }
+
+String Database::GetLastError() { return mError; }
+
+std::shared_ptr<objects::DatabaseConfig> Database::GetConfig() const {
+  return mConfig;
 }
 
-bool Database::Execute(const String& query)
-{
-    return Prepare(query).Execute();
+bool Database::TableHasRows(const String& table) {
+  libcomp::DatabaseQuery query =
+      Prepare(String("SELECT COUNT(1) FROM %1").Arg(table));
+
+  if (!query.IsValid()) {
+    return false;
+  }
+
+  if (!query.Execute()) {
+    return false;
+  }
+
+  if (!query.Next()) {
+    return false;
+  }
+
+  int64_t count;
+
+  if (!query.GetValue(0, count)) {
+    return false;
+  }
+
+  return 0 < count;
 }
 
-String Database::GetLastError()
-{
-    return mError;
+std::shared_ptr<PersistentObject> Database::LoadSingleObject(
+    size_t typeHash, DatabaseBind* pValue) {
+  auto objects = LoadObjects(typeHash, pValue);
+
+  return objects.size() > 0 ? objects.front() : nullptr;
 }
 
-std::shared_ptr<objects::DatabaseConfig> Database::GetConfig() const
-{
-    return mConfig;
-}
-
-bool Database::TableHasRows(const String& table)
-{
-    libcomp::DatabaseQuery query = Prepare(String(
-        "SELECT COUNT(1) FROM %1").Arg(table));
-
-    if(!query.IsValid())
-    {
-        return false;
-    }
-
-    if(!query.Execute())
-    {
-        return false;
-    }
-
-    if(!query.Next())
-    {
-        return false;
-    }
-
-    int64_t count;
-
-    if(!query.GetValue(0, count))
-    {
-        return false;
-    }
-
-    return 0 < count;
-}
-
-std::shared_ptr<PersistentObject> Database::LoadSingleObject(size_t typeHash,
-    DatabaseBind *pValue)
-{
-    auto objects = LoadObjects(typeHash, pValue);
-
-    return objects.size() > 0 ? objects.front() : nullptr;
-}
-
-bool Database::DeleteSingleObject(std::shared_ptr<PersistentObject>& obj)
-{
-    std::list<std::shared_ptr<PersistentObject>> objs;
-    objs.push_back(obj);
-    return DeleteObjects(objs);
+bool Database::DeleteSingleObject(std::shared_ptr<PersistentObject>& obj) {
+  std::list<std::shared_ptr<PersistentObject>> objs;
+  objs.push_back(obj);
+  return DeleteObjects(objs);
 }
 
 void Database::QueueInsert(std::shared_ptr<PersistentObject> obj,
-    const libobjgen::UUID& uuid)
-{
-    auto s = DatabaseChangeSet::Create(uuid);
-    s->Insert(obj);
-    QueueChangeSet(s);
+                           const libobjgen::UUID& uuid) {
+  auto s = DatabaseChangeSet::Create(uuid);
+  s->Insert(obj);
+  QueueChangeSet(s);
 }
 
 void Database::QueueUpdate(std::shared_ptr<PersistentObject> obj,
-    const libobjgen::UUID& uuid)
-{
-    auto s = DatabaseChangeSet::Create(uuid);
-    s->Update(obj);
-    QueueChangeSet(s);
+                           const libobjgen::UUID& uuid) {
+  auto s = DatabaseChangeSet::Create(uuid);
+  s->Update(obj);
+  QueueChangeSet(s);
 }
 
 void Database::QueueDelete(std::shared_ptr<PersistentObject> obj,
-    const libobjgen::UUID& uuid)
-{
-    auto s = DatabaseChangeSet::Create(uuid);
-    s->Delete(obj);
-    QueueChangeSet(s);
+                           const libobjgen::UUID& uuid) {
+  auto s = DatabaseChangeSet::Create(uuid);
+  s->Delete(obj);
+  QueueChangeSet(s);
 }
 
-bool Database::QueueChangeSet(const std::shared_ptr<
-    DatabaseChangeSet>& changes)
-{
-    auto uuid = changes->GetTransactionUUID();
-    std::string key = uuid.ToString();
+bool Database::QueueChangeSet(
+    const std::shared_ptr<DatabaseChangeSet>& changes) {
+  auto uuid = changes->GetTransactionUUID();
+  std::string key = uuid.ToString();
 
-    auto opChanges = std::dynamic_pointer_cast<
-        DBOperationalChangeSet>(changes);
-    if(opChanges)
-    {
-        // Operational change queuing is not supported
-        return false;
-    }
-    else
-    {
-        auto standardChanges = std::dynamic_pointer_cast<
-            DBStandardChangeSet>(changes);
-
-        if(standardChanges)
-        {
-            std::lock_guard<std::mutex> lock(mTransactionLock);
-            auto queueEntry = mTransactionQueue[key];
-            if(queueEntry == nullptr)
-            {
-                queueEntry = std::make_shared<DBStandardChangeSet>(uuid);
-            }
-
-            for(auto obj : standardChanges->GetInserts())
-            {
-                queueEntry->Insert(obj);
-            }
-
-            for(auto obj : standardChanges->GetUpdates())
-            {
-                queueEntry->Update(obj);
-            }
-
-            for(auto obj : standardChanges->GetDeletes())
-            {
-                queueEntry->Delete(obj);
-            }
-
-            mTransactionQueue[key] = queueEntry;
-
-            return true;
-        }
-    }
-
+  auto opChanges = std::dynamic_pointer_cast<DBOperationalChangeSet>(changes);
+  if (opChanges) {
+    // Operational change queuing is not supported
     return false;
+  } else {
+    auto standardChanges =
+        std::dynamic_pointer_cast<DBStandardChangeSet>(changes);
+
+    if (standardChanges) {
+      std::lock_guard<std::mutex> lock(mTransactionLock);
+      auto queueEntry = mTransactionQueue[key];
+      if (queueEntry == nullptr) {
+        queueEntry = std::make_shared<DBStandardChangeSet>(uuid);
+      }
+
+      for (auto obj : standardChanges->GetInserts()) {
+        queueEntry->Insert(obj);
+      }
+
+      for (auto obj : standardChanges->GetUpdates()) {
+        queueEntry->Update(obj);
+      }
+
+      for (auto obj : standardChanges->GetDeletes()) {
+        queueEntry->Delete(obj);
+      }
+
+      mTransactionQueue[key] = queueEntry;
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
-std::list<libobjgen::UUID> Database::ProcessTransactionQueue()
-{
-    std::list<libobjgen::UUID> failures;
+std::list<libobjgen::UUID> Database::ProcessTransactionQueue() {
+  std::list<libobjgen::UUID> failures;
 
-    std::unordered_map<std::string,
-        std::shared_ptr<DBStandardChangeSet>> queue;
-    {
-        std::lock_guard<std::mutex> lock(mTransactionLock);
+  std::unordered_map<std::string, std::shared_ptr<DBStandardChangeSet>> queue;
+  {
+    std::lock_guard<std::mutex> lock(mTransactionLock);
 
-        if(mTransactionQueue.size() == 0)
-        {
-            return failures;
-        }
-
-        queue = mTransactionQueue;
-        mTransactionQueue.clear();
+    if (mTransactionQueue.size() == 0) {
+      return failures;
     }
 
-    // Process the general queue transaction first
-    auto nullKey = NULLUUID.ToString();
-    if(queue.find(nullKey) != queue.end())
-    {
-        if(!ProcessChangeSet(queue[nullKey]))
-        {
-            failures.push_back(nullKey);
-        }
-        queue.erase(nullKey);
-    }
+    queue = mTransactionQueue;
+    mTransactionQueue.clear();
+  }
 
-    // Process the remaining transactions
-    for(auto kv : queue)
-    {
-        if(!ProcessChangeSet(kv.second))
-        {
-            failures.push_back(kv.second->GetTransactionUUID());
-        }
+  // Process the general queue transaction first
+  auto nullKey = NULLUUID.ToString();
+  if (queue.find(nullKey) != queue.end()) {
+    if (!ProcessChangeSet(queue[nullKey])) {
+      failures.push_back(nullKey);
     }
+    queue.erase(nullKey);
+  }
 
-    return failures;
+  // Process the remaining transactions
+  for (auto kv : queue) {
+    if (!ProcessChangeSet(kv.second)) {
+      failures.push_back(kv.second->GetTransactionUUID());
+    }
+  }
+
+  return failures;
 }
 
-bool Database::ProcessChangeSet(const std::shared_ptr<DatabaseChangeSet>& changes)
-{
-    auto opChanges = std::dynamic_pointer_cast<DBOperationalChangeSet>(changes);
+bool Database::ProcessChangeSet(
+    const std::shared_ptr<DatabaseChangeSet>& changes) {
+  auto opChanges = std::dynamic_pointer_cast<DBOperationalChangeSet>(changes);
 
-    if(opChanges)
-    {
-        return ProcessOperationalChangeSet(opChanges);
+  if (opChanges) {
+    return ProcessOperationalChangeSet(opChanges);
+  } else {
+    auto standardChanges =
+        std::dynamic_pointer_cast<DBStandardChangeSet>(changes);
+    if (standardChanges) {
+      return ProcessStandardChangeSet(standardChanges);
     }
-    else
-    {
-        auto standardChanges = std::dynamic_pointer_cast<DBStandardChangeSet>(changes);
-        if(standardChanges)
-        {
-            return ProcessStandardChangeSet(standardChanges);
-        }
-    }
+  }
 
-    return false;
+  return false;
 }
 
-bool Database::UsingDefaultDatabaseType()
-{
-    return mConfig->GetDatabaseType() == mConfig->GetDefaultDatabaseType();
+bool Database::UsingDefaultDatabaseType() {
+  return mConfig->GetDatabaseType() == mConfig->GetDefaultDatabaseType();
 }
 
 std::shared_ptr<PersistentObject> Database::LoadSingleObjectFromRow(
-    size_t typeHash, DatabaseQuery& query)
-{
-    bool isNew = false;
+    size_t typeHash, DatabaseQuery& query) {
+  bool isNew = false;
 
-    std::shared_ptr<PersistentObject> obj;
+  std::shared_ptr<PersistentObject> obj;
 
-    libobjgen::UUID uid;
-    if(query.GetValue("UID", uid))
-    {
-        //If the object is already cached, refresh it
-        obj = PersistentObject::GetObjectByUUID(uid);
-    }
+  libobjgen::UUID uid;
+  if (query.GetValue("UID", uid)) {
+    // If the object is already cached, refresh it
+    obj = PersistentObject::GetObjectByUUID(uid);
+  }
 
-    if(nullptr == obj)
-    {
-        obj = PersistentObject::New(typeHash);
-        isNew = true;
-    }
+  if (nullptr == obj) {
+    obj = PersistentObject::New(typeHash);
+    isNew = true;
+  }
 
-    if(!obj->LoadDatabaseValues(query))
-    {
-        return nullptr;
-    }
+  if (!obj->LoadDatabaseValues(query)) {
+    return nullptr;
+  }
 
-    if(isNew)
-    {
-        PersistentObject::Register(obj);
-    }
+  if (isNew) {
+    PersistentObject::Register(obj);
+  }
 
-    return obj;
+  return obj;
 }
 
-std::vector<std::shared_ptr<libobjgen::MetaObject>> Database::GetMappedObjects()
-{
-    auto databaseType = mConfig->GetDatabaseType();
-    std::vector<std::shared_ptr<libobjgen::MetaObject>> metaObjectTables;
-    for(auto registrar : PersistentObject::GetRegistry())
-    {
-        std::string source = registrar.second->GetSourceLocation();
-        if(source == databaseType || (source.length() == 0 && UsingDefaultDatabaseType()))
-        {
-            metaObjectTables.push_back(registrar.second);
-        }
+std::vector<std::shared_ptr<libobjgen::MetaObject>>
+Database::GetMappedObjects() {
+  auto databaseType = mConfig->GetDatabaseType();
+  std::vector<std::shared_ptr<libobjgen::MetaObject>> metaObjectTables;
+  for (auto registrar : PersistentObject::GetRegistry()) {
+    std::string source = registrar.second->GetSourceLocation();
+    if (source == databaseType ||
+        (source.length() == 0 && UsingDefaultDatabaseType())) {
+      metaObjectTables.push_back(registrar.second);
     }
+  }
 
-    return metaObjectTables;
+  return metaObjectTables;
 }
 
 bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
-    DataStore *pDataStore, const libcomp::String& migration,
-    const libcomp::String& path)
-{
-    LogDatabaseInfo([&]()
-    {
-        return String("Applying migration %1 to database.\n").Arg(migration);
+                              DataStore* pDataStore,
+                              const libcomp::String& migration,
+                              const libcomp::String& path) {
+  LogDatabaseInfo([&]() {
+    return String("Applying migration %1 to database.\n").Arg(migration);
+  });
+
+  // Load the script.
+  auto script = pDataStore->ReadFile(path);
+
+  if (script.empty()) {
+    LogDatabaseError([&]() {
+      return String("Failed to load migration script: %1\n").Arg(path);
     });
 
-    // Load the script.
-    auto script = pDataStore->ReadFile(path);
+    return false;
+  }
 
-    if(script.empty())
-    {
-        LogDatabaseError([&]()
-        {
-            return String("Failed to load migration script: %1\n").Arg(path);
-        });
+  // Zero the string.
+  script.push_back(0);
 
-        return false;
-    }
+  // Create the script engine.
+  auto engine = std::make_shared<ScriptEngine>();
 
-    // Zero the string.
-    script.push_back(0);
+  // Parse the script.
+  if (!engine->Eval(&script[0], path)) {
+    LogDatabaseError([&]() {
+      return String("Failed to run migration script: %1\n").Arg(path);
+    });
 
-    // Create the script engine.
-    auto engine = std::make_shared<ScriptEngine>();
+    return false;
+  }
 
-    // Parse the script.
-    if(!engine->Eval(&script[0], path))
-    {
-        LogDatabaseError([&]()
-        {
-            return String("Failed to run migration script: %1\n").Arg(path);
-        });
+  // Pull in the Database module.
+  engine->Import("database");
 
-        return false;
-    }
+  // Run the up() function.
+  auto ref = Sqrat::RootTable(engine->GetVM())
+                 .GetFunction("up")
+                 .Evaluate<bool>(shared_from_this(), server);
 
-    // Pull in the Database module.
-    engine->Import("database");
+  if (!ref || !(*ref)) {
+    LogDatabaseError(
+        [&]() { return String("Migration script failed: %1\n").Arg(path); });
 
-    // Run the up() function.
-    auto ref = Sqrat::RootTable(engine->GetVM()).GetFunction(
-        "up").Evaluate<bool>(shared_from_this(), server);
+    return false;
+  }
 
-    if(!ref || !(*ref))
-    {
-        LogDatabaseError([&]()
-        {
-            return String("Migration script failed: %1\n").Arg(path);
-        });
-
-        return false;
-    }
-
-    return true;
+  return true;
 }
 
-namespace libcomp
-{
-    template<>
-    ScriptEngine& ScriptEngine::Using<Database>()
-    {
-        if(!BindingExists("Database"))
-        {
-            Sqrat::Class<Database, Sqrat::NoConstructor<Database>> binding(
-                mVM, "Database");
-            Bind<Database>("Database", binding);
+namespace libcomp {
+template <>
+ScriptEngine& ScriptEngine::Using<Database>() {
+  if (!BindingExists("Database")) {
+    Sqrat::Class<Database, Sqrat::NoConstructor<Database>> binding(mVM,
+                                                                   "Database");
+    Bind<Database>("Database", binding);
 
-            // These are needed for some methods.
-            Using<PersistentObject>();
+    // These are needed for some methods.
+    Using<PersistentObject>();
 
-            binding
-                .Func("Open", &Database::Open)
-                .Func("Close", &Database::Close)
-                .Func("IsOpen", &Database::IsOpen)
-                //.Func("Prepare", &Database::Prepare)
-                .Func("Execute", &Database::Execute)
-                .Func("Exists", &Database::Exists)
-                .Func("Use", &Database::Use)
-                .Func("TableHasRows", &Database::TableHasRows)
-                .Func("TableExists", &Database::TableExists)
-                .Func("GetLastError", &Database::GetLastError)
-                .Func("InsertSingleObject", &Database::InsertSingleObject)
-                .Func("UpdateSingleObject", &Database::UpdateSingleObject)
-                .Func("DeleteSingleObject", &Database::DeleteSingleObject)
-                ; // Last call to binding
-        }
+    binding.Func("Open", &Database::Open)
+        .Func("Close", &Database::Close)
+        .Func("IsOpen", &Database::IsOpen)
+        //.Func("Prepare", &Database::Prepare)
+        .Func("Execute", &Database::Execute)
+        .Func("Exists", &Database::Exists)
+        .Func("Use", &Database::Use)
+        .Func("TableHasRows", &Database::TableHasRows)
+        .Func("TableExists", &Database::TableExists)
+        .Func("GetLastError", &Database::GetLastError)
+        .Func("InsertSingleObject", &Database::InsertSingleObject)
+        .Func("UpdateSingleObject", &Database::UpdateSingleObject)
+        .Func("DeleteSingleObject",
+              &Database::DeleteSingleObject);  // Last call to binding
+  }
 
-        return *this;
-    }
+  return *this;
 }
+}  // namespace libcomp
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM

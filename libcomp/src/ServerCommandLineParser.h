@@ -33,20 +33,18 @@
 // object Includes
 #include <ServerCommandLine.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Class to handle parsing command line arguments for a server.
  */
 class ServerCommandLineParser : public ArgumentParser,
-    public objects::ServerCommandLine
-{
-public:
-    ServerCommandLineParser();
-    virtual ~ServerCommandLineParser();
+                                public objects::ServerCommandLine {
+ public:
+  ServerCommandLineParser();
+  virtual ~ServerCommandLineParser();
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_SERVERCOMMANDLINEPARSER_H
+#endif  // LIBCOMP_SRC_SERVERCOMMANDLINEPARSER_H

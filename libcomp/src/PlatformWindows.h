@@ -29,11 +29,9 @@
 
 #include "CString.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Platform
-{
+namespace Platform {
 
 /**
  * Convert the last Windows error into a string.
@@ -44,8 +42,8 @@ namespace Platform
  */
 libcomp::String GetLastErrorString();
 
-} // namespace Platform
+}  // namespace Platform
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_PLATFORMWINDOWS_H
+#endif  // LIBCOMP_SRC_PLATFORMWINDOWS_H

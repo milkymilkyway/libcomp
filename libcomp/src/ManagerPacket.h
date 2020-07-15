@@ -35,11 +35,11 @@
 
 // Standard C++11 Includes
 #include <stdint.h>
+
 #include <memory>
 #include <unordered_map>
 
-namespace libcomp
-{
+namespace libcomp {
 
 typedef uint16_t CommandCode_t;
 
@@ -48,67 +48,66 @@ class PacketParser;
 /**
  * Manager dedicated to handling messages of type @ref libcomp::Message::Packet.
  */
-class ManagerPacket : public libcomp::Manager
-{
-public:
-    /**
-     * Create a new manager.
-     * @param server Pointer to the server that uses this manager
-     */
-    ManagerPacket(std::weak_ptr<libcomp::BaseServer> server);
+class ManagerPacket : public libcomp::Manager {
+ public:
+  /**
+   * Create a new manager.
+   * @param server Pointer to the server that uses this manager
+   */
+  ManagerPacket(std::weak_ptr<libcomp::BaseServer> server);
 
-    /**
-     * Cleanup the manager.
-     */
-    virtual ~ManagerPacket();
+  /**
+   * Cleanup the manager.
+   */
+  virtual ~ManagerPacket();
 
-    /**
-     * Adds a packet parser of the specified type to this manager
-     * to handle a specific command code.
-     * @param commandCode Packet command code to handle
-     * @return true if its a valid type and the command code is not
-     *  already being handled, false otherwise
-     */
-    template <class T> bool AddParser(CommandCode_t commandCode)
-    {
-        if(mPacketParsers.find(commandCode) == mPacketParsers.end() &&
-            std::is_base_of<PacketParser, T>::value)
-        {
-            mPacketParsers[commandCode] = std::dynamic_pointer_cast<PacketParser>(
-                std::shared_ptr<T>(new T()));
-            return true;
-        }
-
-        return false;
+  /**
+   * Adds a packet parser of the specified type to this manager
+   * to handle a specific command code.
+   * @param commandCode Packet command code to handle
+   * @return true if its a valid type and the command code is not
+   *  already being handled, false otherwise
+   */
+  template <class T>
+  bool AddParser(CommandCode_t commandCode) {
+    if (mPacketParsers.find(commandCode) == mPacketParsers.end() &&
+        std::is_base_of<PacketParser, T>::value) {
+      mPacketParsers[commandCode] =
+          std::dynamic_pointer_cast<PacketParser>(std::shared_ptr<T>(new T()));
+      return true;
     }
 
-    virtual std::list<libcomp::Message::MessageType> GetSupportedTypes() const;
-    virtual bool ProcessMessage(const libcomp::Message::Message *pMessage);
+    return false;
+  }
 
-    /**
-     * Get the server that uses this manager.
-     * @return Pointer to the server that uses this manager
-     */
-    std::shared_ptr<libcomp::BaseServer> GetServer();
+  virtual std::list<libcomp::Message::MessageType> GetSupportedTypes() const;
+  virtual bool ProcessMessage(const libcomp::Message::Message* pMessage);
 
-protected:
-    virtual bool ValidateConnectionState(const std::shared_ptr<
-        libcomp::TcpConnection>& connection, CommandCode_t commandCode) const;
+  /**
+   * Get the server that uses this manager.
+   * @return Pointer to the server that uses this manager
+   */
+  std::shared_ptr<libcomp::BaseServer> GetServer();
 
-    /// Static list containing the packet message type to return via
-    /// @ref ManagerPacket::GetSupportedTypes
-    static std::list<libcomp::Message::MessageType> sSupportedTypes;
+ protected:
+  virtual bool ValidateConnectionState(
+      const std::shared_ptr<libcomp::TcpConnection>& connection,
+      CommandCode_t commandCode) const;
 
-    /// Packet parser map by command code used to process messages
-    std::unordered_map<CommandCode_t,
-        std::shared_ptr<PacketParser>> mPacketParsers;
+  /// Static list containing the packet message type to return via
+  /// @ref ManagerPacket::GetSupportedTypes
+  static std::list<libcomp::Message::MessageType> sSupportedTypes;
 
-    /// Pointer to the server that uses this manager
-    std::weak_ptr<libcomp::BaseServer> mServer;
+  /// Packet parser map by command code used to process messages
+  std::unordered_map<CommandCode_t, std::shared_ptr<PacketParser>>
+      mPacketParsers;
+
+  /// Pointer to the server that uses this manager
+  std::weak_ptr<libcomp::BaseServer> mServer;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
-#endif // LIBCOMP_SRC_MANAGERPACKET_H
+#endif  // LIBCOMP_SRC_MANAGERPACKET_H

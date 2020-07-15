@@ -29,6 +29,7 @@
 
 // Standard C++11 Includes
 #include <stdint.h>
+
 #include <functional>
 #include <istream>
 #include <list>
@@ -37,13 +38,16 @@
 #include <ostream>
 #include <unordered_map>
 
-// tinyxml2 Includes
+// Ignore warnings
 #include <PushIgnore.h>
+
+// tinyxml2 Includes
 #include <tinyxml2.h>
+
+// Stop ignoring warnings
 #include <PopIgnore.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class Packet;
 class ReadOnlyPacket;
@@ -52,38 +56,36 @@ class ReadOnlyPacket;
  * A data input stream wrapper with collection type size information
  * broken out into a seperate field.
  */
-class ObjectInStream
-{
-public:
-    /**
-     * Create a stream and an empty dynamic size list.
-     */
-    ObjectInStream(std::istream& _stream) : stream(_stream) { }
+class ObjectInStream {
+ public:
+  /**
+   * Create a stream and an empty dynamic size list.
+   */
+  ObjectInStream(std::istream& _stream) : stream(_stream) {}
 
-    /// Input data stream
-    std::istream& stream;
+  /// Input data stream
+  std::istream& stream;
 
-    /// List of dynamic sizes for collection types
-    std::list<uint16_t> dynamicSizes;
+  /// List of dynamic sizes for collection types
+  std::list<uint16_t> dynamicSizes;
 };
 
 /**
  * A data output stream wrapper with collection type size information
  * broken out into a seperate field.
  */
-class ObjectOutStream
-{
-public:
-    /**
-     * Create a stream and an empty dynamic size list.
-     */
-    ObjectOutStream(std::ostream& _stream) : stream(_stream) { }
+class ObjectOutStream {
+ public:
+  /**
+   * Create a stream and an empty dynamic size list.
+   */
+  ObjectOutStream(std::ostream& _stream) : stream(_stream) {}
 
-    /// Output data stream
-    std::ostream& stream;
+  /// Output data stream
+  std::ostream& stream;
 
-    /// List of dynamic sizes for collection types
-    std::list<uint16_t> dynamicSizes;
+  /// List of dynamic sizes for collection types
+  std::list<uint16_t> dynamicSizes;
 };
 
 /**
@@ -94,196 +96,197 @@ public:
  * @sa DynamicObject
  * @sa PersistentObject
  */
-class Object
-{
-public:
-    /**
-     * Create an object.
-     */
-    Object();
+class Object {
+ public:
+  /**
+   * Create an object.
+   */
+  Object();
 
-    /**
-     * Explicitly defined copy constructor necessary due to removal
-     *  of implicit constructor from non-copyable mutex member.
-     * @param other The other object to copy
-     */
-    Object(const Object& other);
+  /**
+   * Explicitly defined copy constructor necessary due to removal
+   *  of implicit constructor from non-copyable mutex member.
+   * @param other The other object to copy
+   */
+  Object(const Object& other);
 
-    /**
-     * Clean up the object.
-     */
-    virtual ~Object();
+  /**
+   * Clean up the object.
+   */
+  virtual ~Object();
 
-    /**
-     * Check if the object is currently in a valid state.
-     * @param recursive If references to other objects exist
-     *  and recursive = true, IsValid will be run on those
-     *  references as well
-     * @return true if valid, false if invalid
-     */
-    virtual bool IsValid(bool recursive = true) const = 0;
+  /**
+   * Check if the object is currently in a valid state.
+   * @param recursive If references to other objects exist
+   *  and recursive = true, IsValid will be run on those
+   *  references as well
+   * @return true if valid, false if invalid
+   */
+  virtual bool IsValid(bool recursive = true) const = 0;
 
-    /**
-     * Load the object's data members from an ObjectInStream.
-     * @param stream Byte stream containing data member values
-     * @return true if loading was successful, false if it was not
-     */
-    virtual bool Load(ObjectInStream& stream) = 0;
+  /**
+   * Load the object's data members from an ObjectInStream.
+   * @param stream Byte stream containing data member values
+   * @return true if loading was successful, false if it was not
+   */
+  virtual bool Load(ObjectInStream& stream) = 0;
 
-    /**
-     * Save the object's data members to an ObjectOutStream.
-     * @param stream Byte stream to save data member values to
-     * @return true if saving was successful, false if it was not
-     */
-    virtual bool Save(ObjectOutStream& stream) const  = 0;
+  /**
+   * Save the object's data members to an ObjectOutStream.
+   * @param stream Byte stream to save data member values to
+   * @return true if saving was successful, false if it was not
+   */
+  virtual bool Save(ObjectOutStream& stream) const = 0;
 
-    /**
-     * Load the object's data members from a standard input stream.
-     * @param stream Byte stream containing data member values
-     * @param flat If references to non-persistent objects exist
-     *  and flat = false those references' data members are specified
-     *  in the stream as well
-     * @return true if loading was successful, false if it was not
-     */
-    virtual bool Load(std::istream& stream, bool flat = false) = 0;
+  /**
+   * Load the object's data members from a standard input stream.
+   * @param stream Byte stream containing data member values
+   * @param flat If references to non-persistent objects exist
+   *  and flat = false those references' data members are specified
+   *  in the stream as well
+   * @return true if loading was successful, false if it was not
+   */
+  virtual bool Load(std::istream& stream, bool flat = false) = 0;
 
-    /**
-     * Save the object's data members to a standard output stream.
-     * @param stream Byte stream to save data member values to
-     * @param flat If references to non-persistent objects exist
-     *  and flat = false those references' data members will be saved
-     *  in the stream as well
-     * @return true if saving was successful, false if it was not
-     */
-    virtual bool Save(std::ostream& stream, bool flat = false) const  = 0;
+  /**
+   * Save the object's data members to a standard output stream.
+   * @param stream Byte stream to save data member values to
+   * @param flat If references to non-persistent objects exist
+   *  and flat = false those references' data members will be saved
+   *  in the stream as well
+   * @return true if saving was successful, false if it was not
+   */
+  virtual bool Save(std::ostream& stream, bool flat = false) const = 0;
 
-    /**
-     * Load the object's data members from an XML file.
-     * @param doc XML document containing the definition
-     * @param root Root XML node of the definition
-     * @return true if loading was successful, false if it was not
-     */
-    virtual bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root) = 0;
+  /**
+   * Load the object's data members from an XML file.
+   * @param doc XML document containing the definition
+   * @param root Root XML node of the definition
+   * @return true if loading was successful, false if it was not
+   */
+  virtual bool Load(const tinyxml2::XMLDocument& doc,
+                    const tinyxml2::XMLElement& root) = 0;
 
-    /**
-     * Save the object's data members to an XML file.
-     * @param doc XML document to save the definition to
-     * @param root Root XML node to save the definition to
-     * @param append true if the root node should be appended to,
-     *  false if an object node should be added to the root then
-     *  appended to
-     * @return true if saving was successful, false if it was not
-     */
-    virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& root, bool append = false) const = 0;
+  /**
+   * Save the object's data members to an XML file.
+   * @param doc XML document to save the definition to
+   * @param root Root XML node to save the definition to
+   * @param append true if the root node should be appended to,
+   *  false if an object node should be added to the root then
+   *  appended to
+   * @return true if saving was successful, false if it was not
+   */
+  virtual bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& root,
+                    bool append = false) const = 0;
 
-    /**
-     * Load the object's data members from a data packet.
-     * @param p Packet containing data member values
-     * @param flat Specifies if the call to Load should be flat
-     * @return true if loading was successful, false if it was not
-     */
-    virtual bool LoadPacket(libcomp::ReadOnlyPacket& p, bool flat = true);
+  /**
+   * Load the object's data members from a data packet.
+   * @param p Packet containing data member values
+   * @param flat Specifies if the call to Load should be flat
+   * @return true if loading was successful, false if it was not
+   */
+  virtual bool LoadPacket(libcomp::ReadOnlyPacket& p, bool flat = true);
 
-    /**
-     * Save the object's data members to a data packet.
-     * @param p Packet to save data member values to
-     * @param flat Specifies if the call to Save should be flat
-     * @return true if saving was successful, false if it was not
-     */
-    virtual bool SavePacket(libcomp::Packet& p, bool flat = true) const;
+  /**
+   * Save the object's data members to a data packet.
+   * @param p Packet to save data member values to
+   * @param flat Specifies if the call to Save should be flat
+   * @return true if saving was successful, false if it was not
+   */
+  virtual bool SavePacket(libcomp::Packet& p, bool flat = true) const;
 
-    /**
-     * Get the dynamic size count of the MetaObject definition.
-     * An object's dynamic size count can be thought of as the
-     * minimum size required to save an object of a given type.
-     * @return MetaObject definition's dynamic size count
-     */
-    virtual uint16_t GetDynamicSizeCount() const = 0;
+  /**
+   * Get the dynamic size count of the MetaObject definition.
+   * An object's dynamic size count can be thought of as the
+   * minimum size required to save an object of a given type.
+   * @return MetaObject definition's dynamic size count
+   */
+  virtual uint16_t GetDynamicSizeCount() const = 0;
 
-    /**
-     * Static utility function to build multiple objects from
-     * an input stream and a factory function.
-     * @param stream Byte stream containing the object data
-     * @param objectAllocator Factory function to build the objects
-     * @return List of resulting objects built from the stream
-     */
-    static std::list<std::shared_ptr<Object>> LoadBinaryData(
-        std::istream& stream, const std::function<
-        std::shared_ptr<Object>()>& objectAllocator);
+  /**
+   * Static utility function to build multiple objects from
+   * an input stream and a factory function.
+   * @param stream Byte stream containing the object data
+   * @param objectAllocator Factory function to build the objects
+   * @return List of resulting objects built from the stream
+   */
+  static std::list<std::shared_ptr<Object>> LoadBinaryData(
+      std::istream& stream,
+      const std::function<std::shared_ptr<Object>()>& objectAllocator);
 
-    /**
-    * Static utliity function to save multiple objects to an output stream.
-    * @param stream Byte stream to save the object data to.
-    * @param objs List of objects to save to the stream.
-    * @return true if saving was successful, false if it was not
-    */
-    static bool SaveBinaryData(std::ostream& stream,
-        const std::list<std::shared_ptr<Object>>& objs);
+  /**
+   * Static utliity function to save multiple objects to an output stream.
+   * @param stream Byte stream to save the object data to.
+   * @param objs List of objects to save to the stream.
+   * @return true if saving was successful, false if it was not
+   */
+  static bool SaveBinaryData(std::ostream& stream,
+                             const std::list<std::shared_ptr<Object>>& objs);
 
-    /**
-     * Save the object into XML and return it as a string.
-     * @returns An XML string for the object.
-     */
-    std::string GetXml() const;
+  /**
+   * Save the object into XML and return it as a string.
+   * @returns An XML string for the object.
+   */
+  std::string GetXml() const;
 
-protected:
-    /**
-     * Utility function to get a child XML element from a parent node
-     * matching a specified name.
-     * @param root Parent XML node
-     * @param name Child element name to retrieve
-     * @return First matching XML node child or nullptr if not found
-     * @sa Object::GetXmlChildren
-     */
-    const tinyxml2::XMLElement* GetXmlChild(const tinyxml2::XMLElement& root, const std::string name) const;
+ protected:
+  /**
+   * Utility function to get a child XML element from a parent node
+   * matching a specified name.
+   * @param root Parent XML node
+   * @param name Child element name to retrieve
+   * @return First matching XML node child or nullptr if not found
+   * @sa Object::GetXmlChildren
+   */
+  const tinyxml2::XMLElement* GetXmlChild(const tinyxml2::XMLElement& root,
+                                          const std::string name) const;
 
-    /**
-     * Utility function to get child XML elements from a parent node
-     * matching a specified name.
-     * @param root Parent XML node
-     * @param name Child element name to retrieve
-     * @return List of matching XML node children or empty if not found
-     * @sa Object::GetXmlChild
-     */
-    const std::list<const tinyxml2::XMLElement*> GetXmlChildren(const tinyxml2::XMLElement& root, const std::string name) const;
+  /**
+   * Utility function to get child XML elements from a parent node
+   * matching a specified name.
+   * @param root Parent XML node
+   * @param name Child element name to retrieve
+   * @return List of matching XML node children or empty if not found
+   * @sa Object::GetXmlChild
+   */
+  const std::list<const tinyxml2::XMLElement*> GetXmlChildren(
+      const tinyxml2::XMLElement& root, const std::string name) const;
 
-    /**
-     * Utility function to get child XML elements from a parent node.
-     * @param root Parent XML node
-     * @return Map of child members by element name
-     */
-    virtual std::unordered_map<std::string, const tinyxml2::XMLElement*>
-        GetXmlMembers(const tinyxml2::XMLElement& root) const;
+  /**
+   * Utility function to get child XML elements from a parent node.
+   * @param root Parent XML node
+   * @return Map of child members by element name
+   */
+  virtual std::unordered_map<std::string, const tinyxml2::XMLElement*>
+  GetXmlMembers(const tinyxml2::XMLElement& root) const;
 
-    /**
-     * Utility function to get element text from an XML node.
-     * @param root Parent XML node
-     * @return Text contained in the node's element text
-     */
-    virtual std::string GetXmlText(const tinyxml2::XMLElement& root) const;
+  /**
+   * Utility function to get element text from an XML node.
+   * @param root Parent XML node
+   * @return Text contained in the node's element text
+   */
+  virtual std::string GetXmlText(const tinyxml2::XMLElement& root) const;
 
-    /**
-     * Utility function to skip padding bytes when reading from a datastream.
-     * @param stream Byte stream being read from
-     * @param count Number of bytes to skip
-     * @return true if the stream is still good after skipping
-     */
-    bool SkipPadding(std::istream& stream, uint8_t count);
+  /**
+   * Utility function to skip padding bytes when reading from a datastream.
+   * @param stream Byte stream being read from
+   * @param count Number of bytes to skip
+   * @return true if the stream is still good after skipping
+   */
+  bool SkipPadding(std::istream& stream, uint8_t count);
 
-    /**
-     * Utility function to write padding bytes when writing to a datastream.
-     * @param stream Byte stream being written to
-     * @param count Number of bytes to write
-     * @return true if the stream is still good after writing
-     */
-    bool WritePadding(std::ostream& stream, uint8_t count) const;
+  /**
+   * Utility function to write padding bytes when writing to a datastream.
+   * @param stream Byte stream being written to
+   * @param count Number of bytes to write
+   * @return true if the stream is still good after writing
+   */
+  bool WritePadding(std::ostream& stream, uint8_t count) const;
 
-    /// Mutex to lock accessing the object fields
-    std::mutex mFieldLock;
+  /// Mutex to lock accessing the object fields
+  std::mutex mFieldLock;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_OBJECT_H
+#endif  // LIBCOMP_SRC_OBJECT_H

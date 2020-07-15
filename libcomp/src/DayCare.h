@@ -38,46 +38,43 @@
 // tinyxml Includes
 #include <tinyxml2.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class SpawnThread;
 class WatchThread;
 
-class DayCare
-{
-public:
-    DayCare(bool printDetails = true,
-        std::function<void()> onDetain = 0);
-    ~DayCare();
+class DayCare {
+ public:
+  DayCare(bool printDetails = true, std::function<void()> onDetain = 0);
+  ~DayCare();
 
-    bool DetainMonsters(const std::string& path);
-    bool LoadProcessXml(const std::string& xml);
+  bool DetainMonsters(const std::string& path);
+  bool LoadProcessXml(const std::string& xml);
 
-    bool IsRunning() const;
-    bool HaveChildren();
-    void PrintStatus();
+  bool IsRunning() const;
+  bool HaveChildren();
+  void PrintStatus();
 
-    void WaitForExit();
-    void NotifyExit(pid_t pid, int status);
-    void CloseDoors(bool kill = false);
+  void WaitForExit();
+  void NotifyExit(pid_t pid, int status);
+  void CloseDoors(bool kill = false);
 
-    std::list<std::shared_ptr<Child>> OrderChildren(
-        const std::list<std::shared_ptr<Child>>& children);
+  std::list<std::shared_ptr<Child>> OrderChildren(
+      const std::list<std::shared_ptr<Child>>& children);
 
-private:
-    bool LoadProcessDoc(tinyxml2::XMLDocument& doc);
+ private:
+  bool LoadProcessDoc(tinyxml2::XMLDocument& doc);
 
-    bool mRunning;
-    bool mPrintDetails;
+  bool mRunning;
+  bool mPrintDetails;
 
-    SpawnThread *mSpawnThread;
-    WatchThread *mWatchThread;
+  SpawnThread* mSpawnThread;
+  WatchThread* mWatchThread;
 
-    std::list<std::shared_ptr<Child>> mChildren;
-    std::mutex mChildrenShackles;
+  std::list<std::shared_ptr<Child>> mChildren;
+  std::mutex mChildrenShackles;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_DAYCARE_H
+#endif  // LIBCOMP_SRC_DAYCARE_H

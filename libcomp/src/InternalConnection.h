@@ -30,35 +30,34 @@
 // libcomp Includes
 #include "EncryptedConnection.h"
 
-namespace libcomp
-{
+namespace libcomp {
 
 /**
  * Represents a connection established between two internal servers.
  */
-class InternalConnection : public libcomp::EncryptedConnection
-{
-public:
-    /**
-     * Create a new internal connection.
-     * @param io_service ASIO service to manage this connection.
-     */
-    InternalConnection(asio::io_service& io_service);
+class InternalConnection : public libcomp::EncryptedConnection {
+ public:
+  /**
+   * Create a new internal connection.
+   * @param io_service ASIO service to manage this connection.
+   */
+  InternalConnection(asio::io_service& io_service);
 
-    /**
-     * Create a new internal connection.
-     * @param socket Socket provided by the server for the new client.
-     * @param diffieHellman Asymmetric encryption information.
-     */
-    InternalConnection(asio::ip::tcp::socket& socket, const std::shared_ptr<
-        Crypto::DiffieHellman>& diffieHellman);
+  /**
+   * Create a new internal connection.
+   * @param socket Socket provided by the server for the new client.
+   * @param diffieHellman Asymmetric encryption information.
+   */
+  InternalConnection(
+      asio::ip::tcp::socket& socket,
+      const std::shared_ptr<Crypto::DiffieHellman>& diffieHellman);
 
-    /**
-     * Cleanup the connection object.
-     */
-    virtual ~InternalConnection();
+  /**
+   * Cleanup the connection object.
+   */
+  virtual ~InternalConnection();
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_INTERNALCONNECTION_H
+#endif  // LIBCOMP_SRC_INTERNALCONNECTION_H

@@ -29,20 +29,17 @@
 
 #include <CString.h>
 
-namespace libcomp
-{
+namespace libcomp {
 
-namespace Convert
-{
+namespace Convert {
 
 /**
  * Valid string encodings.
  */
-typedef enum
-{
-    ENCODING_UTF8 = 0,
-    ENCODING_CP932,
-    ENCODING_CP1252,
+typedef enum {
+  ENCODING_UTF8 = 0,
+  ENCODING_CP932,
+  ENCODING_CP1252,
 } Encoding_t;
 
 /**
@@ -59,7 +56,7 @@ typedef enum
  * @sa libcomp::Convert::ToEncoding
  * @sa libcomp::Convert::SizeEncoded
  */
-String FromEncoding(Encoding_t encoding, const char *szString, int size = -1);
+String FromEncoding(Encoding_t encoding, const char* szString, int size = -1);
 
 /**
  * Convert a string from the specified @em encoding to a String.
@@ -91,7 +88,7 @@ String FromEncoding(Encoding_t encoding, const std::vector<char>& str);
  * @sa libcomp::Convert::SizeEncoded
  */
 std::vector<char> ToEncoding(Encoding_t encoding, const String& str,
-    bool nullTerminator = true);
+                             bool nullTerminator = true);
 
 /**
  * Determine the size of a String if it was converted to the specified
@@ -111,8 +108,8 @@ std::vector<char> ToEncoding(Encoding_t encoding, const String& str,
  */
 size_t SizeEncoded(Encoding_t encoding, const String& str, size_t align = 0);
 
-} // namespace Convert
+}  // namespace Convert
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#endif // LIBCOMP_SRC_CONVERT_H
+#endif  // LIBCOMP_SRC_CONVERT_H

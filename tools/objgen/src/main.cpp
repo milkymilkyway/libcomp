@@ -27,13 +27,17 @@
 #include <cstdlib>
 
 // Standard C++11 Includes
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <streambuf>
 
-// tinyxml2 Includes
+// Ignore warnings
 #include "PushIgnore.h"
+
+// tinyxml2 Includes
 #include <tinyxml2.h>
+
+// Stop ignoring warnings
 #include "PopIgnore.h"
 
 // libobjgen Includes
@@ -49,308 +53,258 @@
 libobjgen::MetaObjectXmlParser gParser;
 
 bool LoadObjectTypeInformation(const std::list<std::string>& searchPath,
-    const std::string& xmlFile)
-{
-    tinyxml2::XMLDocument doc;
+                               const std::string& xmlFile) {
+  tinyxml2::XMLDocument doc;
 
-    bool loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(xmlFile.c_str());
+  bool loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(xmlFile.c_str());
 
-    if(!loaded)
-    {
-        for(auto path : searchPath)
-        {
-            std::string nextPath = path + std::string("/") + xmlFile;
+  if (!loaded) {
+    for (auto path : searchPath) {
+      std::string nextPath = path + std::string("/") + xmlFile;
 
-            loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(nextPath.c_str());
+      loaded = tinyxml2::XML_SUCCESS == doc.LoadFile(nextPath.c_str());
 
-            if(loaded)
-            {
-                break;
-            }
-        }
+      if (loaded) {
+        break;
+      }
+    }
+  }
+
+  if (!loaded) {
+    std::cerr << "Failed to parse XML file: " << xmlFile << std::endl;
+    std::cerr << "Check the path and the file contents." << std::endl;
+
+    return false;
+  }
+
+  tinyxml2::XMLElement* pRoot = doc.RootElement();
+
+  if (nullptr == pRoot) {
+    std::cerr << "Invalid object XML format for file: " << xmlFile << std::endl;
+
+    return false;
+  }
+
+  if (nullptr == pRoot->Name() || "objgen" != std::string(pRoot->Name())) {
+    std::cerr << "Invalid root element in object XML format for file: "
+              << xmlFile << std::endl;
+
+    return false;
+  }
+
+  const tinyxml2::XMLElement* pIncludeXml = pRoot->FirstChildElement("include");
+
+  while (nullptr != pIncludeXml) {
+    const char* szPath = pIncludeXml->Attribute("path");
+
+    if (nullptr == szPath) {
+      std::cerr << "Missing path attribute in include element in object XML "
+                   "format for file: "
+                << xmlFile << std::endl;
+
+      return false;
     }
 
-    if(!loaded)
-    {
-        std::cerr << "Failed to parse XML file: " << xmlFile << std::endl;
-        std::cerr << "Check the path and the file contents." << std::endl;
+    std::string includePath = szPath;
 
-        return false;
+    if (!LoadObjectTypeInformation(searchPath, includePath)) {
+      return false;
     }
 
-    tinyxml2::XMLElement *pRoot = doc.RootElement();
+    pIncludeXml = pIncludeXml->NextSiblingElement("include");
+  }
 
-    if(nullptr == pRoot)
-    {
-        std::cerr << "Invalid object XML format for file: "
-            << xmlFile << std::endl;
+  const tinyxml2::XMLElement* pObjectXml = pRoot->FirstChildElement("object");
 
-        return false;
+  while (nullptr != pObjectXml) {
+    bool success = gParser.LoadTypeInformation(doc, *pObjectXml);
+    auto obj = gParser.GetCurrentObject();
+    if (success) {
+      pObjectXml = pObjectXml->NextSiblingElement("object");
+    } else {
+      std::cerr << "Failed to read type information for object: "
+                << (nullptr != obj ? obj->GetName() : "unnamed") << ":  "
+                << gParser.GetError() << std::endl;
+
+      return false;
     }
+  }
 
-    if(nullptr == pRoot->Name() || "objgen" != std::string(pRoot->Name()))
-    {
-        std::cerr << "Invalid root element in object XML format for file: "
-            << xmlFile << std::endl;
-
-        return false;
-    }
-
-    const tinyxml2::XMLElement *pIncludeXml =
-        pRoot->FirstChildElement("include");
-
-    while(nullptr != pIncludeXml)
-    {
-        const char *szPath = pIncludeXml->Attribute("path");
-
-        if(nullptr == szPath)
-        {
-            std::cerr << "Missing path attribute in include element in "
-                "object XML format for file: " << xmlFile << std::endl;
-
-            return false;
-        }
-
-        std::string includePath = szPath;
-
-        if(!LoadObjectTypeInformation(searchPath, includePath))
-        {
-            return false;
-        }
-
-        pIncludeXml = pIncludeXml->NextSiblingElement("include");
-    }
-
-    const tinyxml2::XMLElement *pObjectXml = pRoot->FirstChildElement("object");
-
-    while(nullptr != pObjectXml)
-    {
-        bool success = gParser.LoadTypeInformation(doc, *pObjectXml);
-        auto obj = gParser.GetCurrentObject();
-        if(success)
-        {
-            pObjectXml = pObjectXml->NextSiblingElement("object");
-        }
-        else
-        {
-            std::cerr << "Failed to read type information for object: "
-                << (nullptr != obj ?  obj->GetName() : "unnamed") << ":  " << gParser.GetError() << std::endl;
-
-            return false;
-        }
-    }
-
-    return true;
+  return true;
 }
 
 bool GenerateFile(const std::string& path, const std::string& extension,
-    const std::string& object)
-{
-    auto obj = gParser.GetKnownObject(object);
-    if(nullptr == obj)
-    {
-        std::cerr << "Failed to find object '" << object
-            << "' for output file: " << path << std::endl;
+                  const std::string& object) {
+  auto obj = gParser.GetKnownObject(object);
+  if (nullptr == obj) {
+    std::cerr << "Failed to find object '" << object
+              << "' for output file: " << path << std::endl;
 
-        return false;
+    return false;
+  }
+
+  std::shared_ptr<libobjgen::Generator> generator =
+      libobjgen::GeneratorFactory().Generator(extension);
+
+  if (!generator) {
+    std::cerr << "Unknown file extension: " << extension << std::endl;
+
+    return false;
+  }
+
+  std::string code = generator->Generate(*obj);
+
+  if (code.empty()) {
+    std::cerr << "Failed to generate code for object: " << object << std::endl;
+
+    return false;
+  }
+
+  bool rewrite = true;
+
+  {
+    std::ifstream inFile;
+
+    inFile.open(path.c_str());
+
+    if (inFile.good()) {
+      rewrite = code != std::string(std::istreambuf_iterator<char>(inFile),
+                                    std::istreambuf_iterator<char>());
+    }
+  }
+
+  if (rewrite) {
+    std::ofstream outFile;
+
+    outFile.open(path.c_str());
+
+    if (!outFile.good()) {
+      std::cerr << "" << std::endl;
+
+      return false;
     }
 
-    std::shared_ptr<libobjgen::Generator> generator =
-        libobjgen::GeneratorFactory().Generator(extension);
+    outFile << code;
 
-    if(!generator)
-    {
-        std::cerr << "Unknown file extension: " << extension << std::endl;
+    if (!outFile.good()) {
+      std::cerr << "" << std::endl;
 
-        return false;
+      return false;
     }
+  }
 
-    std::string code = generator->Generate(*obj);
-
-    if(code.empty())
-    {
-        std::cerr << "Failed to generate code for object: "
-            << object << std::endl;
-
-        return false;
-    }
-
-    bool rewrite = true;
-
-    {
-        std::ifstream inFile;
-
-        inFile.open(path.c_str());
-
-        if(inFile.good())
-        {
-            rewrite = code != std::string(
-                std::istreambuf_iterator<char>(inFile),
-                std::istreambuf_iterator<char>());
-        }
-    }
-
-    if(rewrite)
-    {
-        std::ofstream outFile;
-
-        outFile.open(path.c_str());
-
-        if(!outFile.good())
-        {
-            std::cerr << "" << std::endl;
-
-            return false;
-        }
-
-        outFile << code;
-
-        if(!outFile.good())
-        {
-            std::cerr << "" << std::endl;
-
-            return false;
-        }
-    }
-
-    return true;
+  return true;
 }
 
-int main(int argc, char *argv[])
-{
-    typedef enum
-    {
-        LAST_OPTION_NONE = 0,
-        LAST_OPTION_INCLUDE,
-        LAST_OPTION_OUTPUT,
-    } LastOption_t;
+int main(int argc, char* argv[]) {
+  typedef enum {
+    LAST_OPTION_NONE = 0,
+    LAST_OPTION_INCLUDE,
+    LAST_OPTION_OUTPUT,
+  } LastOption_t;
 
-    LastOption_t lastOption = LAST_OPTION_NONE;
+  LastOption_t lastOption = LAST_OPTION_NONE;
 
-    std::list<std::string> searchPath;
-    std::list<std::string> xmlFiles;
-    std::list<std::string> outputFiles;
+  std::list<std::string> searchPath;
+  std::list<std::string> xmlFiles;
+  std::list<std::string> outputFiles;
 
-    for(int i = 1; i < argc; ++i)
-    {
-        std::string opt = argv[i];
+  for (int i = 1; i < argc; ++i) {
+    std::string opt = argv[i];
 
-        switch(lastOption)
-        {
-            case LAST_OPTION_INCLUDE:
-            {
-                searchPath.push_back(opt);
+    switch (lastOption) {
+      case LAST_OPTION_INCLUDE: {
+        searchPath.push_back(opt);
 
-                lastOption = LAST_OPTION_NONE;
-                break;
-            }
-            case LAST_OPTION_OUTPUT:
-            {
-                outputFiles.push_back(opt);
+        lastOption = LAST_OPTION_NONE;
+        break;
+      }
+      case LAST_OPTION_OUTPUT: {
+        outputFiles.push_back(opt);
 
-                lastOption = LAST_OPTION_NONE;
-                break;
-            }
-            default:
-            {
-                std::smatch match;
-
-                static const std::regex incExpr("^[-]I(.*)$");
-
-                if(std::regex_match(opt, match, incExpr))
-                {
-                    std::string include = match[1];
-
-                    lastOption = include.empty() ? LAST_OPTION_INCLUDE :
-                        LAST_OPTION_NONE;
-
-                    if(!include.empty())
-                    {
-                        searchPath.push_back(include);
-                    }
-                }
-                else if("-o" == opt)
-                {
-                    lastOption = LAST_OPTION_OUTPUT;
-                }
-                else
-                {
-                    xmlFiles.push_back(opt);
-                }
-                break;
-            }
-        }
-    }
-
-    if(LAST_OPTION_NONE != lastOption)
-    {
-        std::cerr << "Argument expected after: " << argv[argc - 1] << std::endl;
-
-        return EXIT_FAILURE;
-    }
-
-    //Load the type infomration for all included objects
-    for(auto xmlFile : xmlFiles)
-    {
-        if(!LoadObjectTypeInformation(searchPath, xmlFile))
-        {
-            return EXIT_FAILURE;
-        }
-    }
-
-    if(!gParser.FinalizeClassHierarchy())
-    {
-        std::cerr << "Error: " << gParser.GetError() << std::endl;
-
-        return EXIT_FAILURE;
-    }
-
-    for(auto outputFile : outputFiles)
-    {
+        lastOption = LAST_OPTION_NONE;
+        break;
+      }
+      default: {
         std::smatch match;
-        std::string path;
-        std::string extension;
-        std::string object;
 
-        static const std::regex outputExpr(
-            "^(.*\\/)?([^\\/]+)[.]([^.=]+)(?:[=](.+))?$");
+        static const std::regex incExpr("^[-]I(.*)$");
 
-        if(std::regex_match(outputFile, match, outputExpr))
-        {
-            object = match[4];
+        if (std::regex_match(opt, match, incExpr)) {
+          std::string include = match[1];
 
-            if(object.empty())
-            {
-                object = match[2];
-            }
+          lastOption = include.empty() ? LAST_OPTION_INCLUDE : LAST_OPTION_NONE;
 
-            if(!gParser.FinalizeObjectAndReferences(object))
-            {
-                std::cerr << gParser.GetError() << std::endl;
-
-                return EXIT_FAILURE;
-            }
-
-            extension = std::string(match[3]);
-            path = std::string(match[1]) + std::string(match[2]) +
-                std::string(".") + extension;
-
-            std::transform(extension.begin(), extension.end(),
-                extension.begin(), ::tolower);
-
-            if(!GenerateFile(path, extension, object))
-            {
-                return EXIT_FAILURE;
-            }
+          if (!include.empty()) {
+            searchPath.push_back(include);
+          }
+        } else if ("-o" == opt) {
+          lastOption = LAST_OPTION_OUTPUT;
+        } else {
+          xmlFiles.push_back(opt);
         }
-        else
-        {
-            std::cerr << "Invalid output file name: "
-                << outputFile << std::endl;
-
-            return EXIT_FAILURE;
-        }
+        break;
+      }
     }
+  }
 
-    return EXIT_SUCCESS;
+  if (LAST_OPTION_NONE != lastOption) {
+    std::cerr << "Argument expected after: " << argv[argc - 1] << std::endl;
+
+    return EXIT_FAILURE;
+  }
+
+  // Load the type infomration for all included objects
+  for (auto xmlFile : xmlFiles) {
+    if (!LoadObjectTypeInformation(searchPath, xmlFile)) {
+      return EXIT_FAILURE;
+    }
+  }
+
+  if (!gParser.FinalizeClassHierarchy()) {
+    std::cerr << "Error: " << gParser.GetError() << std::endl;
+
+    return EXIT_FAILURE;
+  }
+
+  for (auto outputFile : outputFiles) {
+    std::smatch match;
+    std::string path;
+    std::string extension;
+    std::string object;
+
+    static const std::regex outputExpr(
+        "^(.*\\/)?([^\\/]+)[.]([^.=]+)(?:[=](.+))?$");
+
+    if (std::regex_match(outputFile, match, outputExpr)) {
+      object = match[4];
+
+      if (object.empty()) {
+        object = match[2];
+      }
+
+      if (!gParser.FinalizeObjectAndReferences(object)) {
+        std::cerr << gParser.GetError() << std::endl;
+
+        return EXIT_FAILURE;
+      }
+
+      extension = std::string(match[3]);
+      path = std::string(match[1]) + std::string(match[2]) + std::string(".") +
+             extension;
+
+      std::transform(extension.begin(), extension.end(), extension.begin(),
+                     ::tolower);
+
+      if (!GenerateFile(path, extension, object)) {
+        return EXIT_FAILURE;
+      }
+    } else {
+      std::cerr << "Invalid output file name: " << outputFile << std::endl;
+
+      return EXIT_FAILURE;
+    }
+  }
+
+  return EXIT_SUCCESS;
 }

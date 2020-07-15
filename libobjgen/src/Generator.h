@@ -31,62 +31,61 @@
 #include <memory>
 #include <string>
 
-// VFS Includes
+// Ignore warnings
 #include "PushIgnore.h"
+
+// VFS Includes
 #include <ttvfs/ttvfs.h>
 #include <ttvfs/ttvfs_zip.h>
+
+// Stop ignoring warnings
 #include "PopIgnore.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
 class MetaObject;
 class MetaVariable;
 
-class Generator
-{
-public:
-    Generator();
-    virtual ~Generator();
+class Generator {
+ public:
+  Generator();
+  virtual ~Generator();
 
-    virtual std::string Generate(const MetaObject& obj) = 0;
+  virtual std::string Generate(const MetaObject& obj) = 0;
 
-    std::vector<char> GetTemplate(const std::string& name) const;
+  std::vector<char> GetTemplate(const std::string& name) const;
 
-    std::string ParseTemplate(size_t tabLevel, const std::string& name,
-        const std::map<std::string, std::string>& replacements) const;
+  std::string ParseTemplate(
+      size_t tabLevel, const std::string& name,
+      const std::map<std::string, std::string>& replacements) const;
 
-    static std::string Tab(size_t count = 1);
+  static std::string Tab(size_t count = 1);
 
-    virtual std::string GetMemberName(
-        const MetaVariable& var) const;
-    virtual std::string GetMemberName(
-        const std::shared_ptr<MetaVariable>& var) const;
+  virtual std::string GetMemberName(const MetaVariable& var) const;
+  virtual std::string GetMemberName(
+      const std::shared_ptr<MetaVariable>& var) const;
 
-    static std::string GetCapitalName(
-        const MetaVariable& var);
-    static std::string GetCapitalName(
-        const std::shared_ptr<MetaVariable>& var);
+  static std::string GetCapitalName(const MetaVariable& var);
+  static std::string GetCapitalName(const std::shared_ptr<MetaVariable>& var);
 
-    static std::string GetObjectName(
-        const std::string& fullName);
-    static std::string GetObjectName(
-        const std::string& fullName, std::string& outNamespace);
+  static std::string GetObjectName(const std::string& fullName);
+  static std::string GetObjectName(const std::string& fullName,
+                                   std::string& outNamespace);
 
-    static bool GetXmlAttributeBoolean(const std::string& attr);
+  static bool GetXmlAttributeBoolean(const std::string& attr);
 
-    static std::string GetPersistentRefCopyCode(
-        const std::shared_ptr<MetaVariable>& var, const std::string& name);
+  static std::string GetPersistentRefCopyCode(
+      const std::shared_ptr<MetaVariable>& var, const std::string& name);
 
-    static std::string Escape(const std::string& str);
+  static std::string Escape(const std::string& str);
 
-    static bool LoadString(std::istream& stream, std::string& s);
-    static bool SaveString(std::ostream& stream, const std::string& s);
+  static bool LoadString(std::istream& stream, std::string& s);
+  static bool SaveString(std::ostream& stream, const std::string& s);
 
-private:
-    mutable ttvfs::Root mVfs;
+ private:
+  mutable ttvfs::Root mVfs;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_GENERATOR_H
+#endif  // LIBOBJGEN_SRC_GENERATOR_H

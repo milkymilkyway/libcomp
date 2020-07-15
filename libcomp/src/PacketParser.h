@@ -30,61 +30,58 @@
 // Standard C++ Includes
 #include <memory>
 
-namespace libcomp
-{
+namespace libcomp {
 
 class ReadOnlyPacket;
 class TcpConnection;
 
-} // namespace libcomp
+}  // namespace libcomp
 
-namespace libcomp
-{
+namespace libcomp {
 
 class ManagerPacket;
 
 /**
  * Class responsible for parsing and handling packet.
  */
-class PacketParser
-{
-public:
-    /**
-     * Create the parser.
-     */
-    PacketParser() { }
+class PacketParser {
+ public:
+  /**
+   * Create the parser.
+   */
+  PacketParser() {}
 
-    /**
-     * Clean up the parser.
-     */
-    virtual ~PacketParser() { }
+  /**
+   * Clean up the parser.
+   */
+  virtual ~PacketParser() {}
 
-    /**
-     * Parse and handle a packet.  This should be implemented by
-     * multiple different parser classes that are registerd using
-     * the PACKET_PARSER_DECL(name) command.
-     * @param pPacketManager Manager that received the packet
-     * @param connection Connection that sent the pacekt
-     * @param p Packet to parse and handle
-     * @return true on success, false on failure
-     */
-    virtual bool Parse(ManagerPacket *pPacketManager,
-        const std::shared_ptr<libcomp::TcpConnection>& connection,
-        libcomp::ReadOnlyPacket& p) const = 0;
+  /**
+   * Parse and handle a packet.  This should be implemented by
+   * multiple different parser classes that are registerd using
+   * the PACKET_PARSER_DECL(name) command.
+   * @param pPacketManager Manager that received the packet
+   * @param connection Connection that sent the pacekt
+   * @param p Packet to parse and handle
+   * @return true on success, false on failure
+   */
+  virtual bool Parse(ManagerPacket* pPacketManager,
+                     const std::shared_ptr<libcomp::TcpConnection>& connection,
+                     libcomp::ReadOnlyPacket& p) const = 0;
 };
 
-} // namespace libcomp
+}  // namespace libcomp
 
-#define PACKET_PARSER_DECL(name) \
-    class name : public libcomp::PacketParser \
-    { \
-    public: \
-        name() : libcomp::PacketParser() { } \
-        virtual ~name() { } \
-        \
-        virtual bool Parse(libcomp::ManagerPacket *pPacketManager, \
-            const std::shared_ptr<libcomp::TcpConnection>& connection, \
-            libcomp::ReadOnlyPacket& p) const; \
-    }
+#define PACKET_PARSER_DECL(name)                                   \
+  class name : public libcomp::PacketParser {                      \
+   public:                                                         \
+    name() : libcomp::PacketParser() {}                            \
+    virtual ~name() {}                                             \
+                                                                   \
+    virtual bool Parse(                                            \
+        libcomp::ManagerPacket* pPacketManager,                    \
+        const std::shared_ptr<libcomp::TcpConnection>& connection, \
+        libcomp::ReadOnlyPacket& p) const;                         \
+  }
 
-#endif // LIBCOMP_SRC_PACKETPARSER_H
+#endif  // LIBCOMP_SRC_PACKETPARSER_H

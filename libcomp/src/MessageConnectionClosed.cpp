@@ -31,34 +31,27 @@
 
 using namespace libcomp;
 
-Message::ConnectionClosed::ConnectionClosed(std::shared_ptr<TcpConnection> connection) :
-    mConnection(connection)
-{
+Message::ConnectionClosed::ConnectionClosed(
+    std::shared_ptr<TcpConnection> connection)
+    : mConnection(connection) {}
+
+Message::ConnectionClosed::~ConnectionClosed() {}
+
+std::shared_ptr<TcpConnection> Message::ConnectionClosed::GetConnection()
+    const {
+  return mConnection;
 }
 
-Message::ConnectionClosed::~ConnectionClosed()
-{
+Message::ConnectionMessageType
+Message::ConnectionClosed::GetConnectionMessageType() const {
+  return ConnectionMessageType::CONNECTION_MESSAGE_CONNECTION_CLOSED;
 }
 
-std::shared_ptr<TcpConnection> Message::ConnectionClosed::GetConnection() const
-{
-    return mConnection;
-}
-
-Message::ConnectionMessageType Message::ConnectionClosed::GetConnectionMessageType() const
-{
-    return ConnectionMessageType::CONNECTION_MESSAGE_CONNECTION_CLOSED;
-}
-
-libcomp::String Message::ConnectionClosed::Dump() const
-{
-    if(mConnection)
-    {
-        return libcomp::String("Message: Connection Closed\nConnection: %1"
-            ).Arg(mConnection->GetName());
-    }
-    else
-    {
-        return "Message: Connection Closed";
-    }
+libcomp::String Message::ConnectionClosed::Dump() const {
+  if (mConnection) {
+    return libcomp::String("Message: Connection Closed\nConnection: %1")
+        .Arg(mConnection->GetName());
+  } else {
+    return "Message: Connection Closed";
+  }
 }

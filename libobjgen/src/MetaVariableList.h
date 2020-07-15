@@ -30,80 +30,90 @@
 // libobjgen Includes
 #include "MetaVariable.h"
 
-namespace libobjgen
-{
+namespace libobjgen {
 
-class MetaVariableList : public MetaVariable
-{
-public:
-    MetaVariableList(const std::shared_ptr<MetaVariable>& elementType);
-    virtual ~MetaVariableList();
+class MetaVariableList : public MetaVariable {
+ public:
+  MetaVariableList(const std::shared_ptr<MetaVariable>& elementType);
+  virtual ~MetaVariableList();
 
-    virtual size_t GetSize() const;
+  virtual size_t GetSize() const;
 
-    size_t GetLengthSize() const;
-    void SetLengthSize(size_t lengthSize);
+  size_t GetLengthSize() const;
+  void SetLengthSize(size_t lengthSize);
 
-    std::shared_ptr<MetaVariable> GetElementType() const;
+  std::shared_ptr<MetaVariable> GetElementType() const;
 
-    virtual MetaVariableType_t GetMetaType() const;
+  virtual MetaVariableType_t GetMetaType() const;
 
-    virtual std::string GetType() const;
+  virtual std::string GetType() const;
 
-    virtual bool IsCoreType() const;
-    virtual bool IsScriptAccessible() const;
-    virtual bool IsValid() const;
+  virtual bool IsCoreType() const;
+  virtual bool IsScriptAccessible() const;
+  virtual bool IsValid() const;
 
-    virtual bool Load(std::istream& stream);
-    virtual bool Save(std::ostream& stream) const;
+  virtual bool Load(std::istream& stream);
+  virtual bool Save(std::ostream& stream) const;
 
-    virtual bool Load(const tinyxml2::XMLDocument& doc,
-        const tinyxml2::XMLElement& root);
-    virtual bool Save(tinyxml2::XMLDocument& doc,
-        tinyxml2::XMLElement& parent, const char* elementName) const;
+  virtual bool Load(const tinyxml2::XMLDocument& doc,
+                    const tinyxml2::XMLElement& root);
+  virtual bool Save(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& parent,
+                    const char* elementName) const;
 
-    virtual uint16_t GetDynamicSizeCount() const;
+  virtual uint16_t GetDynamicSizeCount() const;
 
-    virtual std::string GetCodeType() const;
-    virtual std::string GetConstructValue() const;
-    virtual std::string GetValidCondition(const Generator& generator,
-        const std::string& name, bool recursive = false) const;
-    virtual std::string GetLoadCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetLoadRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetSaveRawCode(const Generator& generator,
-        const std::string& name, const std::string& stream) const;
-    virtual std::string GetXmlLoadCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& node, size_t tabLevel = 1) const;
-    virtual std::string GetXmlSaveCode(const Generator& generator,
-        const std::string& name, const std::string& doc,
-        const std::string& parent, size_t tabLevel = 1,
-        const std::string elemName = "member") const;
+  virtual std::string GetCodeType() const;
+  virtual std::string GetConstructValue() const;
+  virtual std::string GetValidCondition(const Generator& generator,
+                                        const std::string& name,
+                                        bool recursive = false) const;
+  virtual std::string GetLoadCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetSaveCode(const Generator& generator,
+                                  const std::string& name,
+                                  const std::string& stream) const;
+  virtual std::string GetLoadRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetSaveRawCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& stream) const;
+  virtual std::string GetXmlLoadCode(const Generator& generator,
+                                     const std::string& name,
+                                     const std::string& doc,
+                                     const std::string& node,
+                                     size_t tabLevel = 1) const;
+  virtual std::string GetXmlSaveCode(
+      const Generator& generator, const std::string& name,
+      const std::string& doc, const std::string& parent, size_t tabLevel = 1,
+      const std::string elemName = "member") const;
 
-    virtual std::string GetAccessDeclarations(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
-    virtual std::string GetAccessFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetUtilityDeclarations(const Generator& generator,
-        const std::string& name, size_t tabLevel = 1) const;
-    virtual std::string GetUtilityFunctions(const Generator& generator,
-        const MetaObject& object, const std::string& name) const;
-    virtual std::string GetAccessScriptBindings(const Generator& generator,
-        const MetaObject& object, const std::string& name,
-        size_t tabLevel = 1) const;
+  virtual std::string GetAccessDeclarations(const Generator& generator,
+                                            const MetaObject& object,
+                                            const std::string& name,
+                                            size_t tabLevel = 1) const;
+  virtual std::string GetAccessFunctions(const Generator& generator,
+                                         const MetaObject& object,
+                                         const std::string& name) const;
+  virtual std::string GetUtilityDeclarations(const Generator& generator,
+                                             const std::string& name,
+                                             size_t tabLevel = 1) const;
+  virtual std::string GetUtilityFunctions(const Generator& generator,
+                                          const MetaObject& object,
+                                          const std::string& name) const;
+  virtual std::string GetAccessScriptBindings(const Generator& generator,
+                                              const MetaObject& object,
+                                              const std::string& name,
+                                              size_t tabLevel = 1) const;
 
-    std::string LengthSizeType() const;
+  std::string LengthSizeType() const;
 
-private:
-    size_t mLengthSize;
-    std::shared_ptr<MetaVariable> mElementType;
+ private:
+  size_t mLengthSize;
+  std::shared_ptr<MetaVariable> mElementType;
 };
 
-} // namespace libobjgen
+}  // namespace libobjgen
 
-#endif // LIBOBJGEN_SRC_METAVARIABLELIST_H
+#endif  // LIBOBJGEN_SRC_METAVARIABLELIST_H

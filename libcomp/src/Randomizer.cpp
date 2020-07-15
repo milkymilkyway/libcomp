@@ -31,7 +31,7 @@
 
 #ifndef EXOTIC_PLATFORM
 #include "ScriptEngine.h"
-#endif // !EXOTIC_PLATFORM
+#endif  // !EXOTIC_PLATFORM
 
 using namespace libcomp;
 
@@ -39,64 +39,57 @@ thread_local std::mt19937 Randomizer::sGen;
 thread_local std::mt19937_64 Randomizer::sGen64;
 
 #ifndef EXOTIC_PLATFORM
-namespace libcomp
-{
-    template<>
-    ScriptEngine& ScriptEngine::Using<Randomizer>()
-    {
-        if(!BindingExists("Randomizer", true))
-        {
-            Sqrat::Class<Randomizer> binding(mVM, "Randomizer");
-            binding
-                .StaticFunc("RNG", &Randomizer::GetRandomNumber<int32_t>)
-                .StaticFunc("RNG64", &Randomizer::GetRandomNumber64<int64_t>);
+namespace libcomp {
+template <>
+ScriptEngine& ScriptEngine::Using<Randomizer>() {
+  if (!BindingExists("Randomizer", true)) {
+    Sqrat::Class<Randomizer> binding(mVM, "Randomizer");
+    binding.StaticFunc("RNG", &Randomizer::GetRandomNumber<int32_t>)
+        .StaticFunc("RNG64", &Randomizer::GetRandomNumber64<int64_t>);
 
-            Bind<Randomizer>("Randomizer", binding);
-        }
+    Bind<Randomizer>("Randomizer", binding);
+  }
 
-        return *this;
-    }
+  return *this;
 }
-#endif // !EXOTIC_PLATFORM
+}  // namespace libcomp
+#endif  // !EXOTIC_PLATFORM
 
-void Randomizer::SeedRNG()
-{
-    static thread_local uint64_t seed = 0;
+void Randomizer::SeedRNG() {
+  static thread_local uint64_t seed = 0;
 
-    // Only seed if we haven't already
-    if(seed == 0)
-    {
-        // Generate the default seed
-        auto b = libcomp::Crypto::GenerateRandom(8).Data();
-        seed = *((uint64_t*)&b[0]);
+  // Only seed if we haven't already
+  if (seed == 0) {
+    // Generate the default seed
+    auto b = libcomp::Crypto::GenerateRandom(8).Data();
+    seed = *((uint64_t*)&b[0]);
 
-        // Seed the high precision random number generators
-        sGen.seed((uint32_t)seed);
-        sGen64.seed(seed);
-    }
+    // Seed the high precision random number generators
+    sGen.seed((uint32_t)seed);
+    sGen64.seed(seed);
+  }
 }
 
-namespace libcomp
-{
-    template<>
-    float Randomizer::GetRandomDecimal<float>(float minVal, float maxVal, uint8_t precision)
-    {
-        uint16_t p = precision > 0 ? (uint16_t)pow(10, (uint16_t)precision) : 1;
+namespace libcomp {
+template <>
+float Randomizer::GetRandomDecimal<float>(float minVal, float maxVal,
+                                          uint8_t precision) {
+  uint16_t p = precision > 0 ? (uint16_t)pow(10, (uint16_t)precision) : 1;
 
-        int32_t r = GetRandomNumber<int32_t>((int32_t)(minVal * (float)p),
-            (int32_t)(maxVal * (float)p));
+  int32_t r = GetRandomNumber<int32_t>((int32_t)(minVal * (float)p),
+                                       (int32_t)(maxVal * (float)p));
 
-        return (float)((double)r / (double)p);
-    }
-
-    template<>
-    double Randomizer::GetRandomDecimal<double>(double minVal, double maxVal, uint8_t precision)
-    {
-        uint16_t p = precision > 0 ? (uint16_t)pow(10, (uint16_t)precision) : 1;
-
-        int64_t r = GetRandomNumber64<int64_t>((int64_t)(minVal * (double)p),
-            (int64_t)(maxVal * (double)p));
-
-        return (double)((double)r / (double)p);
-    }
+  return (float)((double)r / (double)p);
 }
+
+template <>
+double Randomizer::GetRandomDecimal<double>(double minVal, double maxVal,
+                                            uint8_t precision) {
+  uint16_t p = precision > 0 ? (uint16_t)pow(10, (uint16_t)precision) : 1;
+
+  int64_t r = GetRandomNumber64<int64_t>((int64_t)(minVal * (double)p),
+                                         (int64_t)(maxVal * (double)p));
+
+  return (double)((double)r / (double)p);
+}
+}  // namespace libcomp

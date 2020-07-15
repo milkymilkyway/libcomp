@@ -31,43 +31,41 @@
 
 using namespace libcomp;
 
-ServerCommandLineParser::ServerCommandLineParser() : ArgumentParser(),
-    objects::ServerCommandLine()
-{
-    RegisterArgument('\0', "test", ArgumentType::NONE, std::bind([](
-        ServerCommandLineParser *pParser, ArgumentParser::Argument *pArg,
-            const String& arg) -> bool
-    {
-        (void)pArg;
-        (void)arg;
+ServerCommandLineParser::ServerCommandLineParser()
+    : ArgumentParser(), objects::ServerCommandLine() {
+  RegisterArgument(
+      '\0', "test", ArgumentType::NONE,
+      std::bind(
+          [](ServerCommandLineParser *pParser, ArgumentParser::Argument *pArg,
+             const String &arg) -> bool {
+            (void)pArg;
+            (void)arg;
 
-        pParser->SetTestingEnabled(true);
+            pParser->SetTestingEnabled(true);
 
-        return true;
-    }, this, std::placeholders::_1, std::placeholders::_2));
+            return true;
+          },
+          this, std::placeholders::_1, std::placeholders::_2));
 
-    RegisterArgument('\0', "notify", ArgumentType::REQUIRED, std::bind([](
-        ServerCommandLineParser *pParser, ArgumentParser::Argument *pArg,
-            const String& arg) -> bool
-    {
-        (void)pArg;
+  RegisterArgument(
+      '\0', "notify", ArgumentType::REQUIRED,
+      std::bind(
+          [](ServerCommandLineParser *pParser, ArgumentParser::Argument *pArg,
+             const String &arg) -> bool {
+            (void)pArg;
 
-        bool ok = false;
+            bool ok = false;
 
-        pParser->SetNotifyProcess(arg.ToInteger<int32_t>(&ok));
+            pParser->SetNotifyProcess(arg.ToInteger<int32_t>(&ok));
 
-        if(!ok)
-        {
-            LogGeneralError([&]()
-            {
-                return String("Invalid process ID %1\n").Arg(arg);
-            });
-        }
+            if (!ok) {
+              LogGeneralError(
+                  [&]() { return String("Invalid process ID %1\n").Arg(arg); });
+            }
 
-        return ok;
-    }, this, std::placeholders::_1, std::placeholders::_2));
+            return ok;
+          },
+          this, std::placeholders::_1, std::placeholders::_2));
 }
 
-ServerCommandLineParser::~ServerCommandLineParser()
-{
-}
+ServerCommandLineParser::~ServerCommandLineParser() {}
