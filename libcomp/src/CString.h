@@ -434,6 +434,13 @@ class String {
   bool operator!=(const String& other) const;
 
   /**
+   * Assign this string to the contents of another string.
+   * @param other String to copy the contents of.
+   * @returns Reference to this string (to chain with other calls).
+   */
+  String& operator=(const String& other) = default;
+
+  /**
    * Append another string to the end of this one.
    * @param other String to append to the end of this one.
    * @returns Reference to this string (to chain with other calls).

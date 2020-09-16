@@ -87,6 +87,12 @@ class ObjectReference {
   ObjectReference() { mData = sNull; }
 
   /**
+   * Create a reference from an existing reference (copy constructor).
+   * @param other Other object reference to copy.
+   */
+  ObjectReference(const ObjectReference<T>& other) = default;
+
+  /**
    * Create a reference of the templated type with the UUID set.
    * @param uuid UUID of the referenced object
    */

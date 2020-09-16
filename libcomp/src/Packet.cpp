@@ -293,7 +293,7 @@ void Packet::WriteS16(int16_t value) {
 
 void Packet::WriteS16Big(int16_t value) {
   // Convert the value to big endian byte order and then write it.
-  WriteS16((int16_t)htobe16(value));
+  WriteS16((int16_t)htobe16((uint16_t)value));
 }
 
 void Packet::WriteS16Little(int16_t value) {

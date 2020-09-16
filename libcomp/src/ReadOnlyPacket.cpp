@@ -384,7 +384,7 @@ uint16_t ReadOnlyPacket::PeekU16Big() {
 
 int16_t ReadOnlyPacket::PeekS16Big() {
   // Return the value converted from big endian byte order.
-  return (int16_t)be16toh(PeekS16());
+  return (int16_t)be16toh((uint16_t)PeekS16());
 }
 
 uint16_t ReadOnlyPacket::PeekU16Little() {
@@ -539,7 +539,7 @@ int16_t ReadOnlyPacket::ReadS16() {
 
 int16_t ReadOnlyPacket::ReadS16Big() {
   // Return the value converted from big endian byte order.
-  return (int16_t)be16toh(ReadS16());
+  return (int16_t)be16toh((uint16_t)ReadS16());
 }
 
 int16_t ReadOnlyPacket::ReadS16Little() {
