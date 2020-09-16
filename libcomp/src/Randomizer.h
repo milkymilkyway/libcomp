@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file libcomp/src/Randomizer.h
  * @ingroup libcomp
  *

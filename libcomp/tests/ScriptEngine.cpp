@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file libcomp/tests/ScriptEngine.cpp
  * @ingroup libcomp
  *

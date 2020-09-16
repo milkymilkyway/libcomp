@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file libcomp/src/ServerConstants.h
  * @ingroup libcomp
  *
