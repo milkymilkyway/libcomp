@@ -325,6 +325,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, const String& value) {
   bind->buffer = &mBufferBlob.back()[0];
   bind->buffer_length = (*bind->length) = (unsigned long)data.size();
 
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value);
+  });
+
   return IsValid();
 }
 
@@ -349,6 +353,16 @@ bool DatabaseQueryMariaDB::Bind(size_t index, const std::vector<char>& value) {
   bind->buffer = &mBufferBlob.back()[0];
   bind->buffer_length = (*bind->length) = (unsigned long)value.size();
 
+  LogDatabaseDebug([&]() {
+    String s;
+
+    for (auto c : value) {
+      s += String("%1").Arg((int)c & 0xFF, 2, 16, '0');
+    }
+
+    return String("Bound to index %1: %2\n").Arg(index).Arg(s);
+  });
+
   return IsValid();
 }
 
@@ -370,6 +384,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, const libobjgen::UUID& value) {
   bind->buffer = &mBufferBlob.back()[0];
   bind->buffer_length = (*bind->length) = 36;
 
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value.ToString());
+  });
+
   return IsValid();
 }
 
@@ -388,6 +406,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, int32_t value) {
   mBufferInt.push_back(value);
   bind->buffer = &mBufferInt.back();
 
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value);
+  });
+
   return IsValid();
 }
 
@@ -404,6 +426,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, int64_t value) {
 
   mBufferBigInt.push_back(value);
   bind->buffer = &mBufferBigInt.back();
+
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value);
+  });
 
   return IsValid();
 }
@@ -422,6 +448,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, float value) {
   mBufferFloat.push_back(value);
   bind->buffer = &mBufferFloat.back();
 
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value);
+  });
+
   return IsValid();
 }
 
@@ -439,6 +469,10 @@ bool DatabaseQueryMariaDB::Bind(size_t index, double value) {
   mBufferDouble.push_back(value);
   bind->buffer = &mBufferDouble.back();
 
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n").Arg(index).Arg(value);
+  });
+
   return IsValid();
 }
 
@@ -455,6 +489,12 @@ bool DatabaseQueryMariaDB::Bind(size_t index, bool value) {
 
   mBufferBool.push_back(value);
   bind->buffer = &mBufferBool.back();
+
+  LogDatabaseDebug([&]() {
+    return String("Bound to index %1: %2\n")
+        .Arg(index)
+        .Arg(value ? "true" : "false");
+  });
 
   return IsValid();
 }
