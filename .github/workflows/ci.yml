@@ -1,0 +1,93 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  clang-format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Check Formatting
+      run: ci/clang-format.sh
+
+  linux-gcc-build:
+    name: Ubuntu Linux (GCC)
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Build Project
+      env:
+        CC: gcc
+        CXX: g++
+        PLATFORM: linux
+        COMPILER: gcc
+        GENERATOR: Unix Makefiles
+        EXTERNAL_RELEASE: external-42
+      run: ci/linux-build.sh
+
+  linux-clang-build:
+    name: Ubuntu Linux (Clang)
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Build Project
+      env:
+        CC: clang
+        CXX: clang++
+        PLATFORM: linux
+        COMPILER: clang
+        GENERATOR: Ninja
+        EXTERNAL_RELEASE: external-42
+      run: ci/linux-build.sh
+
+  win32-msvc2017-build:
+    name: Windows 32-bit (MSVC 2017)
+    runs-on: windows-2016
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Build Project
+      env:
+        PLATFORM: win32
+        COMPILER: msvc2017
+        MSPLATFORM: Win32
+        GENERATOR: Visual Studio 15 2017
+        CONFIGURATION: RelWithDebInfo
+        OPENSSL_ROOT_DIR: C:/Program Files (x86)/OpenSSL-Win32
+        OPENSSL_URL: https://github.com/comphack/external/releases/download/external-25/Win32OpenSSL-1_1_1h.msi
+        DOXYGEN_URL: https://github.com/comphack/external/releases/download/external-25/doxygen-1.8.14.windows.x64.bin.zip
+        EXTERNAL_RELEASE: external-42
+      run: .\ci\windows-build.ps1
+
+  win64-msvc2017-build:
+    name: Windows 64-bit (MSVC 2017)
+    runs-on: windows-2016
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Build Project
+      env:
+        PLATFORM: win64
+        COMPILER: msvc2017
+        MSPLATFORM: x64
+        GENERATOR: Visual Studio 15 2017 Win64
+        CONFIGURATION: RelWithDebInfo
+        OPENSSL_ROOT_DIR: C:/Program Files/OpenSSL-Win64
+        OPENSSL_URL: https://github.com/comphack/external/releases/download/external-25/Win64OpenSSL-1_1_1h.msi
+        DOXYGEN_URL: https://github.com/comphack/external/releases/download/external-25/doxygen-1.8.14.windows.x64.bin.zip
+        EXTERNAL_RELEASE: external-42
+      run: .\ci\windows-build.ps1
