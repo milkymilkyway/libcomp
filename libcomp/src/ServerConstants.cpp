@@ -350,7 +350,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load ADJUSTMENT_ITEMS key\n");
         return false;
@@ -380,7 +380,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load ADJUSTMENT_SKILLS key\n");
         return false;
@@ -423,7 +423,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint16_t key;
+      uint16_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load CAMEO_MAP key\n");
         return false;
@@ -506,7 +506,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint16_t key;
+      uint16_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load DEMON_BOOK_BONUS key\n");
         return false;
@@ -534,6 +534,122 @@ bool ServerConstants::Initialize(const String& filePath) {
     return false;
   }
 
+  complexIter = complexConstants.find("DEMON_BOOK_SUMMONER_BONUS");
+  if (complexIter != complexConstants.end()) {
+    std::unordered_map<std::string, std::string> map;
+    if (!LoadKeyValueStrings(complexIter->second, map)) {
+      LogServerConstantsErrorMsg("Failed to load DEMON_BOOK_SUMMONER_BONUS\n");
+      return false;
+    }
+
+    for (auto pair : map) {
+      uint16_t key = 0;
+      if (!LoadInteger(pair.first, key)) {
+        LogServerConstantsErrorMsg(
+            "Failed to load DEMON_BOOK_SUMMONER_BONUS key\n");
+        return false;
+      } else if (sConstants.DEMON_BOOK_SUMMONER_BONUS.find(key) !=
+                 sConstants.DEMON_BOOK_SUMMONER_BONUS.end()) {
+        LogServerConstantsErrorMsg(
+            "Duplicate DEMON_BOOK_SUMMONER_BONUS key encountered\n");
+        return false;
+      } else {
+        if (!pair.second.empty()) {
+          for (int32_t p : ToIntegerRange<int32_t>(pair.second, success)) {
+            sConstants.DEMON_BOOK_SUMMONER_BONUS[key].insert(p);
+          }
+
+          if (!success) {
+            LogServerConstantsErrorMsg(
+                "Failed to load an element in DEMON_BOOK_SUMMONER_BONUS\n");
+            return false;
+          }
+        }
+      }
+    }
+  } else {
+    LogServerConstantsErrorMsg("DEMON_BOOK_SUMMONER_BONUS not found\n");
+    return false;
+  }
+
+  complexIter = complexConstants.find("MITAMA_DEMON_BOOK_BONUS");
+  if (complexIter != complexConstants.end()) {
+    std::unordered_map<std::string, std::string> map;
+    if (!LoadKeyValueStrings(complexIter->second, map)) {
+      LogServerConstantsErrorMsg("Failed to load MITAMA_DEMON_BOOK_BONUS\n");
+      return false;
+    }
+
+    for (auto pair : map) {
+      uint16_t key = 0;
+      if (!LoadInteger(pair.first, key)) {
+        LogServerConstantsErrorMsg(
+            "Failed to load MITAMA_DEMON_BOOK_BONUS key\n");
+        return false;
+      } else if (sConstants.MITAMA_DEMON_BOOK_BONUS.find(key) !=
+                 sConstants.MITAMA_DEMON_BOOK_BONUS.end()) {
+        LogServerConstantsErrorMsg(
+            "Duplicate MITAMA_DEMON_BOOK_BONUS key encountered\n");
+        return false;
+      } else {
+        if (!pair.second.empty()) {
+          for (int32_t p : ToIntegerRange<int32_t>(pair.second, success)) {
+            sConstants.MITAMA_DEMON_BOOK_BONUS[key].insert(p);
+          }
+
+          if (!success) {
+            LogServerConstantsErrorMsg(
+                "Failed to load an element in MITAMA_DEMON_BOOK_BONUS\n");
+            return false;
+          }
+        }
+      }
+    }
+  } else {
+    LogServerConstantsErrorMsg("MITAMA_DEMON_BOOK_BONUS not found\n");
+    return false;
+  }
+
+  complexIter = complexConstants.find("MITAMA_DEMON_BOOK_SUMMONER_BONUS");
+  if (complexIter != complexConstants.end()) {
+    std::unordered_map<std::string, std::string> map;
+    if (!LoadKeyValueStrings(complexIter->second, map)) {
+      LogServerConstantsErrorMsg(
+          "Failed to load MITAMA_DEMON_BOOK_SUMMONER_BONUS\n");
+      return false;
+    }
+
+    for (auto pair : map) {
+      uint16_t key = 0;
+      if (!LoadInteger(pair.first, key)) {
+        LogServerConstantsErrorMsg(
+            "Failed to load MITAMA_DEMON_BOOK_SUMMONER_BONUS key\n");
+        return false;
+      } else if (sConstants.MITAMA_DEMON_BOOK_SUMMONER_BONUS.find(key) !=
+                 sConstants.MITAMA_DEMON_BOOK_SUMMONER_BONUS.end()) {
+        LogServerConstantsErrorMsg(
+            "Duplicate MITAMA_DEMON_BOOK_SUMMONER_BONUS key encountered\n");
+        return false;
+      } else {
+        if (!pair.second.empty()) {
+          for (int32_t p : ToIntegerRange<int32_t>(pair.second, success)) {
+            sConstants.MITAMA_DEMON_BOOK_SUMMONER_BONUS[key].insert(p);
+          }
+
+          if (!success) {
+            LogServerConstantsErrorMsg(
+                "Failed to load an element in "
+                "MITAMA_DEMON_BOOK_SUMMONER_BONUS\n");
+            return false;
+          }
+        }
+      }
+    }
+  } else {
+    LogServerConstantsErrorMsg("MITAMA_DEMON_BOOK_SUMMONER_BONUS not found\n");
+    return false;
+  }
+
   complexIter = complexConstants.find("DEMON_CRYSTALS");
   if (complexIter != complexConstants.end()) {
     std::unordered_map<std::string, std::string> map;
@@ -543,7 +659,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load DEMON_CRYSTALS key\n");
         return false;
@@ -666,7 +782,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load EQUIP_MOD_EDIT_ITEMS key\n");
         return false;
@@ -696,7 +812,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load FUSION_BOOST_SKILLS key\n");
         return false;
@@ -846,7 +962,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint32_t key;
+      uint32_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load SPIRIT_FUSION_BOOST key\n");
         return false;
@@ -921,7 +1037,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      int8_t key;
+      int8_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg("Failed to load TEAM_VALUABLES key\n");
         return false;
@@ -958,7 +1074,7 @@ bool ServerConstants::Initialize(const String& filePath) {
     }
 
     for (auto pair : map) {
-      uint8_t key;
+      uint8_t key = 0;
       if (!LoadInteger(pair.first, key)) {
         LogServerConstantsErrorMsg(
             "Failed to load TRIFUSION_SPECIAL_DARK key\n");

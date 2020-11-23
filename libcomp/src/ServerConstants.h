@@ -483,8 +483,21 @@ class ServerConstants {
     std::array<std::set<uint32_t>, 10> CLAN_LEVEL_SKILLS;
 
     /// Map of the number of entries in the compendium required to gain the
-    /// specified tokusei IDs
+    /// specified tokusei IDs, for demons
     std::unordered_map<uint16_t, std::set<int32_t>> DEMON_BOOK_BONUS;
+
+    /// Map of the number of entries in the compendium required to gain the
+    /// specified tokusei IDs, for summoners
+    std::unordered_map<uint16_t, std::set<int32_t>> DEMON_BOOK_SUMMONER_BONUS;
+
+    /// Map of the number of Mitama-Enhanced entries in the compendium required
+    /// to gain the specified tokusei IDs, for Mitama-Enhanced demons
+    std::unordered_map<uint16_t, std::set<int32_t>> MITAMA_DEMON_BOOK_BONUS;
+
+    /// Map of the number of Mitama-Enhanced entries in the compendium required
+    /// to gain the specified tokusei IDs, for summoners
+    std::unordered_map<uint16_t, std::set<int32_t>>
+        MITAMA_DEMON_BOOK_SUMMONER_BONUS;
 
     /// Map of demon crystal item types to races that can be fused with them
     /// for cyrstallization
