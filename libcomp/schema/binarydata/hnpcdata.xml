@@ -25,7 +25,7 @@
         <member type="MiHNPCAppearanceData*" name="appearance"/>
         <!-- MiEquipmentData -->
         <member type="array" size="26" name="equipment">
-            <element type="string" length="36"/>
+            <element type="string" length="36" encoding="cp932"/>
         </member>
     </object>
 </objgen>

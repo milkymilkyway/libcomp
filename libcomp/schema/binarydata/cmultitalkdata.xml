@@ -87,7 +87,7 @@
     </object>
     <object name="MiCMultiTalkDirectionData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" length="260" name="popFile"/>
-        <member type="string" length="260" name="performFile"/>
+        <member type="string" length="260" name="popFile" encoding="cp932"/>
+        <member type="string" length="260" name="performFile" encoding="cp932"/>
     </object>
 </objgen>

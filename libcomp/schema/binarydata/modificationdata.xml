@@ -37,7 +37,8 @@
         <member type="s16" name="successRate"/>
         <member type="s16" name="failRate"/>
         <member type="s16" name="greatSuccessRate"/>
-        <member type="s16" name="greatFailRate" pad="8"/>
+        <member type="s16" name="greatFailRate"/>
+        <member type="s32" name="unknownID" pad="4"/>
     </object>
     <object name="MiModificationExtEffectData" persistent="false">
         <member type="u8" name="groupID"/>

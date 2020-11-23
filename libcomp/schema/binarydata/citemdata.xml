@@ -20,8 +20,8 @@
         <member type="u32" name="run"/>
     </object>
     <object name="MiCItemSPEffectData" persistent="false">
-        <member type="string" length="68" name="shotEffectFile"/>
-        <member type="string" length="68" name="swingEffectFile"/>
+        <member type="string" length="68" name="shotEffectFile" encoding="cp932"/>
+        <member type="string" length="68" name="swingEffectFile" encoding="cp932"/>
         <member type="array" size="3" name="effectColor" pad="1">
             <element type="u8"/>
         </member>

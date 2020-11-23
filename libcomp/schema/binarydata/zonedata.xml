@@ -16,25 +16,25 @@
         <member type="u32" name="startingSpot" pad="4"/>
     </object>
     <object name="MiZoneFileData" persistent="false" scriptenabled="true">
-        <member type="string" length="36" name="modelFile"/>
-        <member type="string" length="36" name="nameFile"/>
-        <member type="string" length="36" name="qmpFile"/>
-        <member type="string" length="36" name="spotFile"/>
-        <member type="string" length="36" name="enemyFile"/>
-        <member type="string" length="36" name="npcFile"/>
-        <member type="string" length="36" name="eventFile"/>
-        <member type="string" length="36" name="unused1"/>
-        <member type="string" length="36" name="unused2"/>
-        <member type="string" length="36" name="groupFile"/>
-        <member type="string" length="36" name="unitFile"/>
-        <member type="string" length="36" name="unused3"/>
-        <member type="string" length="36" name="unused4"/>
-        <member type="string" length="36" name="unused5"/>
-        <member type="string" length="36" name="unused6"/>
-        <member type="string" length="36" name="unused7"/>
-        <member type="string" length="36" name="unused8"/>
-        <member type="string" length="36" name="unused9"/>
-        <member type="string" length="36" name="unused10"/>
+        <member type="string" length="36" name="modelFile" encoding="cp932"/>
+        <member type="string" length="36" name="nameFile" encoding="cp932"/>
+        <member type="string" length="36" name="qmpFile" encoding="cp932"/>
+        <member type="string" length="36" name="spotFile" encoding="cp932"/>
+        <member type="string" length="36" name="enemyFile" encoding="cp932"/>
+        <member type="string" length="36" name="npcFile" encoding="cp932"/>
+        <member type="string" length="36" name="eventFile" encoding="cp932"/>
+        <member type="string" length="36" name="unused1" encoding="cp932"/>
+        <member type="string" length="36" name="unused2" encoding="cp932"/>
+        <member type="string" length="36" name="groupFile" encoding="cp932"/>
+        <member type="string" length="36" name="unitFile" encoding="cp932"/>
+        <member type="string" length="36" name="unused3" encoding="cp932"/>
+        <member type="string" length="36" name="unused4" encoding="cp932"/>
+        <member type="string" length="36" name="unused5" encoding="cp932"/>
+        <member type="string" length="36" name="unused6" encoding="cp932"/>
+        <member type="string" length="36" name="unused7" encoding="cp932"/>
+        <member type="string" length="36" name="unused8" encoding="cp932"/>
+        <member type="string" length="36" name="unused9" encoding="cp932"/>
+        <member type="string" length="36" name="unused10" encoding="cp932"/>
     </object>
     <object name="MiZoneFogData" persistent="false" scriptenabled="true">
         <member type="bool" name="enabled"/>
@@ -55,14 +55,14 @@
     <object name="MiZoneSkyData" persistent="false" scriptenabled="true">
         <member type="bool" name="enableSkybox"/>
         <member type="bool" name="enableSunMoon" pad="2"/>
-        <member type="string" length="36" name="skyDoomFile"/>
-        <member type="string" length="36" name="starFile"/>
-        <member type="string" length="36" name="sunFile"/>
-        <member type="string" length="36" name="alwaysFile"/>
-        <member type="string" length="36" name="mistFile"/>
-        <member type="string" length="36" name="cloudFile"/>
-        <member type="string" length="36" name="always2File"/>
-        <member type="string" length="36" name="lightFile"/>
+        <member type="string" length="36" name="skyDoomFile" encoding="cp932"/>
+        <member type="string" length="36" name="starFile" encoding="cp932"/>
+        <member type="string" length="36" name="sunFile" encoding="cp932"/>
+        <member type="string" length="36" name="alwaysFile" encoding="cp932"/>
+        <member type="string" length="36" name="mistFile" encoding="cp932"/>
+        <member type="string" length="36" name="cloudFile" encoding="cp932"/>
+        <member type="string" length="36" name="always2File" encoding="cp932"/>
+        <member type="string" length="36" name="lightFile" encoding="cp932"/>
     </object>
     <object name="MiZoneGouraudData" persistent="false" scriptenabled="true">
         <member type="bool" name="enabled" pad="3"/>

@@ -3,7 +3,8 @@
     <object name="MiTriUnionSpecialData" persistent="false">
         <member type="u16" name="ID" pad="2"/>
         <member type="bool" name="isTriFusion"/>
-        <member type="u8" name="triunion4" pad="2"/>
+        <member type="u8" name="triunion4"/>
+        <member type="bool" name="enabled" pad="1"/>
         <member type="u32" name="resultID"/>
         <member type="u8" name="pluginID" pad="3"/>
         <member type="u8" name="variant1Allowed" pad="3"/>

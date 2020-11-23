@@ -2,7 +2,7 @@
 <objgen>
     <object name="MiCEquipModelProcInfo" persistent="false">
         <member type="u32" name="type"/>
-        <member type="string" name="value" length="36"/>
+        <member type="string" name="value" length="36" encoding="cp932"/>
     </object>
     <object name="MiCEquipModelData" persistent="false">
         <member type="u32" name="ID"/>
@@ -13,6 +13,6 @@
     <!-- Custom -->
     <object name="MiCAppearanceEquipData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="nif" length="36"/>
+        <member type="string" name="nif" length="36" encoding="cp932"/>
     </object>
 </objgen>
