@@ -322,8 +322,11 @@ SET(${PROJECT_NAME}_SCHEMA
 
     # BinaryData Files
     schema/binarydata/aidata.xml
+    schema/binarydata/actionlogicdata.xml
+    schema/binarydata/autolivedata.xml
     schema/binarydata/bazaarclerknpcdata.xml
     schema/binarydata/blenddata.xml
+    schema/binarydata/cblocknamedata.xml
     schema/binarydata/cchanceitemdata.xml
     schema/binarydata/cculturedata.xml
     schema/binarydata/cdevilbookbonusdata.xml
@@ -335,6 +338,9 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/ceventdata.xml
     schema/binarydata/ceventmessagedata.xml
     schema/binarydata/cguardianassistdata.xml
+    schema/binarydata/cguidedata.xml
+    schema/binarydata/cfortunedata.xml
+    schema/binarydata/chanceitemdata.xml
     schema/binarydata/chelpdata.xml
     schema/binarydata/chouraidata.xml
     schema/binarydata/cicondata.xml
@@ -346,6 +352,7 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/cmodeldata.xml
     schema/binarydata/cmodifiedeffectdata.xml
     schema/binarydata/cmultitalkdata.xml
+    schema/binarydata/cnakamaquestrewarddata.xml
     schema/binarydata/codenamedata.xml
     schema/binarydata/cpolygonmoviedata.xml
     schema/binarydata/cquest.xml
@@ -353,12 +360,19 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/csounddata.xml
     schema/binarydata/cspecialskilleffectdata.xml
     schema/binarydata/cstatusdata.xml
+    schema/binarydata/csynthesiscatalystdata.xml
     schema/binarydata/ctalkmessagedata.xml
     schema/binarydata/ctimeattackdata.xml
     schema/binarydata/ctitledata.xml
     schema/binarydata/ctransformedmodeldata.xml
     schema/binarydata/cultureitemdata.xml
+    schema/binarydata/curafielddata.xml
+    schema/binarydata/cvaluabledata.xml
     schema/binarydata/cvaluablesdata.xml
+    schema/binarydata/czonerelationdata.xml
+    schema/binarydata/deunionitemcatalystdata.xml
+    schema/binarydata/devilbookbonusdata.xml
+    schema/binarydata/devilbookbonusmitamadata.xml
     schema/binarydata/devilbookdata.xml
     schema/binarydata/devilboostdata.xml
     schema/binarydata/devildata.xml
@@ -367,18 +381,24 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/disassemblydata.xml
     schema/binarydata/dynamicmapdata.xml
     schema/binarydata/enchantdata.xml
+    schema/binarydata/enchantinitializedata.xml
+    schema/binarydata/enchantpiercingdata.xml
     schema/binarydata/equipmentsetdata.xml
     schema/binarydata/eventdirectiondata.xml
     schema/binarydata/exchangedata.xml
     schema/binarydata/expertdata.xml
+    schema/binarydata/experttitledata.xml
     schema/binarydata/fusiondata.xml
     schema/binarydata/guardiandata.xml
+    schema/binarydata/gvgdata.xml
     schema/binarydata/gvgtrophydata.xml
     schema/binarydata/hnpcdata.xml
     schema/binarydata/itemdata.xml
     schema/binarydata/missiondata.xml
     schema/binarydata/mitamadata.xml
+    schema/binarydata/modificationcatalystdata.xml
     schema/binarydata/modificationdata.xml
+    schema/binarydata/modificationextcatalystdata.xml
     schema/binarydata/npcbarterdata.xml
     schema/binarydata/npcinvisibledata.xml
     schema/binarydata/onpcdata.xml
@@ -389,15 +409,21 @@ SET(${PROJECT_NAME}_SCHEMA
     schema/binarydata/shopproductdata.xml
     schema/binarydata/sitemdata.xml
     schema/binarydata/skilldata.xml
+    schema/binarydata/slotinitializedata.xml
+    schema/binarydata/slotpiercingdata.xml
     schema/binarydata/spotdata.xml
     schema/binarydata/sstatusdata.xml
     schema/binarydata/statusdata.xml
     schema/binarydata/tankdata.xml
     schema/binarydata/timelimitdata.xml
+    schema/binarydata/triunionkreuzitemdata.xml
     schema/binarydata/triunionspecialdata.xml
     schema/binarydata/uiinfodata.xml
+    schema/binarydata/ultimatebattlebasedata.xml
+    schema/binarydata/unionitemshelperdata.xml
     schema/binarydata/urafieldtowerdata.xml
     schema/binarydata/warppointdata.xml
+    schema/binarydata/worlddata.xml
     schema/binarydata/zonedata.xml
 )
 
@@ -722,6 +748,12 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiAIData.h
     MiAIRelationData.cpp
     MiAIRelationData.h
+    MiActionLogicData.cpp
+    MiActionLogicData.h
+    MiActionTblData.cpp
+    MiActionTblData.h
+    MiAutoLiveData.cpp
+    MiAutoLiveData.h
     MiBattleDamageData.cpp
     MiBattleDamageData.h
     MiBazaarClerkNPCData.h
@@ -750,6 +782,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiCategoryData.cpp
     MiCAppearanceEquipData.cpp
     MiCAppearanceEquipData.h
+    MiCBlockNameData.cpp
+    MiCBlockNameData.h
     MiCChanceItemData.h
     MiCChanceItemData.cpp
     MiCCultureData.h
@@ -760,22 +794,30 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiCEventData.h
     MiCEventMessageData.cpp
     MiCEventMessageData.h
-    MiCDevilBookBonusData.h
     MiCDevilBookBonusData.cpp
-    MiCDevilBookBonusMitamaData.h
+    MiCDevilBookBonusData.h
     MiCDevilBookBonusMitamaData.cpp
-    MiCDevilBoostIconData.h
+    MiCDevilBookBonusMitamaData.h
     MiCDevilBoostIconData.cpp
-    MiCDevilDungeonData.h
+    MiCDevilBoostIconData.h
     MiCDevilDungeonData.cpp
-    MiCDevilEquipmentExclusiveData.h
+    MiCDevilDungeonData.h
     MiCDevilEquipmentExclusiveData.cpp
-    MiCEquipModelProcInfo.h
+    MiCDevilEquipmentExclusiveData.h
     MiCEquipModelProcInfo.cpp
-    MiCEquipModelData.h
+    MiCEquipModelProcInfo.h
     MiCEquipModelData.cpp
-    MiCGuardianAssistData.h
+    MiCEquipModelData.h
+    MiGachaData.cpp
+    MiGachaData.h
     MiCGuardianAssistData.cpp
+    MiCGuardianAssistData.h
+    MiCGuideData.cpp
+    MiCGuideData.h
+    MiGuideArrowData.cpp
+    MiGuideArrowData.h
+    MiChanceItemData.cpp
+    MiChanceItemData.h
     MiCHelpData.cpp
     MiCHelpData.h
     MiCHouraiData.cpp
@@ -818,40 +860,54 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiMultiTalkPopCharaTbl.cpp
     MiCMessageData.cpp
     MiCMessageData.h
+    MiCNakamaQuestRewardData.cpp
+    MiCNakamaQuestRewardData.h
+    MiNakamaQuestRewardFixedData.cpp
+    MiNakamaQuestRewardFixedData.h
+    MiNakamaQuestRewardVariableTbl.cpp
+    MiNakamaQuestRewardVariableTbl.h
     MiCPolygonMovieData.cpp
     MiCPolygonMovieData.h
-    MiCSkillBase.h
     MiCSkillBase.cpp
-    MiCSkillCast.h
+    MiCSkillBase.h
     MiCSkillCast.cpp
-    MiCSkillShoot.h
+    MiCSkillCast.h
     MiCSkillShoot.cpp
-    MiCSkillBullet.h
+    MiCSkillShoot.h
     MiCSkillBullet.cpp
-    MiCSkillTarget.h
+    MiCSkillBullet.h
     MiCSkillTarget.cpp
-    MiCSkillHit.h
+    MiCSkillTarget.h
     MiCSkillHit.cpp
-    MiCSkillEquipCategory.h
+    MiCSkillHit.h
     MiCSkillEquipCategory.cpp
-    MiCSkillData.h
+    MiCSkillEquipCategory.h
     MiCSkillData.cpp
-    MiCSpecialSkillEffectData.h
+    MiCSkillData.h
     MiCSpecialSkillEffectData.cpp
-    MiCStatusData.h
+    MiCSpecialSkillEffectData.h
     MiCStatusData.cpp
-    MiCTimeAttackData.h
+    MiCStatusData.h
     MiCTimeAttackData.cpp
-    MiCTitleData.h
+    MiCTimeAttackData.h
     MiCTitleData.cpp
-    MiCTransformedModelEntry.h
+    MiCTitleData.h
     MiCTransformedModelEntry.cpp
-    MiCTransformedModelData.h
+    MiCTransformedModelEntry.h
     MiCTransformedModelData.cpp
-    MiCValuablesData.h
+    MiCTransformedModelData.h
+    MiCValuableData.cpp
+    MiCValuableData.h
     MiCValuablesData.cpp
+    MiCValuablesData.h
     MiCultureItemData.cpp
     MiCultureItemData.h
+    MiCUraFieldData.cpp
+    MiCUraFieldData.h
+    MiCZoneRelationData.cpp
+    MiCZoneRelationData.h
+    MiRelationZoneIDData.cpp
+    MiRelationZoneIDData.h
     MiPMBaseInfo.cpp
     MiPMBaseInfo.h
     MiPMCameraKeyTbl.cpp
@@ -890,6 +946,12 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiDCategoryData.h
     MiDevilBattleData.cpp
     MiDevilBattleData.h
+    MiDeunionItemCatalystData.cpp
+    MiDeunionItemCatalystData.h
+    MiDevilBookBonusData.cpp
+    MiDevilBookBonusData.h
+    MiDevilBookBonusMitamaData.cpp
+    MiDevilBookBonusMitamaData.h
     MiDevilBookData.cpp
     MiDevilBookData.h
     MiDevilBoostData.cpp
@@ -942,6 +1004,10 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiEnchantCharasticData.cpp
     MiEnchantData.h
     MiEnchantData.cpp
+    MiEnchantInitializeData.cpp
+    MiEnchantInitializeData.h
+    MiEnchantPiercingData.cpp
+    MiEnchantPiercingData.h
     EnchantSetData.h
     EnchantSetData.cpp
     EnchantSpecialData.h
@@ -964,6 +1030,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiExpertGrowthTbl.h
     MiExpertRankData.cpp
     MiExpertRankData.h
+    MiExpertTitleData.cpp
+    MiExpertTitleData.h
     MiFindInfo.cpp
     MiFindInfo.h
     MiGrowthData.cpp
@@ -978,8 +1046,12 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiGuardianSpecialData.h
     MiGuardianUnlockData.cpp
     MiGuardianUnlockData.h
-    MiGvGTrophyData.h
+    MiGvGArrayData.cpp
+    MiGvGArrayData.h
+    MiGvGData.cpp
+    MiGvGData.h
     MiGvGTrophyData.cpp
+    MiGvGTrophyData.h
     MiHNPCAppearanceData.cpp
     MiHNPCAppearanceData.h
     MiHNPCBasicData.cpp
@@ -1002,8 +1074,12 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiMitamaReunionSetBonusData.h
     MiMitamaUnionBonusData.cpp
     MiMitamaUnionBonusData.h
+    MiModificationCatalystData.cpp
+    MiModificationCatalystData.h
     MiModificationData.cpp
     MiModificationData.h
+    MiModificationExtCatalystData.cpp
+    MiModificationExtCatalystData.h
     MiModificationExtEffectData.cpp
     MiModificationExtEffectData.h
     MiModificationExtRecipeData.cpp
@@ -1040,6 +1116,16 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiNPCInvisibleData.h
     MiONPCData.cpp
     MiONPCData.h
+    MiPCData.cpp
+    MiPCData.h
+    MiUnionTbl.cpp
+    MiUnionTbl.h
+    MiPCBattleData.cpp
+    MiPCBattleData.h
+    MiPCBasicData.cpp
+    MiPCBasicData.h
+    MiAppearanceData.cpp
+    MiAppearanceData.h
     MiPossessionData.h
     MiPossessionData.cpp
     MiQuestBonusData.h
@@ -1078,6 +1164,10 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiSkillSpecialParams.h
     MiSkillTbl.h
     MiSkillTbl.cpp
+    MiSlotInitializeData.cpp
+    MiSlotInitializeData.h
+    MiSlotPiercingData.cpp
+    MiSlotPiercingData.h
     MiSpecialConditionData.h
     MiSpecialConditionData.cpp
     MiSStatusData.cpp
@@ -1092,6 +1182,8 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiSynthesisData.h
     MiSynthesisItemData.cpp
     MiSynthesisItemData.h
+    MiCSynthesisCatalystData.cpp
+    MiCSynthesisCatalystData.h
     MiCTalkMessageData.cpp
     MiCTalkMessageData.h
     MiTankData.h
@@ -1102,20 +1194,32 @@ OBJGEN_XML(${PROJECT_NAME}_STRUCTS
     MiTimeLimitData.cpp
     MiTitleData.h
     MiTitleData.cpp
+    MiTriUnionKreuzItemData.cpp
+    MiTriUnionKreuzItemData.h
     MiTriUnionSpecialData.cpp
     MiTriUnionSpecialData.h
     MiUIInfoData.h
     MiUIInfoData.cpp
     MiUnionData.cpp
     MiUnionData.h
-    MiUraFieldTowerData.h
+    MiUnionItemsHelperData.cpp
+    MiUnionItemsHelperData.h
     MiUraFieldTowerData.cpp
-    MiUseRestrictionsData.h
+    MiUraFieldTowerData.h
     MiUseRestrictionsData.cpp
-    MiSpotData.h
+    MiUseRestrictionsData.h
+    MiUltimateBattleBaseData.cpp
+    MiUltimateBattleBaseData.h
     MiSpotData.cpp
+    MiSpotData.h
     MiWarpPointData.cpp
     MiWarpPointData.h
+    MiWorldData.cpp
+    MiWorldData.h
+    MiCreateAreaIdTbl.cpp
+    MiCreateAreaIdTbl.h
+    MiChannelTbl.cpp
+    MiChannelTbl.h
     MiZoneBasicData.h
     MiZoneBasicData.cpp
     MiZoneBGMData.h

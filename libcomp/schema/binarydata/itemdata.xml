@@ -72,9 +72,6 @@
     <object name="MiRentalData" persistent="false" scriptenabled="true">
         <member type="s32" name="rental"/>
     </object>
-    <object name="MiSkillTbl" persistent="false" scriptenabled="true">
-        <member type="u32" name="skill"/>
-    </object>
     <object name="MiItemData" persistent="false" scriptenabled="true">
         <member name="common" type="MiSkillItemStatusCommonData*"/>
         <member name="basic" type="MiItemBasicData*"/>

@@ -4,6 +4,9 @@
         <member type="u8" name="mainCategory"/>
         <member type="u8" name="subCategory" pad="2"/>
     </object>
+    <object name="MiSkillTbl" persistent="false" scriptenabled="true">
+        <member type="u32" name="skill"/>
+    </object>
     <object name="MiCorrectTbl" persistent="false" scriptenabled="true">
         <member type="enum" name="ID" underlying="uint8_t">
             <!-- 力 - Strength -->
