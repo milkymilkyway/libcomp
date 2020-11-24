@@ -2,12 +2,12 @@
 <objgen>
     <object name="MiDynamicMapData" persistent="false" scriptenabled="true">
         <member type="u32" name="id" caps="true"/>
-        <member type="string" length="36" name="spotDataFile" encoding="cp932"/>
-        <member type="string" length="36" name="enemyFile" encoding="cp932"/>
-        <member type="string" length="36" name="npcFile" encoding="cp932"/>
-        <member type="string" length="36" name="eventFile" encoding="cp932"/>
-        <member type="string" length="36" name="eventFile2" encoding="cp932"/>
-        <member type="string" length="36" name="groupFile" encoding="cp932"/>
-        <member type="string" length="36" name="unitFile" encoding="cp932"/>
+        <member type="string" length="36" name="spotDataFile" encoding="default"/>
+        <member type="string" length="36" name="enemyFile" encoding="default"/>
+        <member type="string" length="36" name="npcFile" encoding="default"/>
+        <member type="string" length="36" name="eventFile" encoding="default"/>
+        <member type="string" length="36" name="eventFile2" encoding="default"/>
+        <member type="string" length="36" name="groupFile" encoding="default"/>
+        <member type="string" length="36" name="unitFile" encoding="default"/>
     </object>
 </objgen>

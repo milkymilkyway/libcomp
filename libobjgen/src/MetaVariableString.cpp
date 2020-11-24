@@ -262,12 +262,40 @@ bool MetaVariableString::Load(const tinyxml2::XMLDocument& doc,
     std::transform(encoding.begin(), encoding.end(), encoding.begin(),
                    ::tolower);
 
-    if ("utf8" == encoding) {
+    if ("default" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_DEFAULT);
+    } else if ("utf8" == encoding) {
       SetEncoding(Encoding_t::ENCODING_UTF8);
+    } else if ("cp874" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP874);
     } else if ("cp932" == encoding) {
       SetEncoding(Encoding_t::ENCODING_CP932);
+    } else if ("cp936" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP936);
+    } else if ("cp949" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP949);
+    } else if ("cp950" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP950);
+    } else if ("cp1250" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1250);
+    } else if ("cp1251" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1251);
     } else if ("cp1252" == encoding) {
       SetEncoding(Encoding_t::ENCODING_CP1252);
+    } else if ("cp1253" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1253);
+    } else if ("cp1254" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1254);
+    } else if ("cp1255" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1255);
+    } else if ("cp1256" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1256);
+    } else if ("cp1257" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1257);
+    } else if ("cp1258" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1258);
+    } else if ("cp1361" == encoding) {
+      SetEncoding(Encoding_t::ENCODING_CP1361);
     } else {
       status = false;
     }
@@ -313,11 +341,53 @@ bool MetaVariableString::Save(tinyxml2::XMLDocument& doc,
   }
 
   switch (GetEncoding()) {
+    case Encoding_t::ENCODING_DEFAULT:
+      pVariableElement->SetAttribute("encoding", "default");
+      break;
+    case Encoding_t::ENCODING_CP874:
+      pVariableElement->SetAttribute("encoding", "cp874");
+      break;
     case Encoding_t::ENCODING_CP932:
       pVariableElement->SetAttribute("encoding", "cp932");
       break;
+    case Encoding_t::ENCODING_CP936:
+      pVariableElement->SetAttribute("encoding", "cp936");
+      break;
+    case Encoding_t::ENCODING_CP949:
+      pVariableElement->SetAttribute("encoding", "cp949");
+      break;
+    case Encoding_t::ENCODING_CP950:
+      pVariableElement->SetAttribute("encoding", "cp950");
+      break;
+    case Encoding_t::ENCODING_CP1250:
+      pVariableElement->SetAttribute("encoding", "cp1250");
+      break;
+    case Encoding_t::ENCODING_CP1251:
+      pVariableElement->SetAttribute("encoding", "cp1251");
+      break;
     case Encoding_t::ENCODING_CP1252:
       pVariableElement->SetAttribute("encoding", "cp1252");
+      break;
+    case Encoding_t::ENCODING_CP1253:
+      pVariableElement->SetAttribute("encoding", "cp1253");
+      break;
+    case Encoding_t::ENCODING_CP1254:
+      pVariableElement->SetAttribute("encoding", "cp1254");
+      break;
+    case Encoding_t::ENCODING_CP1255:
+      pVariableElement->SetAttribute("encoding", "cp1255");
+      break;
+    case Encoding_t::ENCODING_CP1256:
+      pVariableElement->SetAttribute("encoding", "cp1256");
+      break;
+    case Encoding_t::ENCODING_CP1257:
+      pVariableElement->SetAttribute("encoding", "cp1257");
+      break;
+    case Encoding_t::ENCODING_CP1258:
+      pVariableElement->SetAttribute("encoding", "cp1258");
+      break;
+    case Encoding_t::ENCODING_CP1361:
+      pVariableElement->SetAttribute("encoding", "cp1361");
       break;
     default:
       break;
@@ -569,11 +639,53 @@ std::string MetaVariableString::EncodingToString(Encoding_t encoding) {
   std::string str;
 
   switch (encoding) {
+    case Encoding_t::ENCODING_DEFAULT:
+      str = "default";
+      break;
+    case Encoding_t::ENCODING_CP874:
+      str = "cp874";
+      break;
     case Encoding_t::ENCODING_CP932:
       str = "cp932";
       break;
+    case Encoding_t::ENCODING_CP936:
+      str = "cp936";
+      break;
+    case Encoding_t::ENCODING_CP949:
+      str = "cp949";
+      break;
+    case Encoding_t::ENCODING_CP950:
+      str = "cp950";
+      break;
+    case Encoding_t::ENCODING_CP1250:
+      str = "cp1250";
+      break;
+    case Encoding_t::ENCODING_CP1251:
+      str = "cp1251";
+      break;
     case Encoding_t::ENCODING_CP1252:
       str = "cp1252";
+      break;
+    case Encoding_t::ENCODING_CP1253:
+      str = "cp1253";
+      break;
+    case Encoding_t::ENCODING_CP1254:
+      str = "cp1254";
+      break;
+    case Encoding_t::ENCODING_CP1255:
+      str = "cp1255";
+      break;
+    case Encoding_t::ENCODING_CP1256:
+      str = "cp1256";
+      break;
+    case Encoding_t::ENCODING_CP1257:
+      str = "cp1257";
+      break;
+    case Encoding_t::ENCODING_CP1258:
+      str = "cp1258";
+      break;
+    case Encoding_t::ENCODING_CP1361:
+      str = "cp1361";
       break;
     default:
     case Encoding_t::ENCODING_UTF8:
@@ -588,11 +700,53 @@ std::string MetaVariableString::EncodingToComp(Encoding_t encoding) {
   std::string str;
 
   switch (encoding) {
+    case Encoding_t::ENCODING_DEFAULT:
+      str = "mEncoding";
+      break;
+    case Encoding_t::ENCODING_CP874:
+      str = "libcomp::Convert::ENCODING_CP874";
+      break;
     case Encoding_t::ENCODING_CP932:
       str = "libcomp::Convert::ENCODING_CP932";
       break;
+    case Encoding_t::ENCODING_CP936:
+      str = "libcomp::Convert::ENCODING_CP936";
+      break;
+    case Encoding_t::ENCODING_CP949:
+      str = "libcomp::Convert::ENCODING_CP949";
+      break;
+    case Encoding_t::ENCODING_CP950:
+      str = "libcomp::Convert::ENCODING_CP950";
+      break;
+    case Encoding_t::ENCODING_CP1250:
+      str = "libcomp::Convert::ENCODING_CP1250";
+      break;
+    case Encoding_t::ENCODING_CP1251:
+      str = "libcomp::Convert::ENCODING_CP1251";
+      break;
     case Encoding_t::ENCODING_CP1252:
       str = "libcomp::Convert::ENCODING_CP1252";
+      break;
+    case Encoding_t::ENCODING_CP1253:
+      str = "libcomp::Convert::ENCODING_CP1253";
+      break;
+    case Encoding_t::ENCODING_CP1254:
+      str = "libcomp::Convert::ENCODING_CP1254";
+      break;
+    case Encoding_t::ENCODING_CP1255:
+      str = "libcomp::Convert::ENCODING_CP1255";
+      break;
+    case Encoding_t::ENCODING_CP1256:
+      str = "libcomp::Convert::ENCODING_CP1256";
+      break;
+    case Encoding_t::ENCODING_CP1257:
+      str = "libcomp::Convert::ENCODING_CP1257";
+      break;
+    case Encoding_t::ENCODING_CP1258:
+      str = "libcomp::Convert::ENCODING_CP1258";
+      break;
+    case Encoding_t::ENCODING_CP1361:
+      str = "libcomp::Convert::ENCODING_CP1361";
       break;
     default:
     case Encoding_t::ENCODING_UTF8:

@@ -2,7 +2,7 @@
 <objgen>
     <object name="MiCMessageData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="message" encoding="cp932"
+        <member type="string" name="message" encoding="default"
             round="4" lensz="4"/>
     </object>
 </objgen>

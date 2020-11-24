@@ -2,7 +2,7 @@
 <objgen>
     <object name="MiPMBaseInfo" persistent="false">
         <member type="string" length="36" name="map"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="array" size="3" name="info2">
             <element type="u8"/>
         </member>
@@ -16,7 +16,7 @@
     <object name="MiPMCameraKeyTbl" persistent="false">
         <member type="f32" name="camera1"/>
         <member type="string" length="36" name="name"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="camera3"/>
         <member type="f32" name="camera4"/>
     </object>
@@ -26,7 +26,7 @@
         <member type="u8" name="message3"/>
         <member type="u16" name="message4"/>
         <member type="string" length="260" name="message"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="message6"/>
     </object>
     <object name="MiPMBGMKeyTbl" persistent="false">
@@ -73,9 +73,9 @@
         <member type="f32" name="effect1"/>
         <member type="f32" name="effect2"/>
         <member type="string" length="36" name="effect3"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="string" length="36" name="effect4"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="effect5"/>
         <member type="f32" name="effect6"/>
         <member type="u32" name="effect7"/>
@@ -110,21 +110,21 @@
     </object>
     <object name="MiPMScalingHelperTbl" persistent="false">
         <member type="string" length="36" name="helper1"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="helper2"/>
     </object>
     <object name="MiPMAttachCharacterTbl" persistent="false">
         <member type="string" length="36" name="character1"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="string" length="68" name="character2"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="character3"/>
         <member type="s32" name="character4"/>
     </object>
     <object name="MiPMMotionKeyTbl" persistent="false">
         <member type="f32" name="motion1"/>
         <member type="string" length="36" name="motion2"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="s32" name="motion3"/>
         <member type="u8" name="motion4"/>
         <member type="u8" name="motion5"/>

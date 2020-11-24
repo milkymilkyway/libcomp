@@ -12,6 +12,6 @@
         <member type="s16" name="effect3"/>
         <member type="s16" name="boost3"/>
         <member type="s32" name="fixed3"/>
-        <member type="string" name="description" encoding="cp932" length="68"/>
+        <member type="string" name="description" encoding="default" length="68"/>
     </object>
 </objgen>

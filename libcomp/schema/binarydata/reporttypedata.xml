@@ -3,6 +3,6 @@
     <object name="MiReportTypeData" persistent="false">
         <member type="u16" name="ID"/>
         <member type="bool" name="enabled" pad="1"/>
-        <member type="string" name="reason" encoding="cp932" length="32"/>
+        <member type="string" name="reason" encoding="default" length="32"/>
     </object>
 </objgen>

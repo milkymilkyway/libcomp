@@ -15,7 +15,7 @@
             <element type="s32"/>
         </member>
         <member type="string" length="132" name="text"
-            encoding="cp932"/>
+            encoding="default"/>
     </object>
     <object name="MiCEventData" persistent="false">
         <member type="u32" name="ID"/>

@@ -5,6 +5,6 @@
         <member type="u32" name="loading1"/>
         <member type="u32" name="loading2"/>
         <member type="float" name="loading3"/>
-        <member type="string" length="256" name="file" encoding="cp932"/>
+        <member type="string" length="256" name="file" encoding="default"/>
     </object>
 </objgen>

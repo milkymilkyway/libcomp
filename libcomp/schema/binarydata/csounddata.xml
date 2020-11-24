@@ -2,7 +2,7 @@
 <objgen>
     <object name="MiCSoundData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" length="36" name="path" encoding="cp932"/>
+        <member type="string" length="36" name="path" encoding="default"/>
         <member type="enum" name="location" underlying="uint8_t">
             <value num="0">SOUND_SE</value>
             <value num="1">SOUND_BGM</value>

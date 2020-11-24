@@ -38,9 +38,23 @@ class MetaVariableString : public MetaVariable {
    * Valid string encodings.
    */
   enum class Encoding_t : int8_t {
-    ENCODING_UTF8 = 0,
+    ENCODING_DEFAULT = 0,
+    ENCODING_UTF8,
+    ENCODING_CP874,
     ENCODING_CP932,
+    ENCODING_CP936,
+    ENCODING_CP949,
+    ENCODING_CP950,
+    ENCODING_CP1250,
+    ENCODING_CP1251,
     ENCODING_CP1252,
+    ENCODING_CP1253,
+    ENCODING_CP1254,
+    ENCODING_CP1255,
+    ENCODING_CP1256,
+    ENCODING_CP1257,
+    ENCODING_CP1258,
+    ENCODING_CP1361,
   };
 
   MetaVariableString();

@@ -2,8 +2,8 @@
 <objgen>
     <object name="MiKeyItemData" persistent="false">
         <member type="u8" name="ID" pad="3"/>
-        <member type="string" name="name" encoding="cp932" length="36"/>
-        <member type="string" name="desc" encoding="cp932" length="260"/>
+        <member type="string" name="name" encoding="default" length="36"/>
+        <member type="string" name="desc" encoding="default" length="260"/>
     </object>
     <object name="MiKeyItemSortData" persistent="false">
         <member type="u8" name="sort1"/>

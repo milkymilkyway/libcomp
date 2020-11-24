@@ -4,7 +4,7 @@
         <member type="u32" name="dungeonID"/>
         <member type="u32" name="ID"/>
         <member type="u32" name="letter"/>
-        <member type="string" name="name" encoding="cp932" length="32"/>
+        <member type="string" name="name" encoding="default" length="32"/>
         <member type="u32" name="captureItem"/>
         <member type="u32" name="captureDuration"/>
         <member type="array" name="phaseMiniBosses" size="4">

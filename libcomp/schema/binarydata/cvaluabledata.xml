@@ -2,6 +2,6 @@
 <objgen>
     <object name="MiCValuableData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" length="36" name="name" encoding="cp932"/>
+        <member type="string" length="36" name="name" encoding="default"/>
     </object>
 </objgen>

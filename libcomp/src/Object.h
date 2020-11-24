@@ -27,6 +27,9 @@
 #ifndef LIBCOMP_SRC_OBJECT_H
 #define LIBCOMP_SRC_OBJECT_H
 
+// libcomp Includes
+#include "Convert.h"
+
 // Standard C++11 Includes
 #include <stdint.h>
 
@@ -100,8 +103,10 @@ class Object {
  public:
   /**
    * Create an object.
+   * @param encoding Encoding to use for strings that are set to the default
+   * encoding.
    */
-  Object();
+  Object(Convert::Encoding_t encoding = Convert::Encoding_t::ENCODING_DEFAULT);
 
   /**
    * Explicitly defined copy constructor necessary due to removal
@@ -229,6 +234,19 @@ class Object {
    */
   std::string GetXml() const;
 
+  /**
+   * Get the encoding to be used by this object during load/save.
+   * @returns Encoding to be used by this object during load/save.
+   */
+  Convert::Encoding_t GetEncoding() const;
+
+  /**
+   * Set the encoding to be used by this object during load/save.
+   * @param encoding Encoding to be used by this object during load/save.
+   */
+  void SetEncoding(
+      Convert::Encoding_t encoding = Convert::Encoding_t::ENCODING_DEFAULT);
+
  protected:
   /**
    * Utility function to get a child XML element from a parent node
@@ -282,6 +300,9 @@ class Object {
    * @return true if the stream is still good after writing
    */
   bool WritePadding(std::ostream& stream, uint8_t count) const;
+
+  /// Encoding used for this object.
+  Convert::Encoding_t mEncoding;
 
   /// Mutex to lock accessing the object fields
   std::mutex mFieldLock;

@@ -3,9 +3,9 @@
     <object name="MiONPCData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="string" length="36" name="name"
-            encoding="cp932" pad="4"/>
-        <member type="string" length="68" name="barrierName" encoding="cp932"/><!-- From qmp file -->
-        <member type="string" length="68" name="objectName" encoding="cp932"/><!-- From nif file -->
+            encoding="default" pad="4"/>
+        <member type="string" length="68" name="barrierName" encoding="default"/><!-- From qmp file -->
+        <member type="string" length="68" name="objectName" encoding="default"/><!-- From nif file -->
         <member type="u32" name="modelID1"/>
         <member type="u32" name="modelID2"/>
     </object>

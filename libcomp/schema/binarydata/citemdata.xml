@@ -3,11 +3,11 @@
     <object name="MiCItemBaseData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="string" length="36" name="name"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="string" length="36" name="name2"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="string" length="516" name="desc"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="u16" name="icon"/>
         <member type="s8" name="category"/>
         <member type="bool" name="tradeList"/>
@@ -20,8 +20,8 @@
         <member type="u32" name="run"/>
     </object>
     <object name="MiCItemSPEffectData" persistent="false">
-        <member type="string" length="68" name="shotEffectFile" encoding="cp932"/>
-        <member type="string" length="68" name="swingEffectFile" encoding="cp932"/>
+        <member type="string" length="68" name="shotEffectFile" encoding="default"/>
+        <member type="string" length="68" name="swingEffectFile" encoding="default"/>
         <member type="array" size="3" name="effectColor" pad="1">
             <element type="u8"/>
         </member>

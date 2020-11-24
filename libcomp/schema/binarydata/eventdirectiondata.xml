@@ -3,7 +3,7 @@
     <object name="MiEventDirectionData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="array" size="16" name="movieFiles">
-            <element type="string" length="36" encoding="cp932"/>
+            <element type="string" length="36" encoding="default"/>
         </member>
     </object>
 </objgen>

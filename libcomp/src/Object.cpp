@@ -37,7 +37,7 @@
 
 using namespace libcomp;
 
-Object::Object() {}
+Object::Object(Convert::Encoding_t encoding) : mEncoding(encoding) {}
 
 Object::Object(const Object& other) { (void)other; }
 
@@ -280,6 +280,10 @@ bool Object::WritePadding(std::ostream& stream, uint8_t count) const {
 
   return stream.good();
 }
+
+Convert::Encoding_t Object::GetEncoding() const { return mEncoding; }
+
+void Object::SetEncoding(Convert::Encoding_t encoding) { mEncoding = encoding; }
 
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {

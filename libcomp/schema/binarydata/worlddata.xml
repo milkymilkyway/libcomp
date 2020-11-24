@@ -6,7 +6,7 @@
     <object name="MiChannelTbl" persistent="false">
         <member type="u32" name="unknown1"/>
         <member type="u32" name="unknown2"/>
-        <member type="string" length="36" name="name" encoding="cp932"/>
+        <member type="string" length="36" name="name" encoding="default"/>
     </object>
     <object name="MiWorldData" persistent="false">
         <member type="u32" name="ID"/>

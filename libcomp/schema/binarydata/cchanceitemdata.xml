@@ -2,6 +2,6 @@
 <objgen>
     <object name="MiCChanceItemData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="name" encoding="cp932" round="4"/>
+        <member type="string" name="name" encoding="default" round="4"/>
     </object>
 </objgen>

@@ -4,13 +4,13 @@
         <member type="u32" name="type"/>
         <member type="float" name="x"/>
         <member type="float" name="y"/>
-        <member type="string" name="text" encoding="cp932" length="260"/>
+        <member type="string" name="text" encoding="default" length="260"/>
     </object>
     <object name="MiZoneChangeData" persistent="false">
         <member type="u32" name="type"/>
         <member type="float" name="x"/>
         <member type="float" name="y"/>
-        <member type="string" name="text" encoding="cp932" length="260"/>
+        <member type="string" name="text" encoding="default" length="260"/>
     </object>
     <object name="MiCMapData" persistent="false">
         <member type="u32" name="ID"/>

@@ -6,8 +6,8 @@
         <member type="f32" name="scale"/>
         <member type="f32" name="summonCircleSize"/>
         <member type="u8" name="unk4" pad="3"/>
-        <member type="string" length="36" name="model" encoding="cp932"/>
-        <member type="string" length="36" name="texture" encoding="cp932"/>
+        <member type="string" length="36" name="model" encoding="default"/>
+        <member type="string" length="36" name="texture" encoding="default"/>
         <member type="array" size="3" name="color">
             <element type="u8"/>
         </member>

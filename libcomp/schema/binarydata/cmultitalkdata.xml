@@ -37,9 +37,9 @@
         <member type="f32" name="decCmd7"/>
         <member type="f32" name="decCmd8"/>
         <member type="string" length="132" name="strCmd1"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="string" length="132" name="strCmd2"
-            encoding="cp932"/>
+            encoding="default"/>
     </object>
     <object name="MiCMultiTalkData" persistent="false">
         <member type="u32" name="ID"/>
@@ -50,7 +50,7 @@
     <object name="MiMultiTalkPopCharaTbl" persistent="false">
         <member type="u32" name="ID"/>
         <member type="string" length="132" name="actor"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="f32" name="x"/>
         <member type="f32" name="y"/>
         <member type="f32" name="z"/>
@@ -73,7 +73,7 @@
     <object name="MiCMultiTalkPopData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="string" length="36" name="location"
-            encoding="cp932"/>
+            encoding="default"/>
         <member type="u8" name="pop2"/>
         <member type="u8" name="pop3"/>
         <member type="u8" name="pop4"/>
@@ -87,7 +87,7 @@
     </object>
     <object name="MiCMultiTalkDirectionData" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" length="260" name="popFile" encoding="cp932"/>
-        <member type="string" length="260" name="performFile" encoding="cp932"/>
+        <member type="string" length="260" name="popFile" encoding="default"/>
+        <member type="string" length="260" name="performFile" encoding="default"/>
     </object>
 </objgen>

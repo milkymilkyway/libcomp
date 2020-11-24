@@ -27,55 +27,86 @@
 #include "Convert.h"
 
 #include "Endian.h"
+#include "EnumMap.h"
 #include "Exception.h"
 #include "Log.h"
 
-// Lookup tables for CP-1252 and CP-932.
-#include <limits.h>
+// Standard C Includes
 #include <stdint.h>
 
+#include <climits>
+
+// Lookup tables
+#include "LookupTableCP1250.h"
+#include "LookupTableCP1251.h"
 #include "LookupTableCP1252.h"
+#include "LookupTableCP1253.h"
+#include "LookupTableCP1254.h"
+#include "LookupTableCP1255.h"
+#include "LookupTableCP1256.h"
+#include "LookupTableCP1257.h"
+#include "LookupTableCP1258.h"
+#include "LookupTableCP1361.h"
+#include "LookupTableCP874.h"
 #include "LookupTableCP932.h"
+#include "LookupTableCP936.h"
+#include "LookupTableCP949.h"
+#include "LookupTableCP950.h"
 
 using namespace libcomp;
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
-/**
- * Convert a CP-1252 encoded string to a @ref String.
- * @param szString The string to convert.
- * @param size Optional size of the string.
- * @returns The converted string.
- */
-static String FromCP1252Encoding(const uint8_t *szString, int size);
+/// Default encoding to use when none is specified.
+static Convert::Encoding_t gDefaultEncoding =
+    Convert::Encoding_t::ENCODING_CP932;
 
 /**
- * Convert a CP-932 encoded string to a @ref String.
+ * Convert a single byte character set (SBCS) encoded string to a @ref String.
  * @param szString The string to convert.
  * @param size Optional size of the string.
+ * @param pLookupTable Lookup table to use.
  * @returns The converted string.
  */
-static String FromCP932Encoding(const uint8_t *szString, int size);
+static String FromSBCSEncoding(const uint8_t *szString, int size,
+                               const uint8_t *pLookupTable);
 
 /**
- * Convert the @ref String to a CP-1252 encoded string.
+ * Convert a double byte character set (DBCS) encoded string to a @ref String.
+ * @param szString The string to convert.
+ * @param size Optional size of the string.
+ * @param pLookupTable Lookup table to use.
+ * @returns The converted string.
+ */
+static String FromDBCSEncoding(const uint8_t *szString, int size,
+                               const uint8_t *pLookupTable);
+
+/**
+ * Convert the @ref String to a single byte character set (SBCS) encoded string.
  * @param str String to convert.
+ * @param pLookupTable Lookup table to use.
  * @param nullTerminator Indicates if a null terminator should be added.
  * @returns The converted string.
  */
-static std::vector<char> ToCP1252Encoding(const String &str,
-                                          bool nullTerminator = true);
+static std::vector<char> ToSBCSEncoding(const String &str,
+                                        const uint8_t *pLookupTable,
+                                        bool nullTerminator = true);
 
 /**
- * Convert the @ref String to a CP-932 encoded string.
+ * Convert the @ref String to a double byte character set (DBCS) encoded string.
  * @param str String to convert.
+ * @param pLookupTable Lookup table to use.
+ * @param lookupTableArraySize Size (in elements) of the lookup table.
  * @param nullTerminator Indicates if a null terminator should be added.
  * @returns The converted string.
  */
-static std::vector<char> ToCP932Encoding(const String &str,
-                                         bool nullTerminator = true);
+static std::vector<char> ToDBCSEncoding(const String &str,
+                                        const uint8_t *pLookupTable,
+                                        size_t lookupTableArraySize,
+                                        bool nullTerminator = true);
 
-static String FromCP1252Encoding(const uint8_t *szString, int size) {
+static String FromSBCSEncoding(const uint8_t *szString, int size,
+                               const uint8_t *pLookupTable) {
   // If the size is 0, return an empty string. If the size is less than 0,
   // read as much as possible. In this case we will limit the string to the
   // max size of an integer (which is so huge it should not be reached).
@@ -89,7 +120,7 @@ static String FromCP1252Encoding(const uint8_t *szString, int size) {
 
   // Obtain pointers to the lookup table so it may be used as an array of
   // unsigned 16-bit values.
-  const uint16_t *pMappingTo = (uint16_t *)LookupTableCP1252;
+  const uint16_t *pMappingTo = (uint16_t *)pLookupTable;
   const uint16_t *pMappingFrom = pMappingTo + 65536;
 
   // String to store the converted string into.
@@ -101,9 +132,9 @@ static String FromCP1252Encoding(const uint8_t *szString, int size) {
     // Retrieve the next byte of the string and determine the mapped code
     // point for the desired encoding. Advance the pointer to the next
     // value in the source string.
-    uint16_t cp1252 = *(szString++);
+    uint16_t SBCS = *(szString++);
 
-    String::CodePoint unicode = pMappingFrom[cp1252];
+    String::CodePoint unicode = pMappingFrom[SBCS];
 
     // If there is no mapped codec, return an empty string to indicate an
     // error.
@@ -119,7 +150,8 @@ static String FromCP1252Encoding(const uint8_t *szString, int size) {
   return final;
 }
 
-static String FromCP932Encoding(const uint8_t *szString, int size) {
+static String FromDBCSEncoding(const uint8_t *szString, int size,
+                               const uint8_t *pLookupTable) {
   // If the size is 0, return an empty string. If the size is less than 0,
   // read as much as possible. In this case we will limit the string to the
   // max size of an integer (which is so huge it should not be reached).
@@ -133,7 +165,7 @@ static String FromCP932Encoding(const uint8_t *szString, int size) {
 
   // Obtain pointers to the lookup table so it may be used as an array of
   // unsigned 16-bit values.
-  const uint16_t *pMappingTo = (uint16_t *)LookupTableCP932;
+  const uint16_t *pMappingTo = (uint16_t *)pLookupTable;
   const uint16_t *pMappingFrom = pMappingTo + 65536;
 
   // String to store the converted string into.
@@ -143,15 +175,15 @@ static String FromCP932Encoding(const uint8_t *szString, int size) {
   // requested size has been reached.
   while (0 < size-- && 0 != *szString) {
     // Retrieve the next byte of the string and determine the mapped code
-    // point for the desired encoding. CP932 is a multi-byte format similar
+    // point for the desired encoding. DBCS is a multi-byte format similar
     // to Shift-JIS. As such, if the most significant bit is set, another
     // byte needs to be read and added to the code point before conversion.
     // After each byte read from the string, the string pointer should be
     // advanced.
-    uint16_t cp932 = *(szString++);
+    uint16_t DBCS = *(szString++);
 
     // Certain byte values indicate multibyte characters.
-    if ((0x81 <= cp932 && 0x9F >= cp932) || (0xE0 <= cp932 && 0xFC >= cp932)) {
+    if ((0x81 <= DBCS && 0x9F >= DBCS) || (0xE0 <= DBCS && 0xFC >= DBCS)) {
       // Sanity check that we can read the 2nd byte of the code point.
       // If not, we should return an empty string to indicate an error.
       /// @todo Consider throwing an exception as well (conversion
@@ -160,15 +192,15 @@ static String FromCP932Encoding(const uint8_t *szString, int size) {
         return String();
       }
 
-      // A multi-byte CP932 code point consists of the first byte in the
+      // A multi-byte DBCS code point consists of the first byte in the
       // 8 most significant bits and the second byte in the 8 least
       // significant bits.
-      cp932 = (uint16_t)((cp932 << 8) | *(szString++));
+      DBCS = (uint16_t)((DBCS << 8) | *(szString++));
     }
 
     // If there is no mapped codec, return an empty string to indicate an
     // error.
-    String::CodePoint unicode = pMappingFrom[cp932];
+    String::CodePoint unicode = pMappingFrom[DBCS];
 
     if (0 == unicode) {
       return String();
@@ -182,11 +214,12 @@ static String FromCP932Encoding(const uint8_t *szString, int size) {
   return final;
 }
 
-static std::vector<char> ToCP1252Encoding(const String &str,
-                                          bool nullTerminator) {
+static std::vector<char> ToSBCSEncoding(const String &str,
+                                        const uint8_t *pLookupTable,
+                                        bool nullTerminator) {
   // Obtain a pointer to the lookup table so it may be used as an array of
   // unsigned 16-bit values.
-  const uint16_t *pMappingTo = (uint16_t *)LookupTableCP1252;
+  const uint16_t *pMappingTo = (uint16_t *)pLookupTable;
 
   // Used to add a null terminator to the end of the byte array.
   char zero = 0;
@@ -200,10 +233,10 @@ static std::vector<char> ToCP1252Encoding(const String &str,
     String::CodePoint unicode = str.At(i);
 
     // Find the mapped code point for the desired encoding.
-    uint16_t cp1252 = pMappingTo[unicode];
+    uint16_t SBCS = pMappingTo[unicode];
 
     // Add the converted character to the final string.
-    final.push_back((char)(cp1252 & 0xFF));
+    final.push_back((char)(SBCS & 0xFF));
   }
 
   // Append a null terminator to the end of the final string.
@@ -215,11 +248,13 @@ static std::vector<char> ToCP1252Encoding(const String &str,
   return final;
 }
 
-static std::vector<char> ToCP932Encoding(const String &str,
-                                         bool nullTerminator) {
+static std::vector<char> ToDBCSEncoding(const String &str,
+                                        const uint8_t *pLookupTable,
+                                        size_t lookupTableArraySize,
+                                        bool nullTerminator) {
   // Obtain a pointer to the lookup table so it may be used as an array of
   // unsigned 16-bit values.
-  const uint16_t *pMappingTo = (uint16_t *)LookupTableCP932;
+  const uint16_t *pMappingTo = (uint16_t *)pLookupTable;
 
   // Used to add a null terminator to the end of the byte array.
   char zero = 0;
@@ -233,7 +268,7 @@ static std::vector<char> ToCP932Encoding(const String &str,
     String::CodePoint unicode = str.At(i);
 
     // Sanity check the code point is inside the array.
-    if (ARRAY_SIZE(LookupTableCP932) <= unicode ||
+    if (lookupTableArraySize <= unicode ||
         (String::CodePoint)0xFFFF < unicode) {
       Exception e(
           String("Invalid character %1 in string: %2\n").Arg(i).Arg(str),
@@ -245,20 +280,20 @@ static std::vector<char> ToCP932Encoding(const String &str,
     }
 
     // Find the mapped code point for the desired encoding.
-    uint16_t cp932 = pMappingTo[unicode];
+    uint16_t DBCS = pMappingTo[unicode];
 
-    // If the most significant bit is set, this CP932 code point is a
+    // If the most significant bit is set, this DBCS code point is a
     // multi-byte codepoint.
-    if (0xFF < cp932) {
+    if (0xFF < DBCS) {
       // Double byte, ensure the value is in big endian host order.
-      cp932 = htobe16(cp932);
+      DBCS = htobe16(DBCS);
 
       // Write two bytes to the final string.
-      final.push_back((char)(cp932 & 0xFF));
-      final.push_back((char)((cp932 >> 8) & 0xFF));
+      final.push_back((char)(DBCS & 0xFF));
+      final.push_back((char)((DBCS >> 8) & 0xFF));
     } else {
       // Single byte, write one byte to the final string.
-      final.push_back((char)(cp932 & 0xFF));
+      final.push_back((char)(DBCS & 0xFF));
     }
   }
 
@@ -273,12 +308,42 @@ static std::vector<char> ToCP932Encoding(const String &str,
 
 String Convert::FromEncoding(Encoding_t encoding, const char *szString,
                              int size) {
+  if (ENCODING_DEFAULT == encoding) {
+    encoding = GetDefaultEncoding();
+  }
+
   // Determine the function to call based on the encoding requested.
   switch (encoding) {
+    case ENCODING_CP874:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP874);
     case ENCODING_CP932:
-      return FromCP932Encoding((uint8_t *)szString, size);
+      return FromDBCSEncoding((uint8_t *)szString, size, LookupTableCP932);
+    case ENCODING_CP936:
+      return FromDBCSEncoding((uint8_t *)szString, size, LookupTableCP936);
+    case ENCODING_CP949:
+      return FromDBCSEncoding((uint8_t *)szString, size, LookupTableCP949);
+    case ENCODING_CP950:
+      return FromDBCSEncoding((uint8_t *)szString, size, LookupTableCP950);
+    case ENCODING_CP1250:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1250);
+    case ENCODING_CP1251:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1251);
     case ENCODING_CP1252:
-      return FromCP1252Encoding((uint8_t *)szString, size);
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1252);
+    case ENCODING_CP1253:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1253);
+    case ENCODING_CP1254:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1254);
+    case ENCODING_CP1255:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1255);
+    case ENCODING_CP1256:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1256);
+    case ENCODING_CP1257:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1257);
+    case ENCODING_CP1258:
+      return FromSBCSEncoding((uint8_t *)szString, size, LookupTableCP1258);
+    case ENCODING_CP1361:
+      return FromDBCSEncoding((uint8_t *)szString, size, LookupTableCP1361);
     default:
       break;
   }
@@ -299,12 +364,47 @@ String Convert::FromEncoding(Encoding_t encoding,
 
 std::vector<char> Convert::ToEncoding(Encoding_t encoding, const String &str,
                                       bool nullTerminator) {
+  if (ENCODING_DEFAULT == encoding) {
+    encoding = GetDefaultEncoding();
+  }
+
   // Determine the function to call based on the encoding requested.
   switch (encoding) {
+    case ENCODING_CP874:
+      return ToSBCSEncoding(str, LookupTableCP874, nullTerminator);
     case ENCODING_CP932:
-      return ToCP932Encoding(str, nullTerminator);
+      return ToDBCSEncoding(str, LookupTableCP932, ARRAY_SIZE(LookupTableCP932),
+                            nullTerminator);
+    case ENCODING_CP936:
+      return ToDBCSEncoding(str, LookupTableCP936, ARRAY_SIZE(LookupTableCP936),
+                            nullTerminator);
+    case ENCODING_CP949:
+      return ToDBCSEncoding(str, LookupTableCP949, ARRAY_SIZE(LookupTableCP949),
+                            nullTerminator);
+    case ENCODING_CP950:
+      return ToDBCSEncoding(str, LookupTableCP950, ARRAY_SIZE(LookupTableCP950),
+                            nullTerminator);
+    case ENCODING_CP1250:
+      return ToSBCSEncoding(str, LookupTableCP1250, nullTerminator);
+    case ENCODING_CP1251:
+      return ToSBCSEncoding(str, LookupTableCP1251, nullTerminator);
     case ENCODING_CP1252:
-      return ToCP1252Encoding(str, nullTerminator);
+      return ToSBCSEncoding(str, LookupTableCP1252, nullTerminator);
+    case ENCODING_CP1253:
+      return ToSBCSEncoding(str, LookupTableCP1253, nullTerminator);
+    case ENCODING_CP1254:
+      return ToSBCSEncoding(str, LookupTableCP1254, nullTerminator);
+    case ENCODING_CP1255:
+      return ToSBCSEncoding(str, LookupTableCP1255, nullTerminator);
+    case ENCODING_CP1256:
+      return ToSBCSEncoding(str, LookupTableCP1256, nullTerminator);
+    case ENCODING_CP1257:
+      return ToSBCSEncoding(str, LookupTableCP1257, nullTerminator);
+    case ENCODING_CP1258:
+      return ToSBCSEncoding(str, LookupTableCP1258, nullTerminator);
+    case ENCODING_CP1361:
+      return ToDBCSEncoding(str, LookupTableCP1361,
+                            ARRAY_SIZE(LookupTableCP1361), nullTerminator);
     default:
       break;
   }
@@ -325,4 +425,77 @@ size_t Convert::SizeEncoded(Encoding_t encoding, const String &str,
 
   // Return the size of the encoded string without alignment.
   return out.size();
+}
+
+std::list<String> Convert::AvailableEncodings() {
+  return {
+      "utf8",   "cp874",  "cp932",  "cp936",  "cp949",  "cp950",
+      "cp1250", "cp1251", "cp1252", "cp1253", "cp1254", "cp1255",
+      "cp1256", "cp1257", "cp1258", "cp1361",
+  };
+}
+
+Convert::Encoding_t Convert::EncodingFromString(const String &name) {
+  static EnumMap<String, Convert::Encoding_t> mapping = {
+      {"utf8", Convert::Encoding_t::ENCODING_UTF8},
+      {"cp874", Convert::Encoding_t::ENCODING_CP874},
+      {"cp932", Convert::Encoding_t::ENCODING_CP932},
+      {"cp936", Convert::Encoding_t::ENCODING_CP936},
+      {"cp949", Convert::Encoding_t::ENCODING_CP949},
+      {"cp950", Convert::Encoding_t::ENCODING_CP950},
+      {"cp1250", Convert::Encoding_t::ENCODING_CP1250},
+      {"cp1251", Convert::Encoding_t::ENCODING_CP1251},
+      {"cp1252", Convert::Encoding_t::ENCODING_CP1252},
+      {"cp1253", Convert::Encoding_t::ENCODING_CP1253},
+      {"cp1254", Convert::Encoding_t::ENCODING_CP1254},
+      {"cp1255", Convert::Encoding_t::ENCODING_CP1255},
+      {"cp1256", Convert::Encoding_t::ENCODING_CP1256},
+      {"cp1257", Convert::Encoding_t::ENCODING_CP1257},
+      {"cp1258", Convert::Encoding_t::ENCODING_CP1258},
+      {"cp1361", Convert::Encoding_t::ENCODING_CP1361},
+  };
+
+  auto it = mapping.find(name);
+
+  if (it != mapping.end()) {
+    return it->second;
+  } else {
+    return Convert::Encoding_t::ENCODING_DEFAULT;
+  }
+}
+
+String Convert::EncodingToString(Convert::Encoding_t encoding) {
+  static EnumMap<Convert::Encoding_t, String> mapping = {
+      {Convert::Encoding_t::ENCODING_DEFAULT, "default"},
+      {Convert::Encoding_t::ENCODING_UTF8, "utf8"},
+      {Convert::Encoding_t::ENCODING_CP874, "cp874"},
+      {Convert::Encoding_t::ENCODING_CP932, "cp932"},
+      {Convert::Encoding_t::ENCODING_CP936, "cp936"},
+      {Convert::Encoding_t::ENCODING_CP949, "cp949"},
+      {Convert::Encoding_t::ENCODING_CP950, "cp950"},
+      {Convert::Encoding_t::ENCODING_CP1250, "cp1250"},
+      {Convert::Encoding_t::ENCODING_CP1251, "cp1251"},
+      {Convert::Encoding_t::ENCODING_CP1252, "cp1252"},
+      {Convert::Encoding_t::ENCODING_CP1253, "cp1253"},
+      {Convert::Encoding_t::ENCODING_CP1254, "cp1254"},
+      {Convert::Encoding_t::ENCODING_CP1255, "cp1255"},
+      {Convert::Encoding_t::ENCODING_CP1256, "cp1256"},
+      {Convert::Encoding_t::ENCODING_CP1257, "cp1257"},
+      {Convert::Encoding_t::ENCODING_CP1258, "cp1258"},
+      {Convert::Encoding_t::ENCODING_CP1361, "cp1361"},
+  };
+
+  auto it = mapping.find(encoding);
+
+  if (it != mapping.end()) {
+    return it->second;
+  } else {
+    return "default";
+  }
+}
+
+Convert::Encoding_t Convert::GetDefaultEncoding() { return gDefaultEncoding; }
+
+void Convert::SetDefaultEncoding(Convert::Encoding_t encoding) {
+  gDefaultEncoding = encoding;
 }

@@ -65,8 +65,8 @@
     </object>
     <object name="MiNPCBarterTextData" persistent="false">
         <member type="u16" name="ID" pad="2"/>
-        <member type="string" name="introText" encoding="cp932" round="4"/>
-        <member type="string" name="choiceText" encoding="cp932" round="4"/>
-        <member type="string" name="tradeText" encoding="cp932" round="4"/>
+        <member type="string" name="introText" encoding="default" round="4"/>
+        <member type="string" name="choiceText" encoding="default" round="4"/>
+        <member type="string" name="tradeText" encoding="default" round="4"/>
     </object>
 </objgen>

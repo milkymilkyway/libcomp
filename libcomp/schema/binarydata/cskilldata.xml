@@ -2,8 +2,8 @@
 <objgen>
     <object name="MiCSkillBase" persistent="false">
         <member type="u32" name="ID"/>
-        <member type="string" name="name" encoding="cp932" round="4"/>
-        <member type="string" name="desc" encoding="cp932" round="4"/>
+        <member type="string" name="name" encoding="default" round="4"/>
+        <member type="string" name="desc" encoding="default" round="4"/>
         <member type="u16" name="iconID"/>
         <member type="bool" name="useWeaponAnimation" pad="1"/>
     </object>
@@ -17,7 +17,7 @@
         <member type="u32" name="soundID"/>
         <member type="u32" name="cast10"/>
         <member type="array" size="20" name="effectLocations">
-            <element type="string" encoding="cp932" round="4"/>
+            <element type="string" encoding="default" round="4"/>
         </member>
     </object>
     <object name="MiCSkillShoot" persistent="false">
@@ -25,9 +25,9 @@
         <member type="bool" name="shoot3"/>
         <member type="u8" name="shoot4" pad="1"/>
         <member type="f32" name="hitEffectLinger"/>
-        <member type="string" name="bone" encoding="cp932" round="4"/>
+        <member type="string" name="bone" encoding="default" round="4"/>
         <member type="array" size="20" name="effectLocations">
-            <element type="string" encoding="cp932" round="4"/>
+            <element type="string" encoding="default" round="4"/>
         </member>
     </object>
     <object name="MiCSkillBullet" persistent="false">
@@ -38,18 +38,18 @@
         <member type="f32" name="projectileDelay"/>
         <member type="f32" name="bullet6"/>
         <member type="u32" name="bullet7"/>
-        <member type="string" name="bullet8" encoding="cp932" round="4"/>
+        <member type="string" name="bullet8" encoding="default" round="4"/>
         <member type="array" size="3" name="color" pad="1">
             <element type="u8"/>
         </member>
-        <member type="string" name="effectFile" encoding="cp932" round="4"/>
+        <member type="string" name="effectFile" encoding="default" round="4"/>
     </object>
     <object name="MiCSkillTarget" persistent="false">
         <member type="u32" name="soundID"/>
         <member type="f32" name="target2"/>
         <member type="u8" name="knockbackShake" pad="3"/>
         <member type="array" size="20" name="effectLocations">
-            <element type="string" encoding="cp932" round="4"/>
+            <element type="string" encoding="default" round="4"/>
         </member>
     </object>
     <object name="MiCSkillHit" persistent="false">
@@ -84,7 +84,7 @@
             <element type="MiCSkillEquipCategory*"/>
         </member>
         <member type="array" size="400" name="effects">
-            <element type="string" encoding="cp932" round="4"/>
+            <element type="string" encoding="default" round="4"/>
         </member>
     </object>
 </objgen>

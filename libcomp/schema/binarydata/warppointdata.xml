@@ -7,7 +7,7 @@
         <member type="float" name="x"/>
         <member type="float" name="y"/>
         <member type="float" name="rotation"/>
-        <member type="string" name="name" encoding="cp932" length="64"/>
+        <member type="string" name="name" encoding="default" length="64"/>
         <member type="u32" name="restrictionType1"/>
         <member type="u32" name="restrictionValue1"/>
         <member type="u32" name="restrictionType2"/>

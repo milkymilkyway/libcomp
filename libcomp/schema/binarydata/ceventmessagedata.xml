@@ -3,7 +3,7 @@
     <object name="MiCEventMessageData" persistent="false">
         <member type="u32" name="ID"/>
         <member type="list" name="lines">
-            <element type="string" encoding="cp932" length="132"/>
+            <element type="string" encoding="default" length="132"/>
         </member>
     </object>
 </objgen>

@@ -2,6 +2,6 @@
 <objgen>
     <object name="MiCDevilEquipmentExclusiveData" persistent="false">
         <member type="u16" name="ID" pad="2"/>
-        <member type="string" name="desc" encoding="cp932" round="4"/>
+        <member type="string" name="desc" encoding="default" round="4"/>
     </object>
 </objgen>

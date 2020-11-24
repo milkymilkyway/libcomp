@@ -63,8 +63,11 @@ class PersistentObject : public Object {
 
   /**
    * Create a persistent object with no UUID.
+   * @param encoding Encoding to use for strings that are set to the default
+   * encoding.
    */
-  PersistentObject();
+  PersistentObject(
+      Convert::Encoding_t encoding = Convert::Encoding_t::ENCODING_DEFAULT);
 
   /**
    * Override the copy constructor to still default the persistent members.

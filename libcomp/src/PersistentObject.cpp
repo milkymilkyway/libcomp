@@ -81,8 +81,8 @@ std::unordered_map<std::string, size_t> PersistentObject::sTypeNames;
 std::unordered_map<size_t, std::function<PersistentObject*()>>
     PersistentObject::sFactory;
 
-PersistentObject::PersistentObject()
-    : Object(), mUUID(), mDirtyFields(), mDeleted(false) {}
+PersistentObject::PersistentObject(Convert::Encoding_t encoding)
+    : Object(encoding), mUUID(), mDirtyFields(), mDeleted(false) {}
 
 PersistentObject::PersistentObject(const PersistentObject& other)
     : Object(), mUUID(), mDirtyFields(), mDeleted(false) {
