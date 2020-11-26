@@ -29,6 +29,7 @@
 
 // libobjgen Includes
 #include "Generator.h"
+#include "GeneratorXmlSchema.h"
 #include "MetaObject.h"
 #include "MetaVariable.h"
 
@@ -620,6 +621,23 @@ class MetaVariableInt : public MetaVariable {
     } else {
       return generator.ParseTemplate(tabLevel, "VariableDatabaseLoad",
                                      replacements);
+    }
+  }
+
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj) {
+    pGenerator->GenerateMemberType(pSequence, GetName(),
+                                   GetSchemaType(parentObj));
+  }
+
+  virtual std::string GetSchemaType(const std::string& parentObj) const {
+    (void)parentObj;
+
+    if (std::numeric_limits<T>::is_integer) {
+      return GetType();
+    } else {
+      return "xs:float";
     }
   }
 };

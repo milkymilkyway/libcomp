@@ -152,6 +152,7 @@ bool GenerateFile(const std::string& path, const std::string& extension,
     return false;
   }
 
+  generator->SetXmlParser(&gParser);
   std::string code = generator->Generate(*obj);
 
   if (code.empty()) {

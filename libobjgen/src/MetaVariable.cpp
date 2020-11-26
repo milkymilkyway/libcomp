@@ -767,3 +767,17 @@ bool MetaVariable::BaseSave(tinyxml2::XMLElement& element) const {
 
   return true;
 }
+
+void MetaVariable::GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                      const std::string& parentObj,
+                                      const std::string& customTypeName) {
+  (void)pGenerator;
+  (void)parentObj;
+  (void)customTypeName;
+}
+
+std::string MetaVariable::GetSchemaType(const std::string& parentObj) const {
+  (void)parentObj;
+
+  return GetType();
+}

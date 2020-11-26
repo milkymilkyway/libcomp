@@ -130,6 +130,13 @@ class MetaVariableString : public MetaVariable {
   virtual std::string GetDatabaseLoadCode(const Generator& generator,
                                           const std::string& name,
                                           size_t tabLevel = 1) const;
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj);
+  virtual void GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                  const std::string& parentObj,
+                                  const std::string& customTypeName = {});
+  virtual std::string GetSchemaType(const std::string& parentObj) const;
 
   static std::string EncodingToString(Encoding_t encoding);
   static std::string EncodingToComp(Encoding_t encoding);

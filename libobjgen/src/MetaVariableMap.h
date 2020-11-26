@@ -105,6 +105,12 @@ class MetaVariableMap : public MetaVariable {
                                               const MetaObject& object,
                                               const std::string& name,
                                               size_t tabLevel = 1) const;
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj);
+  virtual void GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                  const std::string& parentObj,
+                                  const std::string& customTypeName);
 
  private:
   std::shared_ptr<MetaVariable> mKeyElementType;

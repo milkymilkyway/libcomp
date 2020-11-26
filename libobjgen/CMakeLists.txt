@@ -70,6 +70,7 @@ IF(NOT EXOTIC_LIBOBJGEN)
         src/GeneratorFactory.cpp
         src/GeneratorHeader.cpp
         src/GeneratorSource.cpp
+        src/GeneratorXmlSchema.cpp
 
         ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
     )
@@ -100,6 +101,7 @@ IF(NOT EXOTIC_LIBOBJGEN)
         src/GeneratorFactory.h
         src/GeneratorHeader.h
         src/GeneratorSource.h
+        src/GeneratorXmlSchema.h
 
         ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
     )

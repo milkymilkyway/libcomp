@@ -44,6 +44,7 @@
 namespace libobjgen {
 
 class MetaObject;
+class MetaObjectXmlParser;
 class MetaVariable;
 
 class Generator {
@@ -81,6 +82,8 @@ class Generator {
 
   static bool LoadString(std::istream& stream, std::string& s);
   static bool SaveString(std::ostream& stream, const std::string& s);
+
+  virtual void SetXmlParser(MetaObjectXmlParser* pParser) { (void)pParser; }
 
  private:
   mutable ttvfs::Root mVfs;

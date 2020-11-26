@@ -28,6 +28,7 @@
 
 // libobjgen Includes
 #include "Generator.h"
+#include "GeneratorXmlSchema.h"
 #include "MetaObject.h"
 #include "MetaVariableInt.h"
 
@@ -521,6 +522,32 @@ std::string MetaVariableEnum::GetAccessScriptBindings(
      << std::endl;
 
   return ss.str();
+}
+
+void MetaVariableEnum::GenerateSchema(GeneratorXmlSchema* pGenerator,
+                                      tinyxml2::XMLElement* pSequence,
+                                      const std::string& parentObj) {
+  pGenerator->GenerateMemberType(pSequence, GetName(),
+                                 GetSchemaType(parentObj));
+}
+
+void MetaVariableEnum::GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                          const std::string& parentObj,
+                                          const std::string& customTypeName) {
+  std::list<std::string> values;
+
+  for (auto pair : mValues) {
+    values.push_back(pair.first);
+  }
+
+  pGenerator->GenerateEnumType(
+      customTypeName.empty() ? GetSchemaType(parentObj) : customTypeName,
+      values);
+}
+
+std::string MetaVariableEnum::GetSchemaType(
+    const std::string& parentObj) const {
+  return parentObj + "." + GetName();
 }
 
 bool MetaVariableEnum::NumericValueIsValid(const std::string& num) const {

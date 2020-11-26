@@ -28,6 +28,7 @@
 
 // libobjgen Includes
 #include "Generator.h"
+#include "GeneratorXmlSchema.h"
 #include "MetaObject.h"
 
 // Standard C++11 Libraries
@@ -561,4 +562,18 @@ std::string MetaVariableReference::GetDatabaseLoadCode(
     return generator.ParseTemplate(tabLevel, "VariableDatabaseRefLoad",
                                    replacements);
   }
+}
+
+void MetaVariableReference::GenerateSchema(GeneratorXmlSchema* pGenerator,
+                                           tinyxml2::XMLElement* pSequence,
+                                           const std::string& parentObj) {
+  pGenerator->GenerateMemberType(pSequence, GetName(), GetSchemaType(parentObj),
+                                 true);
+}
+
+std::string MetaVariableReference::GetSchemaType(
+    const std::string& parentObj) const {
+  (void)parentObj;
+
+  return mReferenceType;
 }

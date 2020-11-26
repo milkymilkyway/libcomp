@@ -28,6 +28,7 @@
 
 // libobjgen Includes
 #include "Generator.h"
+#include "GeneratorXmlSchema.h"
 #include "MetaObject.h"
 
 // Standard C++11 Libraries
@@ -405,4 +406,28 @@ std::string MetaVariableSet::GetAccessScriptBindings(const Generator& generator,
   }
 
   return ss.str();
+}
+
+void MetaVariableSet::GenerateSchema(GeneratorXmlSchema* pGenerator,
+                                     tinyxml2::XMLElement* pSequence,
+                                     const std::string& parentObj) {
+  auto elementType = mElementType->GetSchemaType(parentObj);
+  if ('.' == elementType.at(elementType.size() - 1)) {
+    elementType += GetName();
+  }
+
+  pGenerator->GenerateMemberArrayType(pSequence, GetName(), elementType, 0,
+                                      !mElementType->IsCoreType());
+}
+
+void MetaVariableSet::GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                         const std::string& parentObj,
+                                         const std::string& customTypeName) {
+  (void)customTypeName;
+
+  auto elementType = mElementType->GetSchemaType(parentObj);
+  if ('.' == elementType.at(elementType.size() - 1)) {
+    elementType += GetName();
+    mElementType->GenerateSchemaType(pGenerator, parentObj, elementType);
+  }
 }

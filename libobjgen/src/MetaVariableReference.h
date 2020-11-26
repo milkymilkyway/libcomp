@@ -126,6 +126,10 @@ class MetaVariableReference : public MetaVariable {
   virtual std::string GetAccessFunctions(const Generator& generator,
                                          const MetaObject& object,
                                          const std::string& name) const;
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj);
+  virtual std::string GetSchemaType(const std::string& parentObj) const;
 
  private:
   std::string mReferenceType;

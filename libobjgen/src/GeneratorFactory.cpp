@@ -28,6 +28,7 @@
 
 #include "GeneratorHeader.h"
 #include "GeneratorSource.h"
+#include "GeneratorXmlSchema.h"
 
 using namespace libobjgen;
 
@@ -37,6 +38,9 @@ GeneratorFactory::GeneratorFactory() {
   };
   mGenerators["h"] = []() {
     return std::shared_ptr<libobjgen::Generator>(new GeneratorHeader);
+  };
+  mGenerators["xsd"] = []() {
+    return std::shared_ptr<libobjgen::Generator>(new GeneratorXmlSchema);
   };
 }
 

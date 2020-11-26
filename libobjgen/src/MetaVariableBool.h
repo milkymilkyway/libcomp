@@ -91,6 +91,9 @@ class MetaVariableBool : public MetaVariable {
   virtual std::string GetDatabaseLoadCode(const Generator& generator,
                                           const std::string& name,
                                           size_t tabLevel = 1) const;
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj);
 
  private:
   bool mDefaultValue;

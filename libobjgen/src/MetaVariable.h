@@ -48,6 +48,7 @@
 namespace libobjgen {
 
 class Generator;
+class GeneratorXmlSchema;
 class MetaObject;
 
 class MetaVariable {
@@ -197,6 +198,13 @@ class MetaVariable {
                                         size_t tabLevel = 1) const;
   virtual std::string GetDynamicSizeCountCode(const Generator& generator,
                                               const std::string& name) const;
+  virtual void GenerateSchema(GeneratorXmlSchema* pGenerator,
+                              tinyxml2::XMLElement* pSequence,
+                              const std::string& parentObj) = 0;
+  virtual void GenerateSchemaType(GeneratorXmlSchema* pGenerator,
+                                  const std::string& parentObj,
+                                  const std::string& customTypeName = {});
+  virtual std::string GetSchemaType(const std::string& parentObj) const;
 
   static std::shared_ptr<MetaVariable> CreateType(const std::string& typeName);
 
