@@ -148,7 +148,11 @@ bool DataFile::Read(void* pBuffer, uint32_t bufferSize) {
     return false;
   }
 
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+  return 1 == PHYSFS_readBytes(mFile, pBuffer, bufferSize);
+#else
   return 1 == PHYSFS_read(mFile, pBuffer, bufferSize, 1);
+#endif
 }
 
 std::vector<char> DataFile::Read(uint32_t size) {
@@ -167,7 +171,11 @@ bool DataFile::Write(const void* pBuffer, uint32_t bufferSize) {
     return false;
   }
 
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+  return 1 == PHYSFS_writeBytes(mFile, pBuffer, bufferSize);
+#else
   return 1 == PHYSFS_write(mFile, pBuffer, bufferSize, 1);
+#endif
 }
 
 bool DataFile::Write(const std::vector<char>& buffer) {

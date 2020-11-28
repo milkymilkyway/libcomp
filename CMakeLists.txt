@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     SET(LIBCOMP_DIR ${CMAKE_SOURCE_DIR}/libcomp)

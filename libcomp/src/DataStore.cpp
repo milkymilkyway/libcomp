@@ -60,7 +60,13 @@ DataStore::~DataStore() {
   }
 }
 
-libcomp::String DataStore::GetError() { return PHYSFS_getLastError(); }
+libcomp::String DataStore::GetError() {
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+  return PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+#else
+  return PHYSFS_getLastError();
+#endif
+}
 
 bool DataStore::AddSearchPaths(const std::list<libcomp::String>& paths) {
   // There must be at least one path.
@@ -122,7 +128,14 @@ bool DataStore::GetListing(const libcomp::String& path,
 
     const char* szFilePath = filePath.C();
 
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+    PHYSFS_Stat stat;
+
+    if (0 != PHYSFS_stat(szFilePath, &stat) &&
+        stat.filetype == PHYSFS_FILETYPE_DIRECTORY) {
+#else
     if (0 != PHYSFS_isDirectory(szFilePath)) {
+#endif
       if (recursive) {
         std::list<libcomp::String> recursiveFiles;
         std::list<libcomp::String> recursiveDirs;
@@ -156,7 +169,12 @@ bool DataStore::GetListing(const libcomp::String& path,
       }
 
       dirs.push_back(fileName);
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+    } else if (0 != PHYSFS_stat(szFilePath, &stat) &&
+               stat.filetype == PHYSFS_FILETYPE_SYMLINK) {
+#else
     } else if (0 != PHYSFS_isSymbolicLink(szFilePath)) {
+#endif
       symLinks.push_back(fileName);
     } else {
       files.push_back(fileName);
@@ -246,7 +264,14 @@ int64_t DataStore::FileSize(const libcomp::String& path) {
 bool DataStore::Delete(const libcomp::String& path, bool recursive) {
   const char* szPath = path.C();
 
+#if (2 < PHYSFS_VER_MAJOR) || (2 == PHYSFS_VER_MAJOR && (1 <= PHYSFS_VER_MINOR))
+  PHYSFS_Stat stat;
+
+  if (recursive && 0 != PHYSFS_stat(szPath, &stat) &&
+      stat.filetype == PHYSFS_FILETYPE_DIRECTORY) {
+#else
   if (recursive && 0 != PHYSFS_isDirectory(szPath)) {
+#endif
     std::list<libcomp::String> files;
     std::list<libcomp::String> dirs;
     std::list<libcomp::String> symLinks;

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-
 IF(EXOTIC_LIBOBJGEN)
     PROJECT(libobjgen_exotic ${EXOTIC_LANGUAGE})
 
@@ -112,16 +110,17 @@ IF(NOT EXOTIC_LIBOBJGEN)
 
     ADD_CUSTOM_COMMAND(
         OUTPUT
-            ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
-            ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
+            "${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c"
+            "${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h"
         COMMAND ${CMAKE_COMMAND} -E make_directory
-            ${CMAKE_CURRENT_BINARY_DIR}/res
+            "${CMAKE_CURRENT_BINARY_DIR}/res"
         COMMAND ${TTVFS_GEN_PATH} ResourceTemplate ResourceTemplateSize
-            ${CMAKE_CURRENT_SOURCE_DIR}/res
-            ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c
-            ${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h
+            "${CMAKE_CURRENT_SOURCE_DIR}/res"
+            "${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.c"
+            "${CMAKE_CURRENT_BINARY_DIR}/res/ResourceTemplate.h"
         DEPENDS ttvfs-ex ${${PROJECT_NAME}_TEMPLATES}
         COMMENT "Generating resource file for libobjgen templates"
+        VERBATIM
     )
 ENDIF(NOT EXOTIC_LIBOBJGEN)
 
