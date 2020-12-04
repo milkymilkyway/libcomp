@@ -433,6 +433,9 @@ void Log::SetLogPath(const String& path, bool truncate) {
     LogGeneralCriticalMsg("The application will now close.\n");
     LogGeneralInfoMsg("Bye!\n");
 
+    // Stop the logger
+    delete this;
+
     exit(EXIT_FAILURE);
   }
 }
