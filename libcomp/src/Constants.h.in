@@ -557,6 +557,12 @@ static constexpr double PI = 3.14159265358979323846;
 /// Skill flag indicating the charge time change.
 #define SKILL_FIXED_CHARGE (0x04)
 
+/// Skill flag indicating the HP cost cannot change.
+#define SKILL_FIXED_HP_COST (0x08)
+
+/// Skill flag indicating the MP cost cannot change.
+#define SKILL_FIXED_MP_COST (0x10)
+
 /// Indicates that a spawned entity can join the player as the result of a
 /// talk skill.
 #define SPAWN_TALK_RESULT_JOIN (0x01)
