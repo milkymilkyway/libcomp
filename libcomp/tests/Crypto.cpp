@@ -111,7 +111,7 @@ TEST(Decrypt, LoadFile) {
 #if _WIN32
   EXPECT_NE(0, Crypto::LoadFile("c:\\windows\\system.ini").size());
 #else
-  EXPECT_NE(0, Crypto::LoadFile("/etc/crontab").size());
+  EXPECT_NE(0, Crypto::LoadFile("/proc/version").size());
 #endif  // _WIN32
 
   // Try a directory.
