@@ -94,6 +94,7 @@
         <member type="s32" name="SpawnSpamInstanceZoneMax" default="30"/>
         <member type="bool" name="AutobanSpawnSpammers" default="false"/>
         <member type="f32" name="ClockSkewThreshold" default="1.5"/>
-        <member type="bool" name="AutobanClockSkew" default="true"/>
+        <member type="u32" name="ClockSkewCount" default="5"/>
+        <member type="bool" name="AutobanClockSkew" default="false"/>
     </object>
 </objgen>
