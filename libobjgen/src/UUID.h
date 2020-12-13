@@ -39,6 +39,8 @@
 namespace libobjgen {
 
 class UUID {
+  friend class std::hash<libobjgen::UUID>;
+
  public:
   UUID();
   UUID(const std::string& other);
@@ -51,14 +53,27 @@ class UUID {
 
   bool IsNull() const;
 
-  bool operator==(UUID other) const;
-  bool operator!=(UUID other) const;
+  bool operator==(const UUID& other) const;
+  bool operator!=(const UUID& other) const;
 
- private:
+ protected:
   uint64_t mTimeAndVersion;
   uint64_t mClockSequenceAndNode;
 };
 
 }  // namespace libobjgen
+
+namespace std {
+template <>
+struct hash<libobjgen::UUID> {
+  typedef libobjgen::UUID argument_type;
+  typedef std::size_t result_type;
+
+  result_type operator()(const argument_type& uuid) const {
+    return std::hash<uint64_t>{}(uuid.mTimeAndVersion) +
+           std::hash<uint64_t>{}(uuid.mClockSequenceAndNode);
+  }
+};
+}  // namespace std
 
 #endif  // LIBOBJGEN_SRC_UUID_H

@@ -290,12 +290,12 @@ bool libobjgen::UUID::IsNull() const {
   return 0 == mTimeAndVersion && 0 == mClockSequenceAndNode;
 }
 
-bool libobjgen::UUID::operator==(UUID other) const {
+bool libobjgen::UUID::operator==(const UUID &other) const {
   return mTimeAndVersion == other.mTimeAndVersion &&
          mClockSequenceAndNode == other.mClockSequenceAndNode;
 }
 
-bool libobjgen::UUID::operator!=(UUID other) const {
+bool libobjgen::UUID::operator!=(const UUID &other) const {
   return mTimeAndVersion != other.mTimeAndVersion ||
          mClockSequenceAndNode != other.mClockSequenceAndNode;
 }

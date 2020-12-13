@@ -88,5 +88,12 @@
         <member type="u16" name="AIEstomaDuration" default="30"/>
         <member type="bool" name="AILazyPathing" default="true"/>
         <member type="bool" name="IFramesEnabled" default="true"/>
+        <member type="u16" name="SpawnSpamUserLevel" default="500"/>
+        <member type="s32" name="SpawnSpamUserMax" default="30"/>
+        <member type="s32" name="SpawnSpamGlobalZoneMax" default="100"/>
+        <member type="s32" name="SpawnSpamInstanceZoneMax" default="30"/>
+        <member type="bool" name="AutobanSpawnSpammers" default="false"/>
+        <member type="f32" name="ClockSkewThreshold" default="1.5"/>
+        <member type="bool" name="AutobanClockSkew" default="true"/>
     </object>
 </objgen>

@@ -13,6 +13,8 @@
         <member type="bool" name="APIOnly"/>
         <member type="u32" name="LastLogin"/>
         <member type="u32" name="LastLogout"/>
+        <member type="string" name="BanReason"/>
+        <member type="string" name="BanInitiator"/>
 
         <member type="array" name="Characters" size="20">
             <element type="Character*"/>
