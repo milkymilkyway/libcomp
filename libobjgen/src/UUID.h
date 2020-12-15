@@ -39,7 +39,7 @@
 namespace libobjgen {
 
 class UUID {
-  friend class std::hash<libobjgen::UUID>;
+  friend struct std::hash<libobjgen::UUID>;
 
  public:
   UUID();
