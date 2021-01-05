@@ -26,12 +26,12 @@
 
 #include "ReadOnlyPacket.h"
 
+#include "BaseLog.h"
 #include "Endian.h"
-#include "Log.h"
 #include "PacketException.h"
 
 #ifndef EXOTIC_PLATFORM
-#include "ScriptEngine.h"
+#include "BaseScriptEngine.h"
 #endif  // !EXOTIC_PLATFORM
 
 #include <array>
@@ -859,7 +859,7 @@ ReadOnlyPacket& ReadOnlyPacket::operator=(ReadOnlyPacket& other) {
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<ReadOnlyPacket>() {
+BaseScriptEngine& BaseScriptEngine::Using<ReadOnlyPacket>() {
   if (!BindingExists("ReadOnlyPacket")) {
     Sqrat::Class<ReadOnlyPacket> binding(mVM, "ReadOnlyPacket");
     binding.Func("Size", &ReadOnlyPacket::Size)

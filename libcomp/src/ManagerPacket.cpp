@@ -29,7 +29,7 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
-#include "Log.h"
+#include "BaseLog.h"
 #include "MessagePacket.h"
 #include "PacketParser.h"
 #include "Packets.h"

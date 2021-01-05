@@ -27,8 +27,8 @@
 #include "Worker.h"
 
 // libcomp Includes
+#include "BaseLog.h"
 #include "Exception.h"
-#include "Log.h"
 #include "MessageShutdown.h"
 
 // Standard C++11 Includes

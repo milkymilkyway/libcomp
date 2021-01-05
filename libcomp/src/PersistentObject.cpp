@@ -29,47 +29,12 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
+#include "BaseLog.h"
+#include "BaseScriptEngine.h"
 #include "Database.h"
 #include "DatabaseBind.h"
-#include "Log.h"
 #include "MetaObjectXmlParser.h"
 #include "MetaVariable.h"
-#include "ScriptEngine.h"
-
-// All libcomp PersistentObject Includes
-#include "Account.h"
-#include "AccountWorldData.h"
-#include "BazaarData.h"
-#include "BazaarItem.h"
-#include "Character.h"
-#include "CharacterProgress.h"
-#include "Clan.h"
-#include "ClanMember.h"
-#include "CultureData.h"
-#include "Demon.h"
-#include "DemonBox.h"
-#include "DemonQuest.h"
-#include "EntityStats.h"
-#include "EventCounter.h"
-#include "Expertise.h"
-#include "FriendSettings.h"
-#include "Hotbar.h"
-#include "InheritedSkill.h"
-#include "Item.h"
-#include "ItemBox.h"
-#include "PentalphaEntry.h"
-#include "PentalphaMatch.h"
-#include "PostItem.h"
-#include "Promo.h"
-#include "PromoExchange.h"
-#include "PvPData.h"
-#include "Quest.h"
-#include "RegisteredChannel.h"
-#include "RegisteredWorld.h"
-#include "ReportedPlayer.h"
-#include "StatusEffect.h"
-#include "UBResult.h"
-#include "UBTournament.h"
 
 using namespace libcomp;
 
@@ -331,7 +296,7 @@ bool PersistentObject::SaveWithUUID(tinyxml2::XMLDocument& doc,
 
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<libobjgen::UUID>() {
+BaseScriptEngine& BaseScriptEngine::Using<libobjgen::UUID>() {
   if (!BindingExists("UUID")) {
     Sqrat::Class<libobjgen::UUID> binding(mVM, "UUID");
     binding.Func("ToString", &libobjgen::UUID::ToString)
@@ -344,7 +309,7 @@ ScriptEngine& ScriptEngine::Using<libobjgen::UUID>() {
 }
 
 template <>
-ScriptEngine& ScriptEngine::Using<PersistentObject>() {
+BaseScriptEngine& BaseScriptEngine::Using<PersistentObject>() {
   if (!BindingExists("PersistentObject")) {
     // Include the base class
     Using<Object>();
@@ -380,125 +345,7 @@ ScriptEngine& ScriptEngine::Using<PersistentObject>() {
 }  // namespace libcomp
 
 bool PersistentObject::sInitializationFailed = false;
-bool PersistentObject::Initialize() {
-  RegisterType(typeid(objects::Account), objects::Account::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Account(); });
 
-  RegisterType(typeid(objects::AccountWorldData),
-               objects::AccountWorldData::GetMetadata(), []() {
-                 return (PersistentObject*)new objects::AccountWorldData();
-               });
-
-  RegisterType(typeid(objects::BazaarData), objects::BazaarData::GetMetadata(),
-               []() { return (PersistentObject*)new objects::BazaarData(); });
-
-  RegisterType(typeid(objects::BazaarItem), objects::BazaarItem::GetMetadata(),
-               []() { return (PersistentObject*)new objects::BazaarItem(); });
-
-  RegisterType(typeid(objects::Character), objects::Character::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Character(); });
-
-  RegisterType(typeid(objects::CharacterProgress),
-               objects::CharacterProgress::GetMetadata(), []() {
-                 return (PersistentObject*)new objects::CharacterProgress();
-               });
-
-  RegisterType(typeid(objects::Clan), objects::Clan::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Clan(); });
-
-  RegisterType(typeid(objects::ClanMember), objects::ClanMember::GetMetadata(),
-               []() { return (PersistentObject*)new objects::ClanMember(); });
-
-  RegisterType(typeid(objects::CultureData),
-               objects::CultureData::GetMetadata(),
-               []() { return (PersistentObject*)new objects::CultureData(); });
-
-  RegisterType(typeid(objects::Demon), objects::Demon::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Demon(); });
-
-  RegisterType(typeid(objects::DemonBox), objects::DemonBox::GetMetadata(),
-               []() { return (PersistentObject*)new objects::DemonBox(); });
-
-  RegisterType(typeid(objects::DemonQuest), objects::DemonQuest::GetMetadata(),
-               []() { return (PersistentObject*)new objects::DemonQuest(); });
-
-  RegisterType(typeid(objects::EntityStats),
-               objects::EntityStats::GetMetadata(),
-               []() { return (PersistentObject*)new objects::EntityStats(); });
-
-  RegisterType(typeid(objects::EventCounter),
-               objects::EventCounter::GetMetadata(),
-               []() { return (PersistentObject*)new objects::EventCounter(); });
-
-  RegisterType(typeid(objects::Expertise), objects::Expertise::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Expertise(); });
-
-  RegisterType(
-      typeid(objects::FriendSettings), objects::FriendSettings::GetMetadata(),
-      []() { return (PersistentObject*)new objects::FriendSettings(); });
-
-  RegisterType(typeid(objects::Hotbar), objects::Hotbar::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Hotbar(); });
-
-  RegisterType(
-      typeid(objects::InheritedSkill), objects::InheritedSkill::GetMetadata(),
-      []() { return (PersistentObject*)new objects::InheritedSkill(); });
-
-  RegisterType(typeid(objects::Item), objects::Item::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Item(); });
-
-  RegisterType(typeid(objects::ItemBox), objects::ItemBox::GetMetadata(),
-               []() { return (PersistentObject*)new objects::ItemBox(); });
-
-  RegisterType(
-      typeid(objects::PentalphaEntry), objects::PentalphaEntry::GetMetadata(),
-      []() { return (PersistentObject*)new objects::PentalphaEntry(); });
-
-  RegisterType(
-      typeid(objects::PentalphaMatch), objects::PentalphaMatch::GetMetadata(),
-      []() { return (PersistentObject*)new objects::PentalphaMatch(); });
-
-  RegisterType(typeid(objects::PostItem), objects::PostItem::GetMetadata(),
-               []() { return (PersistentObject*)new objects::PostItem(); });
-
-  RegisterType(typeid(objects::Promo), objects::Promo::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Promo(); });
-
-  RegisterType(
-      typeid(objects::PromoExchange), objects::PromoExchange::GetMetadata(),
-      []() { return (PersistentObject*)new objects::PromoExchange(); });
-
-  RegisterType(typeid(objects::PvPData), objects::PvPData::GetMetadata(),
-               []() { return (PersistentObject*)new objects::PvPData(); });
-
-  RegisterType(typeid(objects::Quest), objects::Quest::GetMetadata(),
-               []() { return (PersistentObject*)new objects::Quest(); });
-
-  RegisterType(typeid(objects::RegisteredChannel),
-               objects::RegisteredChannel::GetMetadata(), []() {
-                 return (PersistentObject*)new objects::RegisteredChannel();
-               });
-
-  RegisterType(
-      typeid(objects::RegisteredWorld), objects::RegisteredWorld::GetMetadata(),
-      []() { return (PersistentObject*)new objects::RegisteredWorld(); });
-
-  RegisterType(
-      typeid(objects::ReportedPlayer), objects::ReportedPlayer::GetMetadata(),
-      []() { return (PersistentObject*)new objects::ReportedPlayer(); });
-
-  RegisterType(typeid(objects::StatusEffect),
-               objects::StatusEffect::GetMetadata(),
-               []() { return (PersistentObject*)new objects::StatusEffect(); });
-
-  RegisterType(typeid(objects::UBResult), objects::UBResult::GetMetadata(),
-               []() { return (PersistentObject*)new objects::UBResult(); });
-
-  RegisterType(typeid(objects::UBTournament),
-               objects::UBTournament::GetMetadata(),
-               []() { return (PersistentObject*)new objects::UBTournament(); });
-
-  return !sInitializationFailed;
-}
+bool PersistentObject::InitializationFailed() { return sInitializationFailed; }
 
 #endif  // !EXOTIC_PLATFORM

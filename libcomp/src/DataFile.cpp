@@ -27,7 +27,7 @@
 // libcomp Includes
 #include "DataFile.h"
 
-#include "Log.h"
+#include "BaseLog.h"
 
 // PhysFS Includes
 #include <physfs.h>

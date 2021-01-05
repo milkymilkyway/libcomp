@@ -27,7 +27,7 @@
 #include "ArgumentParser.h"
 
 // libcomp Includes
-#include "Log.h"
+#include "BaseLog.h"
 
 using namespace libcomp;
 

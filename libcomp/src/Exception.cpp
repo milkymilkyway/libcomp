@@ -26,8 +26,8 @@
 
 #include "Exception.h"
 
-#include "Constants.h"
-#include "Log.h"
+#include "BaseConstants.h"
+#include "BaseLog.h"
 #include "MemoryManager.h"
 #include "PlatformWindows.h"
 
@@ -384,7 +384,7 @@ void Exception::RegisterSignalHandler() {
     }
 
     // Stop the logger
-    delete libcomp::Log::GetSingletonPtr();
+    delete libcomp::BaseLog::GetBaseSingletonPtr();
 
     exit(EXIT_FAILURE);
   });

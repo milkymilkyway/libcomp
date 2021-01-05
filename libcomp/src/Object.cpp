@@ -32,7 +32,7 @@
 #include <ReadOnlyPacket.h>
 
 #ifndef EXOTIC_PLATFORM
-#include <ScriptEngine.h>
+#include <BaseScriptEngine.h>
 #endif  // !EXOTIC_PLATFORM
 
 using namespace libcomp;
@@ -288,7 +288,7 @@ void Object::SetEncoding(Convert::Encoding_t encoding) { mEncoding = encoding; }
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<Object>() {
+BaseScriptEngine& BaseScriptEngine::Using<Object>() {
   if (!BindingExists("Object")) {
     Sqrat::Class<Object, Sqrat::NoConstructor<Object>> binding(mVM, "Object");
     Bind<Object>("Object", binding);

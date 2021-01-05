@@ -31,7 +31,7 @@
 #include <gtest/gtest.h>
 
 // Stop ignoring warnings
-#include <Config.h>
+#include <BaseConfig.h>
 #include <Crypto.h>
 #include <Exception.h>
 #include <PushIgnore.h>
@@ -199,7 +199,7 @@ TEST(EncryptDecrypt, File) {
       reinterpret_cast<const char *>(decryptedFile) + sizeof(decryptedFile));
   std::vector<char> encryptedData;
 
-  if (0 == strcmp("CHED", Config::ENCRYPTED_FILE_MAGIC)) {
+  if (0 == strcmp("CHED", BaseConfig::ENCRYPTED_FILE_MAGIC)) {
     encryptedData =
         std::vector<char>(reinterpret_cast<const char *>(encryptedFile2),
                           reinterpret_cast<const char *>(encryptedFile2) +

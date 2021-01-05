@@ -90,6 +90,7 @@ class DatabaseMariaDB : public Database {
   virtual bool Exists();
   virtual bool Setup(bool rebuild = false,
                      const std::shared_ptr<BaseServer>& server = {},
+                     const std::shared_ptr<BaseScriptEngine>& engine = {},
                      DataStore* pDataStore = nullptr,
                      const std::string& migrationDirectory = std::string());
   virtual bool Use();

@@ -1,0 +1,79 @@
+/**
+ * @file libcomp/src/BaseConstants.h
+ * @ingroup libcomp
+ *
+ * @author COMP Omega <compomega@tutanota.com>
+ *
+ * @brief Constant values used throughout the applications.
+ *
+ * This file is part of the COMP_hack Library (libcomp).
+ *
+ * Copyright (C) 2012-2020 COMP_hack Team <compomega@tutanota.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef LIBCOMP_SRC_BASECONSTANTS_H
+#define LIBCOMP_SRC_BASECONSTANTS_H
+
+namespace libcomp {
+
+/// HACK format magic.
+#define HACK_FORMAT_MAGIC (0x4B434148)
+
+/// Major, Minor, Patch (1.0.0).
+#define HACK_FORMAT_VER1 (0x00010000)
+
+/// Major, Minor, Patch (1.1.0).
+#define HACK_FORMAT_VER2 (0x00010100)
+
+/// Indicates the packet came from the client.
+#define HACK_SOURCE_CLIENT (0)
+
+/// Indicates the packet came from the server.
+#define HACK_SOURCE_SERVER (1)
+
+/// Number of bits in a Blowfish key.
+#define BF_NET_KEY_BIT_SIZE (64)
+
+/// Number of bytes in a Blowfish key.
+#define BF_NET_KEY_BYTE_SIZE (BF_NET_KEY_BIT_SIZE / 8)
+
+/// Number of bits in a Diffie-Hellman key.
+#define DH_KEY_BIT_SIZE (1024)
+
+/// Number of hex digits for a Diffie-Hellman key.
+#define DH_KEY_HEX_SIZE (DH_KEY_BIT_SIZE / 4)
+
+/// Number of bytes in the Diffie-Hellman share data.
+#define DH_SHARED_DATA_SIZE (DH_KEY_BIT_SIZE / 8)
+
+/// Base "g" for a Diffie-Hellman key exchange (int format).
+#define DH_BASE_INT 2
+
+/// Base "g" for a Diffie-Hellman key exchange (string format).
+#define DH_BASE_STRING "2"
+
+/// Size of the stack that is used to talk to a Squirrel VM.
+#define SQUIRREL_STACK_SIZE (1024)
+
+/// Maximum number of bytes in a packet.
+#define MAX_PACKET_SIZE (16384)
+
+/// Maximum number of calls to trace when generating the backtrace.
+#define MAX_BACKTRACE_DEPTH (100)
+
+}  // namespace libcomp
+
+#endif  // LIBCOMP_SRC_BASECONSTANTS_H

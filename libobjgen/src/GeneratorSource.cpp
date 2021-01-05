@@ -49,12 +49,12 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
   ss << std::endl;
 
   ss << "// libcomp Includes" << std::endl;
+  ss << "#include <BaseLog.h>" << std::endl;
   if (obj.IsPersistent()) {
     ss << "#include <Database.h>" << std::endl;
   }
   ss << "#include <DatabaseBind.h>" << std::endl;
   ss << "#include <DatabaseQuery.h>" << std::endl;
-  ss << "#include <Log.h>" << std::endl;
   ss << "#include <VectorStream.h>" << std::endl;
 
 #ifdef EXOTIC_BUILD
@@ -63,7 +63,7 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
   bool scriptEnabled = obj.IsScriptEnabled();
 #endif  // !EXOTIC_BUILD
   if (scriptEnabled) {
-    ss << "#include <ScriptEngine.h>" << std::endl;
+    ss << "#include <BaseScriptEngine.h>" << std::endl;
   }
   ss << std::endl;
 
@@ -535,7 +535,8 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
     dependency_prototypes << "// Include reference prototypes" << std::endl;
     dependency_prototypes << Tab() << "template<>" << std::endl;
     dependency_prototypes
-        << Tab() << "ScriptEngine& ScriptEngine::Using<libobjgen::UUID>();"
+        << Tab()
+        << "BaseScriptEngine& BaseScriptEngine::Using<libobjgen::UUID>();"
         << std::endl;
 
     std::stringstream bindingType;
@@ -545,8 +546,9 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
       parent_dependency << Tab(3) << "Using<" << baseObject << ">();"
                         << std::endl;
       dependency_prototypes << Tab() << "template<>" << std::endl;
-      dependency_prototypes << Tab() << "ScriptEngine& ScriptEngine::Using<"
-                            << baseObject << ">();" << std::endl;
+      dependency_prototypes
+          << Tab() << "BaseScriptEngine& BaseScriptEngine::Using<" << baseObject
+          << ">();" << std::endl;
     } else if (obj.IsPersistent()) {
       bindingType << "DerivedClass<" << obj.GetName()
                   << ", libcomp::PersistentObject>";
@@ -555,14 +557,16 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
       dependency_prototypes << Tab() << "template<>" << std::endl;
       dependency_prototypes
           << Tab()
-          << "ScriptEngine& ScriptEngine::Using<libcomp::PersistentObject>();"
+          << "BaseScriptEngine& "
+             "BaseScriptEngine::Using<libcomp::PersistentObject>();"
           << std::endl;
     } else {
       bindingType << "DerivedClass<" << obj.GetName() << ", libcomp::Object>";
       parent_dependency << Tab(3) << "Using<libcomp::Object>();" << std::endl;
       dependency_prototypes << Tab() << "template<>" << std::endl;
       dependency_prototypes
-          << Tab() << "ScriptEngine& ScriptEngine::Using<libcomp::Object>();"
+          << Tab()
+          << "BaseScriptEngine& BaseScriptEngine::Using<libcomp::Object>();"
           << std::endl;
     }
 
@@ -578,8 +582,9 @@ std::string GeneratorSource::Generate(const MetaObject& obj) {
       for (auto ref : scriptReferences) {
         if (ref != obj.GetName()) {
           dependency_prototypes << Tab() << "template<>" << std::endl;
-          dependency_prototypes << Tab() << "ScriptEngine& ScriptEngine::Using<"
-                                << ref << ">();" << std::endl;
+          dependency_prototypes
+              << Tab() << "BaseScriptEngine& BaseScriptEngine::Using<" << ref
+              << ">();" << std::endl;
         }
       }
     }

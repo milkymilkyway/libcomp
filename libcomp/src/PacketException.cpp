@@ -26,7 +26,7 @@
 
 #include "PacketException.h"
 
-#include "Log.h"
+#include "BaseLog.h"
 
 using namespace libcomp;
 

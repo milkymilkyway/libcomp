@@ -26,8 +26,8 @@
 
 #include "DatabaseQueryMariaDB.h"
 
+#include "BaseLog.h"
 #include "DatabaseMariaDB.h"
-#include "Log.h"
 
 #ifndef EXOTIC_PLATFORM
 

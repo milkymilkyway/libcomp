@@ -38,6 +38,7 @@
 
 namespace libcomp {
 
+class BaseScriptEngine;
 class BaseServer;
 class DatabaseBind;
 class DataStore;
@@ -109,12 +110,14 @@ class Database : public std::enable_shared_from_this<Database> {
    * @param rebuild Optional parameter to rebuild all tables used
    *  by this database during the verification step
    * @param server Server to pass to migration scripts (or null).
+   * @param engine Script engine to pass to migration scripts (or null).
    * @param pDataStore Pointer to the data store for migrations (or null).
    * @param migrationDirectory Directory to look for migrations in.
    * @return true if it could be set up, false if it could not
    */
   virtual bool Setup(bool rebuild = false,
                      const std::shared_ptr<BaseServer>& server = {},
+                     const std::shared_ptr<BaseScriptEngine>& engine = {},
                      DataStore* pDataStore = nullptr,
                      const std::string& migrationDirectory = std::string()) = 0;
 
@@ -193,12 +196,14 @@ class Database : public std::enable_shared_from_this<Database> {
   /**
    * Apply a database migration script.
    * @param server Server to pass to the script.
+   * @param engine Script engine to run the migration with.
    * @param pDataStore Data store to read the script from.
    * @param migration Name of the migration.
    * @param path Path to the script in the data store.
    * @returns true if the migration was applied; false otherwise.
    */
   virtual bool ApplyMigration(const std::shared_ptr<BaseServer>& server,
+                              const std::shared_ptr<BaseScriptEngine>& engine,
                               DataStore* pDataStore,
                               const libcomp::String& migration,
                               const libcomp::String& path);

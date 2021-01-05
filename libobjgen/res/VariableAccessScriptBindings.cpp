@@ -2,7 +2,7 @@ namespace libcomp
 {
     @DEPENDENCY_PROTOTYPES@
     template<>
-    ScriptEngine& ScriptEngine::Using<@OBJECT_NAME@>()
+    BaseScriptEngine& BaseScriptEngine::Using<@OBJECT_NAME@>()
     {
         if(!BindingExists(@OBJECT_STRING_NAME@, true))
         {

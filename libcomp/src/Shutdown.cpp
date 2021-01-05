@@ -29,8 +29,8 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
+#include "BaseLog.h"
 #include "BaseServer.h"
-#include "Log.h"
 
 // Standard C++11 Includes
 #include <signal.h>

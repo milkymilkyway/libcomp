@@ -216,6 +216,14 @@ class BaseServer : public TcpServer,
   }
 
   /**
+   * Create a script engine that can be used for migrations, workers, etc.
+   * @param useRawPrint Set this to not prefix messages with "SQUIRREL: ".
+   * @returns Script engine object.
+   */
+  virtual std::shared_ptr<BaseScriptEngine> CreateScriptEngine(
+      bool useRawPrint = false) const = 0;
+
+  /**
    * Called when the server has started.
    */
   virtual void ServerReady();
@@ -280,6 +288,23 @@ class BaseServer : public TcpServer,
   bool LoadDataFromFile(const libcomp::String& filePath,
                         PersistentObjectMap& records, bool registerRecords,
                         const std::set<std::string>& specificTypes = {});
+
+  /**
+   * Initialize the server constants.
+   * @param constantsPath Path to the server constants to load.
+   * @returns true if the server constants were initialized, false otherwise.
+   */
+  virtual bool InitializeConstants(const libcomp::String& constantsPath);
+
+  /**
+   * Process an object that is loaded by @ref LoadDataFromFile
+   * @param name Name of the object.
+   * @param record Object that is to be processed.
+   * @returns true if the object was processed, false on error
+   */
+  virtual bool ProcessDataLoadObject(
+      const libcomp::String& name,
+      std::shared_ptr<libcomp::PersistentObject>& record);
 
   /// A shared pointer to the config used to set up the server.
   std::shared_ptr<objects::ServerConfig> mConfig;

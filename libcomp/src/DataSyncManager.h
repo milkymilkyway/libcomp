@@ -50,8 +50,9 @@ class DataSyncManager {
  public:
   /**
    * Create a new DataSyncManager.
+   * @param packetCode Packet code used by this server to sync data
    */
-  DataSyncManager();
+  DataSyncManager(uint16_t packetCode);
 
   /**
    * Clean up the DataSyncManager.
@@ -321,6 +322,9 @@ class DataSyncManager {
   void WriteOutgoingRecords(
       libcomp::Packet& p, bool isPersistent,
       const std::set<std::shared_ptr<libcomp::Object>>& records);
+
+  /// Packet code used by this server to sync data
+  uint16_t mPacketCode;
 
   /// Map of all record inserts and updates queued for synchronization
   std::unordered_map<std::string, std::set<std::shared_ptr<libcomp::Object>>>

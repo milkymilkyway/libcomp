@@ -26,10 +26,10 @@
 
 #include "Crypto.h"
 
-#include "Config.h"
+#include "BaseConfig.h"
+#include "BaseLog.h"
 #include "Endian.h"
 #include "Exception.h"
-#include "Log.h"
 #include "Packet.h"
 #include "Platform.h"
 
@@ -144,9 +144,9 @@ using namespace libcomp;
  */
 INITIALIZER(InitDecrypt) {
   // Sanity check the configuration.
-  assert(4 == strlen(Config::ENCRYPTED_FILE_MAGIC));
-  assert(16 == strlen(Config::ENCRYPTED_FILE_KEY));
-  assert(8 == strlen(Config::ENCRYPTED_FILE_IV));
+  assert(4 == strlen(BaseConfig::ENCRYPTED_FILE_MAGIC));
+  assert(16 == strlen(BaseConfig::ENCRYPTED_FILE_KEY));
+  assert(8 == strlen(BaseConfig::ENCRYPTED_FILE_IV));
 }
 
 /**
@@ -178,7 +178,7 @@ bool Crypto::DecryptFile(std::vector<char> &data) {
     // Check the header.
     if (data.size() >=
             (sizeof(EncryptedFileHeader_t) + pHeader->originalSize) &&
-        0 == memcmp(&pHeader->magic[0], Config::ENCRYPTED_FILE_MAGIC,
+        0 == memcmp(&pHeader->magic[0], BaseConfig::ENCRYPTED_FILE_MAGIC,
                     sizeof(pHeader->magic))) {
       uint32_t originalSize = pHeader->originalSize;
       pHeader = nullptr;
@@ -212,7 +212,8 @@ bool Crypto::EncryptFile(std::vector<char> &data) {
   EncryptedFileHeader_t header;
   header.originalSize = static_cast<uint32_t>(data.size());
 
-  memcpy(&header.magic[0], Config::ENCRYPTED_FILE_MAGIC, sizeof(header.magic));
+  memcpy(&header.magic[0], BaseConfig::ENCRYPTED_FILE_MAGIC,
+         sizeof(header.magic));
 
   Crypto::Blowfish bf;
   bf.EncryptCbc(data);
@@ -230,7 +231,8 @@ bool Crypto::EncryptFile(const std::string &path,
   EncryptedFileHeader_t header;
   header.originalSize = static_cast<uint32_t>(data.size());
 
-  memcpy(&header.magic[0], Config::ENCRYPTED_FILE_MAGIC, sizeof(header.magic));
+  memcpy(&header.magic[0], BaseConfig::ENCRYPTED_FILE_MAGIC,
+         sizeof(header.magic));
 
   Crypto::Blowfish bf;
   bf.EncryptCbc(dataCopy);
@@ -460,8 +462,9 @@ Crypto::Blowfish::Blowfish() {
   mbedtls_blowfish_init(&d->ctx);
 
   // Use the default key.
-  SetKey(reinterpret_cast<const unsigned char *>(Config::ENCRYPTED_FILE_KEY),
-         16);
+  SetKey(
+      reinterpret_cast<const unsigned char *>(BaseConfig::ENCRYPTED_FILE_KEY),
+      16);
 }
 
 Crypto::Blowfish::~Blowfish() {
@@ -999,8 +1002,9 @@ Crypto::Blowfish::Blowfish() {
   d = new BlowfishPrivate;
 
   // Use the default key.
-  SetKey(reinterpret_cast<const unsigned char *>(Config::ENCRYPTED_FILE_KEY),
-         16);
+  SetKey(
+      reinterpret_cast<const unsigned char *>(BaseConfig::ENCRYPTED_FILE_KEY),
+      16);
 }
 
 Crypto::Blowfish::~Blowfish() {
@@ -1454,7 +1458,7 @@ void Crypto::Blowfish::SetKey(const std::vector<char> &key) {
 
 void Crypto::Blowfish::EncryptCbc(std::vector<char> &data) {
   uint64_t initializationVector =
-      *reinterpret_cast<const uint64_t *>(Config::ENCRYPTED_FILE_IV);
+      *reinterpret_cast<const uint64_t *>(BaseConfig::ENCRYPTED_FILE_IV);
 
   EncryptCbc(initializationVector, data);
 }
@@ -1462,7 +1466,7 @@ void Crypto::Blowfish::EncryptCbc(std::vector<char> &data) {
 void Crypto::Blowfish::DecryptCbc(std::vector<char> &data,
                                   std::vector<char>::size_type realSize) {
   uint64_t initializationVector =
-      *reinterpret_cast<const uint64_t *>(Config::ENCRYPTED_FILE_IV);
+      *reinterpret_cast<const uint64_t *>(BaseConfig::ENCRYPTED_FILE_IV);
 
   DecryptCbc(initializationVector, data, realSize);
 }

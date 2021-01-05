@@ -26,10 +26,10 @@
 
 #include "Convert.h"
 
+#include "BaseLog.h"
 #include "Endian.h"
 #include "EnumMap.h"
 #include "Exception.h"
-#include "Log.h"
 
 // Standard C Includes
 #include <stdint.h>

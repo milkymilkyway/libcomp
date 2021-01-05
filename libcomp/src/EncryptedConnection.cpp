@@ -27,10 +27,10 @@
 #include "EncryptedConnection.h"
 
 // libcomp Includes
-#include "Constants.h"
+#include "BaseConstants.h"
+#include "BaseLog.h"
 #include "Crypto.h"
 #include "Exception.h"
-#include "Log.h"
 #include "MessageConnectionClosed.h"
 #include "MessageEncrypted.h"
 #include "MessagePacket.h"

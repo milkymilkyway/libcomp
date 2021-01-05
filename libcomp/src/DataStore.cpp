@@ -27,12 +27,12 @@
 // libcomp Includes
 #include "DataStore.h"
 
+#include "BaseLog.h"
 #include "Crypto.h"
 #include "DataFile.h"
-#include "Log.h"
 
 #ifndef EXOTIC_PLATFORM
-#include "ScriptEngine.h"
+#include "BaseScriptEngine.h"
 #endif  // !EXOTIC_PLATFORM
 
 // Standard C++11 Includes
@@ -378,7 +378,7 @@ libcomp::String DataStore::GetHash(const libcomp::String& path) {
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<DataStore>() {
+BaseScriptEngine& BaseScriptEngine::Using<DataStore>() {
   if (!BindingExists("DataStore")) {
     Sqrat::Class<DataStore, Sqrat::NoConstructor<DataStore>> binding(
         mVM, "DataStore");

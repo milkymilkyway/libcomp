@@ -29,17 +29,16 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
-#include "Log.h"
+#include "BaseLog.h"
+#include "BaseScriptEngine.h"
 #include "Packet.h"
-#include "PacketCodes.h"
 #include "PersistentObject.h"
-#include "ScriptEngine.h"
 
 using namespace libcomp;
 
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<DataSyncManager>() {
+BaseScriptEngine& BaseScriptEngine::Using<DataSyncManager>() {
   if (!BindingExists("DataSyncManager", true)) {
     Sqrat::Class<DataSyncManager, Sqrat::NoConstructor<DataSyncManager>>
         binding(mVM, "DataSyncManager");
@@ -54,7 +53,8 @@ ScriptEngine& ScriptEngine::Using<DataSyncManager>() {
 }
 }  // namespace libcomp
 
-DataSyncManager::DataSyncManager() {}
+DataSyncManager::DataSyncManager(uint16_t packetCode)
+    : mPacketCode(packetCode) {}
 
 DataSyncManager::~DataSyncManager() {}
 
@@ -499,7 +499,7 @@ void DataSyncManager::QueueOutgoing(
   if (updates.size() == 0 && removes.size() == 0) return;
 
   libcomp::Packet p;
-  p.WritePacketCode(InternalPacketCode_t::PACKET_DATA_SYNC);
+  p.WriteU16Little(mPacketCode);
 
   bool isPersistent = false;
   PersistentObject::GetTypeHashByName(type.C(), isPersistent);
@@ -515,7 +515,7 @@ void DataSyncManager::QueueOutgoing(
 void DataSyncManager::WriteOutgoingRecord(
     libcomp::Packet& p, bool isPersistent, const libcomp::String& type,
     const std::shared_ptr<libcomp::Object>& record) {
-  p.WritePacketCode(InternalPacketCode_t::PACKET_DATA_SYNC);
+  p.WriteU16Little(mPacketCode);
 
   p.WriteString16Little(libcomp::Convert::ENCODING_UTF8, type, true);
   p.WriteU16Little(1);

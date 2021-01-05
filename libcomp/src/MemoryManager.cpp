@@ -33,7 +33,7 @@ bool libcomp::IsMemoryManagerEnabled() { return false; }
 #else  // !EXOTIC_PLATFORM
 
 // libcomp Includes
-#include "Constants.h"
+#include "BaseConstants.h"
 #include "Exception.h"
 
 // zlib Includes

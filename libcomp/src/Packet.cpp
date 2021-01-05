@@ -26,13 +26,13 @@
 
 #include "Packet.h"
 
+#include "BaseLog.h"
 #include "Compress.h"
 #include "Endian.h"
-#include "Log.h"
 #include "PacketException.h"
 
 #ifndef EXOTIC_PLATFORM
-#include "ScriptEngine.h"
+#include "BaseScriptEngine.h"
 #endif  // EXOTIC_PLATFORM
 
 #include <zlib.h>
@@ -574,7 +574,7 @@ Packet& Packet::operator=(Packet&& other) {
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<Packet>() {
+BaseScriptEngine& BaseScriptEngine::Using<Packet>() {
   if (!BindingExists("Packet")) {
     // Include the base class
     Using<ReadOnlyPacket>();

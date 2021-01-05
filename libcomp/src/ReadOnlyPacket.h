@@ -35,8 +35,8 @@
 #include <memory>
 #include <vector>
 
+#include "BaseConstants.h"
 #include "CString.h"
-#include "Constants.h"
 #include "Convert.h"
 
 #ifndef _WIN32

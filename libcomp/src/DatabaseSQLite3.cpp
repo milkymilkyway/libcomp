@@ -29,11 +29,11 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
+#include "BaseLog.h"
 #include "DataStore.h"
 #include "Database.h"
 #include "DatabaseBind.h"
 #include "DatabaseQuerySQLite3.h"
-#include "Log.h"
 
 // SQLite3 Includes
 #include <sqlite3.h>
@@ -107,6 +107,7 @@ bool DatabaseSQLite3::Exists() {
 
 bool DatabaseSQLite3::Setup(bool rebuild,
                             const std::shared_ptr<BaseServer>& server,
+                            const std::shared_ptr<BaseScriptEngine>& engine,
                             DataStore* pDataStore,
                             const std::string& migrationDirectory) {
   if (!IsOpen()) {
@@ -213,7 +214,7 @@ bool DatabaseSQLite3::Setup(bool rebuild,
         auto path = libcomp::String("%1/%2").Arg(migrationDirectory).Arg(file);
 
         if (!count) {
-          if (ApplyMigration(server, pDataStore, migration, path)) {
+          if (ApplyMigration(server, engine, pDataStore, migration, path)) {
             query =
                 Prepare("INSERT INTO `Migrations` (`Migration`) VALUES(:file)");
 

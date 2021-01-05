@@ -45,7 +45,7 @@ namespace libcomp {
 class Database;
 class DatabaseBind;
 class DatabaseQuery;
-class ScriptEngine;
+class BaseScriptEngine;
 
 /**
  * Base class of a all dynamically generated objects that persist in the
@@ -54,7 +54,7 @@ class ScriptEngine;
  * UUID.
  */
 class PersistentObject : public Object {
-  friend class ScriptEngine;
+  friend class BaseScriptEngine;
 
  public:
   /// Map of MetaObject definitions by the source object's C++ type hash
@@ -135,12 +135,10 @@ class PersistentObject : public Object {
   bool IsDeleted();
 
   /**
-   * Register all derived types in libcomp to the TypeMap.
-   * Persisted types needed in other databases should derive from this class
-   * to register their own as well.
-   * @return true on success, false on failure
+   * Check if a derived type failed to initialize (register).
+   * @return true if no initialization error occurred, false otherwise
    */
-  static bool Initialize();
+  static bool InitializationFailed();
 
   /**
    * Retrieve an object by its UUID but do not load from the database.
@@ -333,7 +331,6 @@ class PersistentObject : public Object {
   bool SaveWithUUID(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement& root,
                     bool append = false) const;
 
- protected:
   /**
    * Register a derived class type with a function to describe it to the
    * database.
@@ -345,6 +342,7 @@ class PersistentObject : public Object {
                            const std::shared_ptr<libobjgen::MetaObject>& obj,
                            const std::function<PersistentObject*()>& f);
 
+ protected:
   /**
    * Load an object from the database from a field database binding.
    * @param typeHash C++ type hash representing the object type to load

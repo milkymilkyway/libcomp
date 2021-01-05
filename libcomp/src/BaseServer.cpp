@@ -40,19 +40,15 @@
 #endif  // _WIN32
 
 // libcomp Includes
+#include <BaseLog.h>
+#include <BaseScriptEngine.h>
 #include <Crypto.h>
 #include <DataFile.h>
 #include <DatabaseMariaDB.h>
 #include <DatabaseSQLite3.h>
-#include <Log.h>
 #include <MemoryManager.h>
 #include <MessageInit.h>
-#include <ScriptEngine.h>
 #include <ServerCommandLineParser.h>
-#include <ServerConstants.h>
-
-// object Includes
-#include <Account.h>
 
 using namespace libcomp;
 
@@ -88,12 +84,7 @@ bool BaseServer::Initialize() {
     constantsPath = libcomp::String("%1constants.xml").Arg(GetConfigPath());
   }
 
-  if (!libcomp::ServerConstants::Initialize(constantsPath)) {
-    LogServerCritical([&]() {
-      return String("Server side constants failed to load from file path: %1\n")
-          .Arg(constantsPath);
-    });
-
+  if (!InitializeConstants(constantsPath)) {
     return false;
   }
 
@@ -173,6 +164,12 @@ bool BaseServer::Initialize() {
   return true;
 }
 
+bool BaseServer::InitializeConstants(const libcomp::String& constantsPath) {
+  (void)constantsPath;
+
+  return true;
+}
+
 void BaseServer::FinishInitialize() {}
 
 std::shared_ptr<Database> BaseServer::GetDatabase(
@@ -243,8 +240,9 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
     auto configIter = configMap.find(dbType);
 
     bool createMockData = configIter->second->GetMockData();
-    initFailure = !db->Setup(createMockData, shared_from_this(), pDataStore,
-                             migrationDirectory);
+    initFailure =
+        !db->Setup(createMockData, shared_from_this(), CreateScriptEngine(),
+                   pDataStore, migrationDirectory);
     if (!initFailure && createMockData) {
       auto configFile = configIter->second->GetMockDataFilename();
       if (configFile.IsEmpty()) {
@@ -380,29 +378,29 @@ bool BaseServer::ReadConfig(std::shared_ptr<objects::ServerConfig> config,
   if (nullptr == pObject || !config->Load(doc, *pObject)) {
     return false;
   } else {
-    auto log = libcomp::Log::GetSingletonPtr();
+    auto log = libcomp::BaseLog::GetBaseSingletonPtr();
 
     for (auto pair : config->GetLogLevels()) {
-      LogComponent_t comp = StringToLogComponent(pair.first);
+      GenericLogComponent_t comp = log->StringToLogComponent(pair.first);
 
-      if (libcomp::LogComponent_t::Invalid != comp) {
-        Log::Level_t level;
+      if (to_underlying(libcomp::BaseLogComponent_t::Invalid) != comp) {
+        BaseLog::Level_t level;
 
         switch (pair.second) {
           case objects::ServerConfig::LogLevel_t::LEVEL_DEBUG:
-            level = Log::LOG_LEVEL_DEBUG;
+            level = BaseLog::LOG_LEVEL_DEBUG;
             break;
           case objects::ServerConfig::LogLevel_t::LEVEL_INFO:
-            level = Log::LOG_LEVEL_INFO;
+            level = BaseLog::LOG_LEVEL_INFO;
             break;
           case objects::ServerConfig::LogLevel_t::LEVEL_WARNING:
-            level = Log::LOG_LEVEL_WARNING;
+            level = BaseLog::LOG_LEVEL_WARNING;
             break;
           case objects::ServerConfig::LogLevel_t::LEVEL_ERROR:
-            level = Log::LOG_LEVEL_ERROR;
+            level = BaseLog::LOG_LEVEL_ERROR;
             break;
           default:
-            level = Log::LOG_LEVEL_CRITICAL;
+            level = BaseLog::LOG_LEVEL_CRITICAL;
             break;
         }
 
@@ -625,23 +623,8 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
       return false;
     }
 
-    if (name == "Account") {
-      // Check that there is a password and salt it
-      auto account = std::dynamic_pointer_cast<objects::Account>(record);
-
-      if (account->GetUsername().IsEmpty() ||
-          account->GetPassword().IsEmpty()) {
-        LogServerErrorMsg(
-            "Attempted to create an account with no username or no "
-            "password.\n");
-
-        return false;
-      }
-
-      libcomp::String salt = libcomp::Crypto::GenerateRandom(10);
-      account->SetSalt(salt);
-      account->SetPassword(
-          libcomp::Crypto::HashPassword(account->GetPassword(), salt));
+    if (!ProcessDataLoadObject(name, record)) {
+      return false;
     }
 
     if (registerRecords && !record->Register(record, uuid)) {
@@ -658,11 +641,20 @@ bool BaseServer::LoadDataFromFile(const libcomp::String& filePath,
   return true;
 }
 
+bool BaseServer::ProcessDataLoadObject(
+    const libcomp::String& name,
+    std::shared_ptr<libcomp::PersistentObject>& record) {
+  (void)name;
+  (void)record;
+
+  return true;
+}
+
 void BaseServer::Cleanup() {}
 
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<BaseServer>() {
+BaseScriptEngine& BaseScriptEngine::Using<BaseServer>() {
   if (!BindingExists("BaseServer")) {
     Sqrat::Class<BaseServer, Sqrat::NoConstructor<BaseServer>> binding(
         mVM, "BaseServer");

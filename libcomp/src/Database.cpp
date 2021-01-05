@@ -29,10 +29,10 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
+#include "BaseLog.h"
+#include "BaseScriptEngine.h"
 #include "BaseServer.h"
 #include "DataStore.h"
-#include "Log.h"
-#include "ScriptEngine.h"
 
 using namespace libcomp;
 
@@ -249,6 +249,7 @@ Database::GetMappedObjects() {
 }
 
 bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
+                              const std::shared_ptr<BaseScriptEngine>& engine,
                               DataStore* pDataStore,
                               const libcomp::String& migration,
                               const libcomp::String& path) {
@@ -269,9 +270,6 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
 
   // Zero the string.
   script.push_back(0);
-
-  // Create the script engine.
-  auto engine = std::make_shared<ScriptEngine>();
 
   // Parse the script.
   if (!engine->Eval(&script[0], path)) {
@@ -302,7 +300,7 @@ bool Database::ApplyMigration(const std::shared_ptr<BaseServer>& server,
 
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<Database>() {
+BaseScriptEngine& BaseScriptEngine::Using<Database>() {
   if (!BindingExists("Database")) {
     Sqrat::Class<Database, Sqrat::NoConstructor<Database>> binding(mVM,
                                                                    "Database");

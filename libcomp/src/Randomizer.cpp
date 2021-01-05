@@ -30,7 +30,7 @@
 #include "Crypto.h"
 
 #ifndef EXOTIC_PLATFORM
-#include "ScriptEngine.h"
+#include "BaseScriptEngine.h"
 #endif  // !EXOTIC_PLATFORM
 
 using namespace libcomp;
@@ -41,7 +41,7 @@ thread_local std::mt19937_64 Randomizer::sGen64;
 #ifndef EXOTIC_PLATFORM
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<Randomizer>() {
+BaseScriptEngine& BaseScriptEngine::Using<Randomizer>() {
   if (!BindingExists("Randomizer", true)) {
     Sqrat::Class<Randomizer> binding(mVM, "Randomizer");
     binding.StaticFunc("RNG", &Randomizer::GetRandomNumber<int32_t>)

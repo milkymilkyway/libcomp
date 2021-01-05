@@ -29,11 +29,11 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
+#include "BaseLog.h"
 #include "BaseServer.h"
 #include "DataStore.h"
 #include "DatabaseBind.h"
 #include "DatabaseQueryMariaDB.h"
-#include "Log.h"
 
 // config-win.h and my_global.h redefine bool unless explicitly defined
 #define bool bool
@@ -125,6 +125,7 @@ bool DatabaseMariaDB::Exists() {
 
 bool DatabaseMariaDB::Setup(bool rebuild,
                             const std::shared_ptr<BaseServer>& server,
+                            const std::shared_ptr<BaseScriptEngine>& engine,
                             DataStore* pDataStore,
                             const std::string& migrationDirectory) {
   if (!IsOpen()) {
@@ -236,7 +237,7 @@ bool DatabaseMariaDB::Setup(bool rebuild,
         auto path = libcomp::String("%1/%2").Arg(migrationDirectory).Arg(file);
 
         if (!count) {
-          if (ApplyMigration(server, pDataStore, migration, path)) {
+          if (ApplyMigration(server, engine, pDataStore, migration, path)) {
             query =
                 Prepare("INSERT INTO `Migrations` (`Migration`) VALUES(:file)");
 

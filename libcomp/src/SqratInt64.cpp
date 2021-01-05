@@ -29,7 +29,7 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
-#include "ScriptEngine.h"
+#include "BaseScriptEngine.h"
 
 Sqrat::s64::s64() { mValue = 0; }
 
@@ -567,7 +567,7 @@ static Sqrat::u64 u64_cast(int32_t value) { return Sqrat::u64(value); }
 
 namespace libcomp {
 template <>
-ScriptEngine& ScriptEngine::Using<Sqrat::s64>() {
+BaseScriptEngine& BaseScriptEngine::Using<Sqrat::s64>() {
   if (!BindingExists("s64", true)) {
     Sqrat::Class<Sqrat::s64> binding(mVM, "s64");
     binding.SquirrelFunc("_cmp", &Sqrat::s64::_cmp);
@@ -588,7 +588,7 @@ ScriptEngine& ScriptEngine::Using<Sqrat::s64>() {
 }
 
 template <>
-ScriptEngine& ScriptEngine::Using<Sqrat::u64>() {
+BaseScriptEngine& BaseScriptEngine::Using<Sqrat::u64>() {
   if (!BindingExists("u64", true)) {
     Sqrat::Class<Sqrat::u64> binding(mVM, "u64");
     binding.SquirrelFunc("_cmp", &Sqrat::u64::_cmp);

@@ -26,8 +26,8 @@
 
 #include "TcpServer.h"
 
-#include "Constants.h"
-#include "Log.h"
+#include "BaseConstants.h"
+#include "BaseLog.h"
 #include "TcpConnection.h"
 #include "WindowsService.h"
 
