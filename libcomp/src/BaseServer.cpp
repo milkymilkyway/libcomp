@@ -60,7 +60,10 @@ BaseServer::BaseServer(const char* szProgram,
     : TcpServer("any", config->GetPort()),
       mConfig(config),
       mCommandLine(commandLine),
-      mDataStore(szProgram) {}
+      mDataStore(szProgram) {
+  mMainWorker = std::make_shared<Worker>();
+  mQueueWorker = std::make_shared<Worker>();
+}
 
 bool BaseServer::Initialize() {
   SetDiffieHellman(LoadDiffieHellman(mConfig->GetDiffieHellmanKeyPair()));
@@ -145,11 +148,11 @@ bool BaseServer::Initialize() {
   CreateWorkers();
 
   // Add the server as a system manager for libcomp::Message::Init.
-  mMainWorker.AddManager(
+  mMainWorker->AddManager(
       std::dynamic_pointer_cast<Manager>(shared_from_this()));
 
   // Get the message queue.
-  auto msgQueue = mMainWorker.GetMessageQueue();
+  auto msgQueue = mMainWorker->GetMessageQueue();
 
   // The message queue better exist!
   if (nullptr == msgQueue) {
@@ -274,9 +277,12 @@ std::shared_ptr<Database> BaseServer::GetDatabase(
 
 BaseServer::~BaseServer() {
   // Make sure the worker threads stop.
-  for (auto worker : mWorkers) {
-    worker->Join();
+  if (mConfig->GetMultithreadMode()) {
+    for (auto worker : mWorkers) {
+      worker->Join();
+    }
   }
+
   mWorkers.clear();
 }
 
@@ -286,10 +292,12 @@ TimerManager* BaseServer::GetTimerManager() { return &mTimerManager; }
 
 int BaseServer::Run() {
   // Run the asycn worker in its own thread.
-  mQueueWorker.Start("async_worker");
+  if (mConfig->GetMultithreadMode()) {
+    mQueueWorker->Start("async_worker");
+  }
 
   // Run the main worker in this thread, blocking until done.
-  mMainWorker.Start("main_worker", true);
+  mMainWorker->Start("main_worker", true);
 
   // Cleanup for any other tasks that should run in the main thread.
   Cleanup();
@@ -317,11 +325,14 @@ void BaseServer::ServerReady() {
 }
 
 void BaseServer::Shutdown() {
-  mMainWorker.Shutdown();
-  mQueueWorker.Shutdown();
+  mMainWorker->Shutdown();
 
-  for (auto worker : mWorkers) {
-    worker->Shutdown();
+  if (mConfig->GetMultithreadMode()) {
+    mQueueWorker->Shutdown();
+
+    for (auto worker : mWorkers) {
+      worker->Shutdown();
+    }
   }
 }
 
@@ -463,10 +474,17 @@ void BaseServer::CreateWorkers() {
     LogServerWarningMsg("Processing will be handled by a single worker.\n");
   }
 
-  for (unsigned int i = 0; i < numberOfWorkers; i++) {
-    auto worker = std::shared_ptr<Worker>(new Worker);
-    worker->Start(libcomp::String("worker%1").Arg(i));
-    mWorkers.push_back(worker);
+  if (mConfig->GetMultithreadMode()) {
+    for (unsigned int i = 0; i < numberOfWorkers; i++) {
+      auto worker = std::shared_ptr<Worker>(new Worker);
+      worker->Start(libcomp::String("worker%1").Arg(i));
+      mWorkers.push_back(worker);
+    }
+  } else {
+    mWorkers.push_back(mMainWorker);
+
+    // Don't make a special worker unless we are in multithread mode.
+    mQueueWorker = mMainWorker;
   }
 }
 

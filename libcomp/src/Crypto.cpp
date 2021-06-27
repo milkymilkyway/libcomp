@@ -246,14 +246,14 @@ bool Crypto::EncryptFile(const std::string &path,
 }
 
 std::vector<char> Crypto::LoadFile(const std::string &path, int requestedSize) {
-  std::ifstream::streampos fileSize;
+  std::streampos fileSize;
   std::vector<char> data;
   std::ifstream file;
 
   try {
     if (0 < requestedSize) {
       file.open(path.c_str(), std::ifstream::in | std::ifstream::binary);
-      fileSize = static_cast<std::ifstream::streampos>(requestedSize);
+      fileSize = static_cast<std::streampos>(requestedSize);
 
       if (file.good() && 0 < fileSize) {
         data.resize(static_cast<std::vector<char>::size_type>(fileSize));

@@ -56,6 +56,16 @@ class Object;
 class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
  public:
   /**
+   * Purpose for the connection.
+   */
+  enum class Purpose_t {
+    UNKNOWN = 0,    //!< Connection purpose is unknown.
+    MAIN_INTERNAL,  //!< Connection is used for the main internal communication.
+    INTERNAL,       //!< Connection is used for internal communication.
+    CLIENT,         //!< Connection is used to communicate with a client.
+  };
+
+  /**
    * Role the server is operating in.
    */
   typedef enum {
@@ -248,6 +258,18 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   void SetName(const String& name);
 
   /**
+   * Get the purpose for this connection.
+   * @returns Purpose for this connection.
+   */
+  Purpose_t GetPurpose() const;
+
+  /**
+   * Set the purpose for this connection.
+   * @param purpose Purpose for this connection.
+   */
+  void SetPurpose(Purpose_t purpose);
+
+  /**
    * Called when a connection has been established.
    */
   virtual void ConnectionSuccess();
@@ -384,6 +406,9 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 
   /// Packet being sent to the remote host.
   ReadOnlyPacket mOutgoing;
+
+  /// Connection purpose.
+  Purpose_t mPurpose;
 };
 
 }  // namespace libcomp

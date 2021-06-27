@@ -30,8 +30,9 @@
 #ifndef EXOTIC_PLATFORM
 
 // libcomp Includes
-#include <BaseServer.h>
-#include <Manager.h>
+#include "BaseServer.h"
+#include "Manager.h"
+#include "TcpConnection.h"
 
 // Standard C++11 Includes
 #include <stdint.h>
@@ -89,6 +90,36 @@ class ManagerPacket : public libcomp::Manager {
    */
   std::shared_ptr<libcomp::BaseServer> GetServer();
 
+  /**
+   * Get the purpose filter.
+   * @returns Set of connection purposes this manager responds to.
+   */
+  std::set<TcpConnection::Purpose_t> GetPurposeFilter() const;
+
+  /**
+   * Set the purpose filter.
+   * @param filter Set of connection purposes this manager responds to.
+   */
+  void SetPurposeFilter(const std::set<TcpConnection::Purpose_t>& filter);
+
+  /**
+   * Add a purpose to the purpose filter.
+   * @param purpose Purpose to add to the purpose filter.
+   */
+  void AddPurposeFilter(TcpConnection::Purpose_t purpose);
+
+  /**
+   * Clears the purpose filter. All connection purposes will be responded to.
+   */
+  void ClearPurposeFilter();
+
+  /**
+   * Determines if the manager responds to a connection purpose.
+   * @param purpose Connection purpose to check.
+   * @returns true if the purpose is responded to, false otherwise.
+   */
+  bool RespondsToPurpose(TcpConnection::Purpose_t purpose) const;
+
  protected:
   virtual bool ValidateConnectionState(
       const std::shared_ptr<libcomp::TcpConnection>& connection,
@@ -104,6 +135,9 @@ class ManagerPacket : public libcomp::Manager {
 
   /// Pointer to the server that uses this manager
   std::weak_ptr<libcomp::BaseServer> mServer;
+
+  /// Filter packet messages by the connection purpose.
+  std::set<TcpConnection::Purpose_t> mPurposeFilter;
 };
 
 }  // namespace libcomp

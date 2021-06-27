@@ -42,7 +42,8 @@ TcpConnection::TcpConnection(asio::io_service& io_service)
       mStatus(TcpConnection::STATUS_NOT_CONNECTED),
       mRole(TcpConnection::ROLE_CLIENT),
       mRemoteAddress("0.0.0.0"),
-      mSendingPacket(false) {}
+      mSendingPacket(false),
+      mPurpose(Purpose_t::UNKNOWN) {}
 
 TcpConnection::TcpConnection(
     asio::ip::tcp::socket& socket,
@@ -52,7 +53,8 @@ TcpConnection::TcpConnection(
       mStatus(TcpConnection::STATUS_CONNECTED),
       mRole(TcpConnection::ROLE_SERVER),
       mRemoteAddress("0.0.0.0"),
-      mSendingPacket(false) {
+      mSendingPacket(false),
+      mPurpose(Purpose_t::UNKNOWN) {
   // Cache the remote address.
   try {
     mRemoteAddress = mSocket.remote_endpoint().address().to_string();
@@ -453,3 +455,7 @@ std::list<ReadOnlyPacket> TcpConnection::GetCombinedPackets() {
 String TcpConnection::GetName() const { return mName; }
 
 void TcpConnection::SetName(const String& name) { mName = name; }
+
+TcpConnection::Purpose_t TcpConnection::GetPurpose() const { return mPurpose; }
+
+void TcpConnection::SetPurpose(Purpose_t purpose) { mPurpose = purpose; }

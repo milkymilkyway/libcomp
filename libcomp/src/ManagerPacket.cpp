@@ -54,6 +54,13 @@ bool ManagerPacket::ProcessMessage(const libcomp::Message::Message* pMessage) {
       dynamic_cast<const libcomp::Message::Packet*>(pMessage);
 
   if (nullptr != pPacketMessage) {
+    auto connection = pPacketMessage->GetConnection();
+
+    // If we don't respond to this purpose, skip it.
+    if (!RespondsToPurpose(connection->GetPurpose())) {
+      return true;
+    }
+
     libcomp::ReadOnlyPacket p(pPacketMessage->GetPacket());
     p.Rewind();
     // p.HexDump();
@@ -71,7 +78,6 @@ bool ManagerPacket::ProcessMessage(const libcomp::Message::Message* pMessage) {
       return false;
     }
 
-    auto connection = pPacketMessage->GetConnection();
     LogPacketDebug([code, connection]() {
       return String("Processing packet 0x%1 from %2 (%3): started\n")
           .Arg(code, 4, 16, '0')
@@ -141,6 +147,29 @@ bool Parsers::Placeholder::Parse(
   (void)p;
 
   return false;
+}
+
+std::set<TcpConnection::Purpose_t> ManagerPacket::GetPurposeFilter() const {
+  return mPurposeFilter;
+}
+
+void ManagerPacket::SetPurposeFilter(
+    const std::set<TcpConnection::Purpose_t>& filter) {
+  mPurposeFilter = filter;
+}
+
+void ManagerPacket::AddPurposeFilter(TcpConnection::Purpose_t purpose) {
+  mPurposeFilter.insert(purpose);
+}
+
+void ManagerPacket::ClearPurposeFilter() { mPurposeFilter.clear(); }
+
+bool ManagerPacket::RespondsToPurpose(TcpConnection::Purpose_t purpose) const {
+  if (mPurposeFilter.count(purpose)) {
+    return true;
+  } else {
+    return mPurposeFilter.empty();
+  }
 }
 
 #endif  // !EXOTIC_PLATFORM

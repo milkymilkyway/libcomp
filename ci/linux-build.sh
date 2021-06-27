@@ -12,6 +12,7 @@ export COVERALLS_ENABLE=OFF
 if [ "${COMPILER}" == "clang" ]; then
     export SINGLE_OBJGEN=ON
     export USE_COTIRE=OFF
+    export LIBCXX_PACKAGES="libc++-11-dev libc++abi-11-dev"
 else
     export SINGLE_OBJGEN=OFF
     export USE_COTIRE=ON
@@ -31,7 +32,7 @@ function check_or_download {
 
 # Install packages
 sudo apt-get update -q
-sudo apt-get install libssl-dev doxygen unzip -y
+sudo apt-get install libssl-dev doxygen unzip ${LIBCXX_PACKAGES} -y
 
 if [ "${GENERATOR}" == "Ninja" ]; then
     sudo apt-get install ninja-build -y

@@ -211,8 +211,8 @@ class BaseServer : public TcpServer,
    */
   template <typename Function, typename... Args>
   bool QueueWork(Function&& f, Args&&... args) const {
-    return mQueueWorker.ExecuteInWorker(std::forward<Function>(f),
-                                        std::forward<Args>(args)...);
+    return mQueueWorker->ExecuteInWorker(std::forward<Function>(f),
+                                         std::forward<Args>(args)...);
   }
 
   /**
@@ -313,10 +313,10 @@ class BaseServer : public TcpServer,
   std::shared_ptr<ServerCommandLineParser> mCommandLine;
 
   /// Worker that blocks and runs in the main thread.
-  libcomp::Worker mMainWorker;
+  std::shared_ptr<libcomp::Worker> mMainWorker;
 
   /// Worker used for async processing.
-  libcomp::Worker mQueueWorker;
+  std::shared_ptr<libcomp::Worker> mQueueWorker;
 
   /// List of workers to handle incoming connection packet based work.
   std::list<std::shared_ptr<libcomp::Worker>> mWorkers;
