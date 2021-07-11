@@ -37,6 +37,8 @@
 #include <regex_ext>
 #include <sstream>
 
+#include "Undestructible.h"
+
 using namespace libcomp;
 
 bool String::mBadArgumentReporting = true;
@@ -482,9 +484,11 @@ String String::Arg(const String& a) const {
     }
   };
 
-  static const std::regex re("\\%([0-9]+)");
-  std::string s =
-      std::regex_replace(d->mString.cbegin(), d->mString.cend(), re, callback);
+  // Wrap the static regex object in Undestructible<T> to ensure its
+  // destructor doesn't get called by exiting threads.
+  static const Undestructible<std::regex> re("\\%([0-9]+)");
+  std::string s = std::regex_replace(d->mString.cbegin(), d->mString.cend(),
+                                     re.Get(), callback);
 
   if (0 == matchCount && mBadArgumentReporting) {
     std::cerr << "Argument not found in string: " << s << std::endl;
