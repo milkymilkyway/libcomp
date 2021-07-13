@@ -27,6 +27,7 @@
 #include "PlatformWindows.h"
 
 #ifdef _WIN32
+#include <direct.h>
 #include <windows.h>
 
 libcomp::String libcomp::Platform::GetLastErrorString() {
@@ -58,4 +59,15 @@ libcomp::String libcomp::Platform::GetLastErrorString() {
 
   return error;
 }
+
+// Ensure the windows.h CreateDirectory macro doesn't conflict
+#undef CreateDirectory
+bool libcomp::Platform::CreateDirectory(const libcomp::String &path) {
+  return _mkdir(path.C()) == 0;
+}
+
+bool libcomp::Platform::IsPathSeparator(char c) {
+  return c == '/' || c == '\\';
+}
+
 #endif  // _WIN32

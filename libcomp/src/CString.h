@@ -568,6 +568,98 @@ class String {
   }
 
   /**
+   * Standard iterator type returned by begin() and end()
+   */
+  using iterator = std::string::iterator;
+
+  /**
+   * Constant iterator type returned by cbegin() and cend()
+   */
+  using const_iterator = std::string::const_iterator;
+
+  /**
+   * Reverse iterator type returned by rbegin() and rend()
+   */
+  using reverse_iterator = std::string::reverse_iterator;
+
+  /**
+   * Constant reverse iterator type returned by rbegin() and rend()
+   */
+  using const_reverse_iterator = std::string::const_reverse_iterator;
+
+  /**
+   * Obtain a standard iterator pointing to the beginning of the String.
+   * @returns An iterator pointing to the beginning of the String.
+   */
+  iterator begin();
+
+  /**
+   * Obtain a standard iterator pointing to the end of the String.
+   * @returns An iterator pointing to the end of the String.
+   */
+  iterator end();
+
+  /**
+   * Obtain a const iterator pointing to the beginning of the String.
+   * @returns A const iterator pointing to the beginning of the String.
+   */
+  const_iterator begin() const;
+
+  /**
+   * Obtain a const iterator pointing to the end of the String.
+   * @returns A const iterator pointing to the end of the String.
+   */
+  const_iterator end() const;
+
+  /**
+   * Obtain a const iterator pointing to the beginning of the String.
+   * @returns A const iterator pointing to the beginning of the String.
+   */
+  const_iterator cbegin() const;
+
+  /**
+   * Obtain a const iterator pointing to the end of the String.
+   * @returns A const iterator pointing to the end of the String.
+   */
+  const_iterator cend() const;
+
+  /**
+   * Obtain a reverse iterator pointing to the end of the String.
+   * @returns A reverse iterator pointing to the end of the String.
+   */
+  reverse_iterator rbegin();
+
+  /**
+   * Obtain a reverse iterator pointing to the beginning of the String.
+   * @returns A reverse iterator pointing to the beginning of the String.
+   */
+  reverse_iterator rend();
+
+  /**
+   * Obtain a const reverse iterator pointing to the end of the String.
+   * @returns A const reverse iterator pointing to the end of the String.
+   */
+  const_reverse_iterator rbegin() const;
+
+  /**
+   * Obtain a const reverse iterator pointing to the beginning of the String.
+   * @returns A const reverse iterator pointing to the beginning of the String.
+   */
+  const_reverse_iterator rend() const;
+
+  /**
+   * Obtain a const reverse iterator pointing to the end of the String.
+   * @returns A const reverse iterator pointing to the end of the String.
+   */
+  const_reverse_iterator crbegin() const;
+
+  /**
+   * Obtain a const reverse iterator pointing to the beginning of the String.
+   * @returns A const reverse iterator pointing to the beginning of the String.
+   */
+  const_reverse_iterator crend() const;
+
+  /**
    * Get if argument errors will be reported. This will report the
    * error over the standard error stream.
    * @returns true if argument errors will be reported.

@@ -42,6 +42,20 @@ namespace Platform {
  */
 libcomp::String GetLastErrorString();
 
+/**
+ * Create a directory at the provided location.
+ * @returns Whether the operation was successful or not.
+ * @ingroup Platform
+ */
+bool CreateDirectory(const libcomp::String &path);
+
+/**
+ * Determine whether a given character is a valid path separator.
+ * @returns Whether the provided character is a path separator.
+ * @ingroup Platform
+ */
+bool IsPathSeparator(char c);
+
 }  // namespace Platform
 
 }  // namespace libcomp
