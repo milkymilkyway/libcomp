@@ -34,9 +34,13 @@
 #include "Database.h"
 #include "DatabaseBind.h"
 #include "DatabaseQuerySQLite3.h"
+#include "Platform.h"
 
 // SQLite3 Includes
 #include <sqlite3.h>
+
+// Standard C++ Includes
+#include <algorithm>
 
 using namespace libcomp;
 
@@ -50,20 +54,33 @@ DatabaseSQLite3::~DatabaseSQLite3() { Close(); }
 bool DatabaseSQLite3::Open() {
   auto filepath = GetFilepath();
 
-  bool result = true;
-
-  if (SQLITE_OK != sqlite3_open(filepath.C(), &mDatabase)) {
-    result = false;
-
-    LogDatabaseError([&]() {
-      return String("Failed to open database connection: %1\n")
-          .Arg(sqlite3_errmsg(mDatabase));
-    });
-
-    (void)Close();
+  if (SQLITE_OK == sqlite3_open(filepath.C(), &mDatabase)) {
+    return true;
   }
 
-  return result;
+  // On failure, try to create the parent directory and try again
+  auto last_separator = std::find_if(filepath.crbegin(), filepath.crend(),
+                                     Platform::IsPathSeparator);
+  if (last_separator != filepath.crend()) {
+    // Calculate the index of the path separator and try to create the directory
+    size_t last_separator_idx =
+        (size_t)std::distance(filepath.cbegin(), last_separator.base()) - 1;
+
+    if (Platform::CreateDirectory(filepath.Left(last_separator_idx))) {
+      // Try to open the database again
+      if (SQLITE_OK == sqlite3_open(filepath.C(), &mDatabase)) {
+        return true;
+      }
+    }
+  }
+
+  LogDatabaseError([&]() {
+    return String("Failed to open database connection: %1\n")
+        .Arg(sqlite3_errmsg(mDatabase));
+  });
+
+  (void)Close();
+  return false;
 }
 
 bool DatabaseSQLite3::Close() {
