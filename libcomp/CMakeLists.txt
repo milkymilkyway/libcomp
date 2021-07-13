@@ -92,6 +92,7 @@ SET(${PROJECT_NAME}_SRCS
     src/Packet.cpp
     src/PacketException.cpp
     #src/PacketScript.cpp
+    src/PlatformLinux.cpp
     src/PlatformWindows.cpp
     src/PEFile.cpp
     src/PersistentObject.cpp

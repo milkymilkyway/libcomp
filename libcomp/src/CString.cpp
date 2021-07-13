@@ -662,6 +662,38 @@ String String::Join(const std::list<String>& strings, const String& delimiter) {
                          });
 }
 
+String::iterator String::begin() { return d->mString.begin(); }
+
+String::iterator String::end() { return d->mString.end(); }
+
+String::const_iterator String::begin() const { return d->mString.cbegin(); }
+
+String::const_iterator String::end() const { return d->mString.cend(); }
+
+String::const_iterator String::cbegin() const { return d->mString.cbegin(); }
+
+String::const_iterator String::cend() const { return d->mString.cend(); }
+
+String::reverse_iterator String::rbegin() { return d->mString.rbegin(); }
+
+String::reverse_iterator String::rend() { return d->mString.rend(); }
+
+String::const_reverse_iterator String::rbegin() const {
+  return d->mString.crbegin();
+}
+
+String::const_reverse_iterator String::rend() const {
+  return d->mString.crend();
+}
+
+String::const_reverse_iterator String::crbegin() const {
+  return d->mString.crbegin();
+}
+
+String::const_reverse_iterator String::crend() const {
+  return d->mString.crend();
+}
+
 ::std::ostream& libcomp::operator<<(::std::ostream& os, const String& str) {
   return os << str.ToUtf8();
 }
