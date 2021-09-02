@@ -133,6 +133,19 @@ bool TcpConnection::QueueObject(const Object& obj) {
   return true;
 }
 
+bool TcpConnection::QueueObject(uint16_t packetCode, const Object& obj) {
+  Packet p;
+  p.WriteU16Little(packetCode);
+
+  if (!obj.SavePacket(p)) {
+    return false;
+  }
+
+  QueuePacket(p);
+
+  return true;
+}
+
 void TcpConnection::SendPacket(Packet& packet, bool closeConnection) {
   ReadOnlyPacket copy(std::move(packet));
 
@@ -152,6 +165,17 @@ void TcpConnection::SendPacketCopy(libcomp::Packet& packet,
 
 bool TcpConnection::SendObject(const Object& obj, bool closeConnection) {
   if (!QueueObject(obj)) {
+    return false;
+  }
+
+  FlushOutgoing(closeConnection);
+
+  return true;
+}
+
+bool TcpConnection::SendObject(uint16_t packetCode, const Object& obj,
+                               bool closeConnection) {
+  if (!QueueObject(packetCode, obj)) {
     return false;
   }
 
