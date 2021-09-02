@@ -41,7 +41,8 @@ extern char *SERVICE_NAME;
 
 class WindowsService {
  public:
-  WindowsService(const std::function<int(int, const char **)> &func);
+  WindowsService(const std::function<int(int, const char **)> &func,
+                 int argc = 0, const char **argv = nullptr);
 
   int Run(int argc, const char *argv[]);
   void HandleCtrlCode(DWORD CtrlCode);
@@ -52,6 +53,8 @@ class WindowsService {
   SERVICE_STATUS_HANDLE mStatusHandle;
 
   std::function<int(int, const char **)> mMain;
+  int mNumArguments;
+  const char **mArguments;
 };
 
 extern WindowsService *gService;

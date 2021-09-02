@@ -54,11 +54,19 @@ static VOID WINAPI ServiceCtrlHandler(DWORD CtrlCode) {
 }
 
 WindowsService::WindowsService(
-    const std::function<int(int, const char **)> &func)
-    : mStatus({0}), mStatusHandle(NULL), mMain(func) {}
+    const std::function<int(int, const char **)> &func, int argc,
+    const char **argv)
+    : mStatus({0}),
+      mStatusHandle(NULL),
+      mMain(func),
+      mNumArguments(argc),
+      mArguments(argv) {}
 
 int WindowsService::Run(int argc, const char *argv[]) {
-  int exitCode = -1;
+  (void)argc;
+  (void)argv;
+
+  int exitCode = EXIT_FAILURE;
 
   DWORD Status = E_FAIL;
 
@@ -92,12 +100,13 @@ int WindowsService::Run(int argc, const char *argv[]) {
     (void)SetCurrentDirectoryA(cwd);
   }
 
-  exitCode = mMain(argc, argv);
+  exitCode = mMain(mNumArguments, mArguments);
 
   // Tell the service controller we are stopped.
   mStatus.dwControlsAccepted = 0;
   mStatus.dwCurrentState = SERVICE_STOPPED;
-  mStatus.dwWin32ExitCode = 0;
+  mStatus.dwWin32ExitCode =
+      EXIT_SUCCESS == exitCode ? ERROR_SUCCESS : ERROR_INTERNAL_ERROR;
   mStatus.dwCheckPoint = 3;
 
   if (!SetServiceStatus(mStatusHandle, &mStatus)) {
