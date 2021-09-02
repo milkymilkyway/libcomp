@@ -41,7 +41,7 @@ int ApplicationMain(int argc, const char *argv[]);
 ;
 
 int main(int argc, const char *argv[]) {
-  gService = new WindowsService(&ApplicationMain);
+  gService = new WindowsService(&ApplicationMain, argc, argv);
 
   SERVICE_TABLE_ENTRY ServiceTable[] = {
       {SERVICE_NAME, (LPSERVICE_MAIN_FUNCTION)ServiceMain}, {NULL, NULL}};
