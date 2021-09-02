@@ -168,6 +168,29 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
   virtual bool QueueObject(const Object& obj);
 
   /**
+   * Queue an object to be packetized and sent.
+   * @note This will not send the packet until @ref SendPacket or
+   *   @ref FlushOutgoing is called.
+   * @param packetCode Packet code added before the object.
+   * @param obj Object to be packetized.
+   * @return true if the object could be packetized; false otherwise.
+   */
+  virtual bool QueueObject(uint16_t packetCode, const Object& obj);
+
+  /**
+   * Queue an object to be packetized and sent.
+   * @note This will not send the packet until @ref SendPacket or
+   *   @ref FlushOutgoing is called.
+   * @param packetCode Packet code added before the object.
+   * @param obj Object to be packetized.
+   * @return true if the object could be packetized; false otherwise.
+   */
+  template <typename T>
+  bool QueueObject(T packetCode, const Object& obj) {
+    return QueueObject(to_underlying(packetCode), obj);
+  }
+
+  /**
    * Queue a packet and then send all queued packets to the remote host.
    * @param packet Packet to send to the remote host.
    * @param closeConnection If the connection should be closed after the
@@ -202,6 +225,33 @@ class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
    * @return true if the object could be packetized; false otherwise.
    */
   virtual bool SendObject(const Object& obj, bool closeConnection = false);
+
+  /**
+   * Packetize and queue an object and then send all queued packets to the
+   *   remote host.
+   * @param packetCode Packet code added before the object.
+   * @param obj Object to be packetized.
+   * @param closeConnection If the connection should be closed after the
+   *   send queue has been emptied.
+   * @return true if the object could be packetized; false otherwise.
+   */
+  virtual bool SendObject(uint16_t packetCode, const Object& obj,
+                          bool closeConnection = false);
+
+  /**
+   * Packetize and queue an object and then send all queued packets to the
+   *   remote host.
+   * @param packetCode Packet code added before the object.
+   * @param obj Object to be packetized.
+   * @param closeConnection If the connection should be closed after the
+   *   send queue has been emptied.
+   * @return true if the object could be packetized; false otherwise.
+   */
+  template <typename T>
+  bool SendObject(T packetCode, const Object& obj,
+                  bool closeConnection = false) {
+    return SendObject(to_underlying(packetCode), obj, closeConnection);
+  }
 
   /**
    * Send all queued packets to the remote host.
