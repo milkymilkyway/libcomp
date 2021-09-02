@@ -87,7 +87,6 @@ bool DatabaseQuerySQLite3::Execute() {
     for (int i = 0; i < colCount; i++) {
       mResultColumnNames.push_back(
           std::string(sqlite3_column_name(mStatement, i)));
-      mResultColumnTypes.push_back(sqlite3_column_type(mStatement, i));
     }
   }
 
@@ -261,11 +260,6 @@ bool DatabaseQuerySQLite3::Bind(
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, String& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_TEXT) {
-    return false;
-  }
-
   int idx = (int)index;
 
   size_t bytes = (size_t)sqlite3_column_bytes(mStatement, idx);
@@ -288,11 +282,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name, String& value) {
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, std::vector<char>& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_BLOB) {
-    return false;
-  }
-
   int idx = (int)index;
 
   size_t bytes = (size_t)sqlite3_column_bytes(mStatement, idx);
@@ -335,11 +324,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name,
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, int32_t& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_INTEGER) {
-    return false;
-  }
-
   int idx = (int)index;
   value = (int32_t)sqlite3_column_int(mStatement, idx);
   return true;
@@ -355,11 +339,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name, int32_t& value) {
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, int64_t& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_INTEGER) {
-    return false;
-  }
-
   int idx = (int)index;
   value = (int64_t)sqlite3_column_int64(mStatement, idx);
   return true;
@@ -375,11 +354,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name, int64_t& value) {
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, float& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_FLOAT) {
-    return false;
-  }
-
   int idx = (int)index;
   value = (float)sqlite3_column_double(mStatement, idx);
   return true;
@@ -395,11 +369,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name, float& value) {
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, double& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_FLOAT) {
-    return false;
-  }
-
   int idx = (int)index;
   value = sqlite3_column_double(mStatement, idx);
   return true;
@@ -415,11 +384,6 @@ bool DatabaseQuerySQLite3::GetValue(const String& name, double& value) {
 }
 
 bool DatabaseQuerySQLite3::GetValue(size_t index, bool& value) {
-  if (mResultColumnTypes.size() <= index ||
-      mResultColumnTypes[index] != SQLITE_INTEGER) {
-    return false;
-  }
-
   int idx = (int)index;
   value = sqlite3_column_int(mStatement, idx) != 0;
   return true;

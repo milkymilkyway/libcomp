@@ -162,10 +162,6 @@ class DatabaseQuerySQLite3 : public DatabaseQueryImpl {
 
   /// Column names from the current result set
   std::vector<std::string> mResultColumnNames;
-
-  /// Column data types from the current result set represented as SQLite3
-  /// data type integers
-  std::vector<int> mResultColumnTypes;
 };
 
 }  // namespace libcomp
